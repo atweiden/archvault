@@ -8,21 +8,20 @@ regex host_name
     ^
     [
         [
-            [<:Letter> || <digit>]
+            <+:Letter +digit>
             ||
-            [<:Letter> || <digit>]
-            [<:Letter> || <digit> || '-']*
-            [<:Letter> || <digit>]
+            <+:Letter +digit>
+            <+:Letter +digit +[-]>*
+            <+:Letter +digit>
         ]
         '.'
     ]*
-
     [
-        [<:Letter> || <digit>]
+        <+:Letter +digit>
         ||
-        [<:Letter> || <digit>]
-        [<:Letter> || <digit> || '-']*
-        [<:Letter> || <digit>]
+        <+:Letter +digit>
+        <+:Letter +digit +[-]>*
+        <+:Letter +digit>
     ]
     $
 }
@@ -31,7 +30,7 @@ regex host_name
 token vault_name
 {
     <alpha> ** 1
-    [ <alnum> || '-' ] ** 0..15
+    <+alnum +[-]> ** 0..15
 }
 
 # linux username validation
@@ -44,10 +43,9 @@ regex user_name
     #   followed by lower case letters, digits, underscores, or
     #   dashes.
     # - username may end with a dollar sign
-
     <alpha> ** 1
-    [ <alnum> || '-' ] ** 0..30
-    [ <alnum> || '-' || '$' ]?
+    <+alnum +[-]> ** 0..30
+    <+alnum +[-] +[$]>?
 }
 
 # vim: ft=perl6
