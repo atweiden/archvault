@@ -60,7 +60,7 @@ multi sub MAIN(
                 if $holograms-dir;
 
         # if --hostname, initialize $CONF.hostname to HostName
-        %cfg<hostname> = Holovault::Config.gen_host_name($hostname)
+        %cfg<host_name> = Holovault::Config.gen_host_name($hostname)
             if $hostname;
 
         # if --keymap, initialize $CONF.keymap to Keymap
