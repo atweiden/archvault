@@ -14,12 +14,12 @@ has UserName $.user_name =
     %*ENV<USER_NAME> ?? self.gen_user_name(%*ENV<USER_NAME>)
                      !! prompt_name(:user);
 
-# sha512 password digest for normal user (default: secret sha512 salt)
+# sha512 password digest for normal user
 has Str $.user_pass_digest =
     %*ENV<USER_PASS> ?? self.gen_digest(%*ENV<USER_PASS>)
                      !! prompt_pass_digest();
 
-# sha512 password digest for root user (default: secret sha512 salt)
+# sha512 password digest for root user
 has Str $.root_pass_digest =
     %*ENV<ROOT_PASS> ?? self.gen_digest(%*ENV<ROOT_PASS>)
                      !! prompt_pass_digest(:root);
@@ -29,7 +29,7 @@ has VaultName $.vault_name =
     %*ENV<VAULT_NAME> ?? self.gen_vault_name(%*ENV<VAULT_NAME>)
                       !! prompt_name(:vault);
 
-# password for LUKS encrypted volume (default: entered manually)
+# password for LUKS encrypted volume
 has VaultPass $.vault_pass =
     %*ENV<VAULT_PASS> ?? self.gen_vault_pass(%*ENV<VAULT_PASS>)
                       !! Nil;
@@ -72,17 +72,17 @@ has Timezone $.timezone =
     %*ENV<TIMEZONE> ?? self.gen_timezone(%*ENV<TIMEZONE>)
                     !! prompt_timezone();
 
-# directory in which to search for holograms requested (default: none)
+# directory in which to search for holograms requested
 has IO::Path $.holograms_dir =
     %*ENV<HOLOGRAMS_DIR> ?? self.gen_holograms_dir_handle(%*ENV<HOLOGRAMS_DIR>)
                          !! self!resolve_holograms_dir;
 
-# holograms requested (default: none)
+# holograms requested
 has Str @.holograms =
     %*ENV<HOLOGRAMS> ?? self.gen_holograms(%*ENV<HOLOGRAMS>)
                      !! prompt_holograms();
 
-# augment (default: no)
+# augment
 has Bool $.augment = %*ENV<AUGMENT>.Bool || False;
 
 
@@ -460,10 +460,10 @@ sub prompt_locale() returns Locale:D
 multi sub prompt_name(Bool :$host! where *.so) returns HostName:D
 {
     # default response
-    my HostName $response_default = "luckbox";
+    my HostName $response_default = "vault";
 
     # prompt text
-    my Str $prompt_text = "Enter hostname [luckbox]: ";
+    my Str $prompt_text = "Enter hostname [vault]: ";
 
     # help text
     my Str $help_text = q:to/EOF/;
@@ -510,10 +510,10 @@ multi sub prompt_name(Bool :$user! where *.so) returns UserName:D
 multi sub prompt_name(Bool :$vault! where *.so) returns VaultName:D
 {
     # default response
-    my VaultName $response_default = "luckbox";
+    my VaultName $response_default = "vault";
 
     # prompt text
-    my Str $prompt_text = "Enter vault name [luckbox]: ";
+    my Str $prompt_text = "Enter vault name [vault]: ";
 
     # help text
     my Str $help_text = q:to/EOF/;
