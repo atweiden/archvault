@@ -60,17 +60,17 @@ has DiskType $.disk_type =
 # locale (default: en_US)
 has Locale $.locale =
     %*ENV<LOCALE> ?? self.gen_locale(%*ENV<LOCALE>)
-                  !! self!prompt_locale;
+                  !! prompt_locale();
 
 # keymap (default: us)
 has Keymap $.keymap =
     %*ENV<KEYMAP> ?? self.gen_keymap(%*ENV<KEYMAP>)
-                  !! self!prompt_keymap;
+                  !! prompt_keymap();
 
 # timezone (default: America/Los_Angeles)
 has Timezone $.timezone =
     %*ENV<TIMEZONE> ?? self.gen_timezone(%*ENV<TIMEZONE>)
-                    !! self!prompt_timezone;
+                    !! prompt_timezone();
 
 # directory in which to search for holograms requested (default: none)
 has IO::Path $.holograms_dir =
@@ -80,7 +80,7 @@ has IO::Path $.holograms_dir =
 # holograms requested (default: none)
 has Str @.holograms =
     %*ENV<HOLOGRAMS> ?? self.gen_holograms(%*ENV<HOLOGRAMS>)
-                     !! self!prompt_holograms;
+                     !! prompt_holograms();
 
 # augment (default: no)
 has Bool $.augment = %*ENV<AUGMENT>.Bool || False;
@@ -117,22 +117,15 @@ method gen_holograms(Str:D $holograms) returns Array[Str:D]
 # confirm directory $directory exists and is readable, and return IO::Path
 method gen_holograms_dir_handle(Str:D $directory) returns IO::Path:D
 {
-    sub is_permissible(Str:D $directory) returns Bool
+    if is_permissible($directory)
     {
-        unless $directory.IO.d
-        {
-            say "Sorry, directory does not exist at 「$directory」";
-            exit;
-        }
-        unless $directory.IO.r
-        {
-            say "Sorry, directory found at 「$directory」 is unreadable.";
-            exit;
-        }
-        True;
+        my IO::Path $dir_handle = $directory.IO;
     }
-
-    my IO::Path $dir_handle = $directory.IO if is_permissible($directory);
+    else
+    {
+        say "Sorry, directory 「$directory」 does not exist or is unreadable.";
+        exit;
+    }
 }
 
 # confirm hostname $h is valid HostName and return HostName
@@ -183,6 +176,12 @@ method gen_vault_pass(Str:D $v) returns VaultPass:D
     my VaultPass $vault_pass = $v or die "Sorry, invalid vault pass";
 }
 
+# does directory exist and is directory readable?
+sub is_permissible(Str:D $directory) returns Bool
+{
+    $directory.IO.d && $directory.IO.r ?? True !! False;
+}
+
 # resolve holograms dir
 # does not need to return a defined IO::Path since holograms are optional
 method !resolve_holograms_dir() returns IO::Path
@@ -190,25 +189,22 @@ method !resolve_holograms_dir() returns IO::Path
     my IO::Path $dir_handle;
 
     # is $PWD/holograms readable?
-    if my IO::Path $local_holograms_dir =
-        self.gen_holograms_dir_handle('holograms')
+    if is_permissible('holograms')
     {
         # set dir handle to $PWD/holograms
-        $dir_handle = $local_holograms_dir;
+        $dir_handle = self.gen_holograms_dir_handle('holograms');
     }
     # is $HOME/.holograms readable?
-    elsif my IO::Path $home_holograms_dir =
-        self.gen_holograms_dir_handle("%*ENV<HOME>/.holograms")
+    elsif is_permissible("%*ENV<HOME>/.holograms")
     {
         # set dir handle to $HOME/.holograms
-        $dir_handle = $home_holograms_dir;
+        $dir_handle = self.gen_holograms_dir_handle("%*ENV<HOME>/.holograms");
     }
     # is /etc/holograms readable?
-    elsif my IO::Path $system_holograms_dir =
-        self.gen_holograms_dir_handle('/etc/holograms')
+    elsif is_permissible('/etc/holograms')
     {
         # set dir handle to /etc/holograms
-        $dir_handle = $system_holograms_dir;
+        $dir_handle = self.gen_holograms_dir_handle('/etc/holograms');
     }
 
     $dir_handle;
@@ -219,62 +215,341 @@ method !resolve_holograms_dir() returns IO::Path
 # user input prompts
 # -----------------------------------------------------------------------------
 
-sub is_valid($response, Str:D @valid_responses) returns Bool:D
+# dialog menu user input prompt with tags (keys) only
+multi sub dprompt(
+    ::T, # type of response expected
+    @menu, # menu (T $tag)
+    T :$default_item! where *.defined, # default response
+    Str:D :$title!, # menu title
+    Str:D :$prompt_text!, # question posed to user
+    Int:D :$height = 80,
+    Int:D :$width = 80,
+    Int:D :$menu_height = 24,
+    Str:D :$confirm_topic! # context string for confirm text
+) returns Any:D
 {
-    True;
+    my T $response;
+
+    while True
+    {
+        # prompt for selection
+        $response = qqx!
+            dialog \\
+                --stdout \\
+                --no-items \\
+                --scrollbar \\
+                --no-cancel \\
+                --default-item $default_item \\
+                --title '$title' \\
+                --menu '$prompt_text' $height $width $menu_height @menu[]
+        !;
+
+        # confirm selection
+        my Bool $confirmed = qqx!
+            dialog \\
+                --stdout \\
+                --defaultno \\
+                --title 'ARE YOU SURE?' \\
+                --yesno 'Use $confirm_topic «$response»?' 8 35
+        !.defined || False;
+
+        last if $confirmed;
+    }
+
+    $response;
+}
+
+# dialog menu user input prompt with tags (keys) and items (values)
+multi sub dprompt(
+    ::T, # type of response expected
+    %menu, # menu (T $tag => Str $item)
+    T :$default_item! where *.defined, # default response
+    Str:D :$title!, # menu title
+    Str:D :$prompt_text!, # question posed to user
+    Int:D :$height = 80,
+    Int:D :$width = 80,
+    Int:D :$menu_height = 24,
+    Str:D :$confirm_topic! # context string for confirm text
+) returns Any:D
+{
+    my T $response;
+
+    while True
+    {
+        # prompt for selection
+        $response = qqx!
+            dialog \\
+                --stdout \\
+                --scrollbar \\
+                --no-cancel \\
+                --default-item $default_item \\
+                --title '$title' \\
+                --menu '$prompt_text' $height $width $menu_height {%menu.sort}
+        !;
+
+        # confirm selection
+        my Bool $confirmed = qqx!
+            dialog \\
+                --stdout \\
+                --defaultno \\
+                --title 'ARE YOU SURE?' \\
+                --yesno 'Use $confirm_topic «$response»?' 8 35
+        !.defined || False;
+
+        last if $confirmed;
+    }
+
+    $response;
+}
+
+# user input prompt (text)
+sub tprompt(
+    ::T, # type of response expected
+    T $response_default where *.defined, # default response
+    Str:D :$prompt_text!, # question posed to user
+    Str :$help_text # optional help text to display before prompt
+) returns Any:D
+{
+    my $response;
+
+    # check for affirmative confirmation
+    sub is_confirmed(Str:D $confirmation) returns Bool:D
+    {
+        # was response negatory or empty?
+        if $confirmation ~~ /:i n[o]?/ or $confirmation.chars == 0
+        {
+            False;
+        }
+        # was response affirmative?
+        elsif $confirmation ~~ /:i y[e[s]?]?/
+        {
+            True;
+        }
+        # were unrecognized characters entered?
+        else
+        {
+            False;
+        }
+    }
+
+    while True
+    {
+        # display help text (optional)
+        say $help_text if $help_text;
+
+        # prompt for response
+        $response = prompt $prompt_text;
+
+        # if empty carriage return entered, use default response value
+        unless $response
+        {
+            $response = $response_default;
+        }
+
+        # retry if response is invalid
+        unless $response ~~ T
+        {
+            say 'Sorry, invalid response. Please try again.';
+            next;
+        }
+
+        # prompt for confirmation
+        my Str $confirmation = prompt "Confirm «$response» [y/N]: ";
+        last if is_confirmed($confirmation);
+    }
+
+    $response;
 }
 
 sub prompt_disk_type() returns DiskType:D
 {
-    my DiskType $disk_type = prompt "Disk type? (hdd, ssd, usb) ";
-    $disk_type = 'USB';
+    my DiskType $default_item = 'USB';
+    my Str $prompt_text = 'Select disk type:';
+    my Str $title = 'DISK TYPE SELECTION';
+    my Str $confirm_topic = 'disk type selected';
+
+    my DiskType $disk_type = dprompt(
+        DiskType,
+        %Holovault::Types::disktypes,
+        :$default_item,
+        :$prompt_text,
+        :$title,
+        :$confirm_topic
+    );
 }
 
 sub prompt_graphics() returns Graphics:D
 {
-    my Graphics $graphics = 'INTEL';
+    my Graphics $default_item = 'INTEL';
+    my Str $prompt_text = 'Select graphics card type:';
+    my Str $title = 'GRAPHICS CARD TYPE SELECTION';
+    my Str $confirm_topic = 'graphics card type selected';
+
+    my Graphics $graphics = dprompt(
+        Graphics,
+        %Holovault::Types::graphics,
+        :$default_item,
+        :$prompt_text,
+        :$title,
+        :$confirm_topic
+    );
 }
 
-method !prompt_holograms() returns Array[Str:D]
+sub prompt_holograms() returns Array[Str]
 {
-    my Str @holograms_found = self.ls_holograms;
-    my Str @holograms = "string";
+    # default response
+    my Str $response_default = "";
+
+    # prompt text
+    my Str $prompt_text = "Holograms (optional): ";
+
+    # help text
+    my Str $help_text = q:to/EOF/;
+    Determining holograms requested...
+
+    Enter pkgname of holograms, space-separated, e.g. hologram-simple
+    or configure-ovpn
+
+    Leave blank if you don't want any or don't know what this is
+    EOF
+    $help_text .= trim;
+
+    # prompt user
+    my Str @holograms = tprompt(
+        Str,
+        $response_default,
+        :$prompt_text,
+        :$help_text
+    ).split(' ');
 }
 
-method !prompt_keymap() returns Keymap:D
+sub prompt_keymap() returns Keymap:D
 {
-    # get list of keymaps
-    my Keymap @keymaps = self.ls_keymaps;
-    my Keymap $keymap = "us";
+    my Keymap $default_item = 'us';
+    my Str $prompt_text = 'Select keymap:';
+    my Str $title = 'KEYMAP SELECTION';
+    my Str $confirm_topic = 'keymap selected';
+
+    my Keymap $keymap = dprompt(
+        Keymap,
+        %Holovault::Types::keymaps,
+        :$default_item,
+        :$prompt_text,
+        :$title,
+        :$confirm_topic
+    );
 }
 
-method !prompt_locale() returns Locale:D
+sub prompt_locale() returns Locale:D
 {
-    # get list of locales
-    my Locale @locales = self.ls_locales;
-    my Locale $locale = "en_US";
+    my Locale $default_item = 'en_US';
+    my Str $prompt_text = 'Select locale:';
+    my Str $title = 'LOCALE SELECTION';
+    my Str $confirm_topic = 'locale selected';
+
+    my Locale $locale = dprompt(
+        Locale,
+        %Holovault::Types::locales,
+        :$default_item,
+        :$prompt_text,
+        :$title,
+        :$confirm_topic
+    );
 }
 
 multi sub prompt_name(Bool :$host! where *.so) returns HostName:D
 {
-    my HostName $host_name = "string";
+    # default response
+    my HostName $response_default = "luckbox";
+
+    # prompt text
+    my Str $prompt_text = "Enter hostname [luckbox]: ";
+
+    # help text
+    my Str $help_text = q:to/EOF/;
+    Determining hostname...
+
+    Leave blank if you don't know what this is
+    EOF
+    $help_text .= trim;
+
+    # prompt user
+    my HostName $host_name = tprompt(
+        HostName,
+        $response_default,
+        :$prompt_text,
+        :$help_text
+    );
 }
 
 multi sub prompt_name(Bool :$user! where *.so) returns UserName:D
 {
-    my UserName $user_name = "string";
+    # default response
+    my UserName $response_default = "live";
+
+    # prompt text
+    my Str $prompt_text = "Enter username [live]: ";
+
+    # help text
+    my Str $help_text = q:to/EOF/;
+    Determining username...
+
+    Leave blank if you don't know what this is
+    EOF
+    $help_text .= trim;
+
+    # prompt user
+    my UserName $user_name = tprompt(
+        UserName,
+        $response_default,
+        :$prompt_text,
+        :$help_text
+    );
 }
 
 multi sub prompt_name(Bool :$vault! where *.so) returns VaultName:D
 {
-    my VaultName $vault_name = "string";
+    # default response
+    my VaultName $response_default = "luckbox";
+
+    # prompt text
+    my Str $prompt_text = "Enter vault name [luckbox]: ";
+
+    # help text
+    my Str $help_text = q:to/EOF/;
+    Determining name of LUKS encrypted volume...
+
+    Leave blank if you don't know what this is
+    EOF
+    $help_text .= trim;
+
+    # prompt user
+    my VaultName $vault_name = tprompt(
+        VaultName,
+        $response_default,
+        :$prompt_text,
+        :$help_text
+    );
 }
 
 method !prompt_partition() returns Str:D
 {
     # get list of partitions
-    my Str @partitions = self.ls_partitions;
-    "string";
+    my Str @partitions = self.ls_partitions.map({ $_ = "/dev/$_" });
+
+    my Str $default_item = '/dev/sdb';
+    my Str $prompt_text = 'Select partition for installing Arch:';
+    my Str $title = 'PARTITION SELECTION';
+    my Str $confirm_topic = 'partition selected';
+
+    my Str $partition = dprompt(
+        Str,
+        @partitions,
+        :$default_item,
+        :$prompt_text,
+        :$title,
+        :$confirm_topic
+    );
 }
 
 # generate sha512 password digest from user input
@@ -284,7 +559,7 @@ sub prompt_pass_digest(Bool :$root) returns Str:D
     my Str $blank_pass_digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
 
     # for "Enter Root / User Password" input prompts
-    my Str $pass_owner = $root ?? "Root" !! "User";
+    my Str $subject = $root ?? "Root" !! "User";
 
     # store sha512 digest of password
     my Str $pass_digest;
@@ -293,19 +568,21 @@ sub prompt_pass_digest(Bool :$root) returns Str:D
     while True
     {
         # reading secure password digest into memory...
-        print "Enter $pass_owner "; # Enter Root / User Password
+        print "Enter $subject "; # Enter Root / User Password
         $pass_digest = qx{openssl passwd -1 -salt sha512}.trim;
-        print "Retype $pass_owner "; # Retype Root / User Password
-        my Str $pass_digest_confirm = qx{openssl passwd -1 -salt sha512}.trim;
 
-        # verifying secure password digest...
+        # verifying secure password digest is not empty...
         if $pass_digest ~~ $blank_pass_digest
         {
             # password is empty, try again
-            say "$pass_owner password cannot be blank. Please try again";
+            say "$subject password cannot be blank. Please try again";
             next;
         }
-        elsif $pass_digest ~~ $pass_digest_confirm
+
+        # verifying secure password digest...
+        print "Retype $subject "; # Retype Root / User Password
+        my Str $pass_digest_confirm = qx{openssl passwd -1 -salt sha512}.trim;
+        if $pass_digest ~~ $pass_digest_confirm
         {
             last;
         }
@@ -322,19 +599,46 @@ sub prompt_pass_digest(Bool :$root) returns Str:D
 
 sub prompt_processor() returns Processor:D
 {
-    my Processor $processor = 'OTHER';
+    my Processor $default_item = 'OTHER';
+    my Str $prompt_text = 'Select processor:';
+    my Str $title = 'PROCESSOR SELECTION';
+    my Str $confirm_topic = 'processor selected';
+
+    my Processor $processor = dprompt(
+        Processor,
+        %Holovault::Types::processors,
+        :$default_item,
+        :$prompt_text,
+        :$title,
+        :$confirm_topic
+    );
 }
 
-method !prompt_timezone() returns Timezone:D
+sub prompt_timezone() returns Timezone:D
 {
     # get list of timezones
-    my Str @timezones = self.ls_timezones;
+    my Timezone @timezones = @Holovault::Types::timezones;
 
     # get list of timezone regions
     my Str @regions = @timezones».subst(/'/'\N*$/, '').unique;
 
     # prompt choose region
     my Str $region;
+    {
+        my Str $default_item = 'America';
+        my Str $prompt_text = 'Select region:';
+        my Str $title = 'TIMEZONE REGION SELECTION';
+        my Str $confirm_topic = 'timezone region selected';
+
+        $region = dprompt(
+            Str,
+            @regions,
+            :$default_item,
+            :$prompt_text,
+            :$title,
+            :$confirm_topic
+        );
+    }
 
     # get list of timezone region subregions
     my Str @subregions =
@@ -342,9 +646,23 @@ method !prompt_timezone() returns Timezone:D
 
     # prompt choose subregion
     my Str $subregion;
+    {
+        my Str $default_item = 'Los_Angeles';
+        my Str $prompt_text = 'Select subregion:';
+        my Str $title = 'TIMEZONE SUBREGION SELECTION';
+        my Str $confirm_topic = 'timezone subregion selected';
 
-    my Str $timezone = @timezones.grep("$region/$subregion").shift;
-    $timezone = 'America/Los_Angeles';
+        $subregion = dprompt(
+            Str,
+            @subregions,
+            :$default_item,
+            :$prompt_text,
+            :$title,
+            :$confirm_topic
+        );
+    }
+
+    my Timezone $timezone = @timezones.grep("$region/$subregion").shift;
 }
 
 
@@ -409,8 +727,8 @@ method ls_locales() returns Array[Locale:D]
 method ls_partitions() returns Array[Str:D]
 {
     my Str @partitions = qx{
-        lsblk --output NAME --nodeps --noheadings --raw | grep -E 'sd|hd|xvd'
-    }.trim;
+        lsblk --output NAME --nodeps --noheadings --raw
+    }.trim.split("\n").sort;
 }
 
 # list timezones
