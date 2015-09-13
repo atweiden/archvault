@@ -43,7 +43,13 @@ Dependencies
 - openssl: user password salts
 - reflector: https-only mirrors
 - tzdata: timezone data in `/usr/share/zoneinfo/zone.tab`
-- util-linux: `lsblk`
+- util-linux: `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`
+
+
+Optional Dependencies
+---------------------
+
+- dialog: ncurses user input menu
 
 
 Licensing
