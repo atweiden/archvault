@@ -1,0 +1,2 @@
+- check for active internet connection
+- check for root privs
