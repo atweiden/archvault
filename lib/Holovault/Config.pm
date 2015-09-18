@@ -192,19 +192,19 @@ method !resolve_holograms_dir() returns IO::Path
     if is_permissible('holograms')
     {
         # set dir handle to $PWD/holograms
-        $dir_handle = self.gen_holograms_dir_handle('holograms');
+        $dir_handle = 'holograms'.IO;
     }
     # is $HOME/.holograms readable?
     elsif is_permissible("%*ENV<HOME>/.holograms")
     {
         # set dir handle to $HOME/.holograms
-        $dir_handle = self.gen_holograms_dir_handle("%*ENV<HOME>/.holograms");
+        $dir_handle = "%*ENV<HOME>/.holograms".IO;
     }
     # is /etc/holograms readable?
     elsif is_permissible('/etc/holograms')
     {
         # set dir handle to /etc/holograms
-        $dir_handle = self.gen_holograms_dir_handle('/etc/holograms');
+        $dir_handle = '/etc/holograms'.IO;
     }
 
     $dir_handle;
@@ -662,7 +662,7 @@ sub prompt_timezone() returns Timezone:D
         );
     }
 
-    my Timezone $timezone = @timezones.grep("$region/$subregion").shift;
+    my Timezone $timezone = @timezones.grep("$region/$subregion")[0];
 }
 
 
