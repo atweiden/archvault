@@ -111,7 +111,7 @@ method gen_graphics(Str:D $g) returns Graphics:D
 # split holograms space separated into array of PkgNames and return array
 method gen_holograms(Str:D $holograms) returns Array[PkgName:D]
 {
-    my PkgName @holograms = $holograms.split(' ');
+    my PkgName @holograms = $holograms.split(/\s+/).unique;
 }
 
 # confirm directory $directory exists and is readable, and return IO::Path
@@ -354,7 +354,8 @@ sub tprompt(
         }
 
         # prompt for confirmation
-        my Str $confirmation = prompt "Confirm «$response» [y/N]: ";
+        my Str $confirmation =
+            prompt "Confirm «{$response.split(/\s+/).join(', ')}» [y/N]: ";
         last if is_confirmed($confirmation);
     }
 
@@ -414,16 +415,44 @@ sub prompt_holograms()
     EOF
     $help_text .= trim;
 
-    # prompt user
-    my Str @h = tprompt(
-        Str,
-        $response_default,
-        :$prompt_text,
-        :$help_text
-    ).split(' ');
+    my PkgName @holograms;
+    while True
+    {
+        # prompt user
+        my Str @h = tprompt(
+            Str,
+            $response_default,
+            :$prompt_text,
+            :$help_text
+        ).split(/\s+/).unique;
 
-    # optionally return holograms
-    my PkgName @holograms = @h if @h[0] ~~ PkgName;
+        # don't return anything if user input carriage return
+        last if @h[0] ~~ "";
+
+        # were all holograms input valid pkgnames (hologram names)?
+        if @h.grep(PkgName).elems == @h.elems
+        {
+            @holograms = @h;
+            last;
+        }
+        # user must've input at least one invalid hologram name
+        else
+        {
+            # display non-fatal error message and loop
+            my Str @invalid_hologram_names = (@h (-) @h.grep(PkgName)).keys;
+            my Str $msg = qq:to/EOF/;
+            Sorry, invalid hologram name(s) given:
+
+            {@invalid_hologram_names.join(', ')}
+
+            Please try again.
+            EOF
+            say $msg.trim;
+        }
+    }
+
+    # optionally return holograms if user input valid holograms
+    @holograms if @holograms;
 }
 
 sub prompt_keymap() returns Keymap:D
