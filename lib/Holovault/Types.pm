@@ -1030,6 +1030,12 @@ subset Keymap of Str is export where { %keymaps.keys.grep($_) };
 # locale
 subset Locale of Str is export where { %locales.keys.grep($_) };
 
+# pkgname (hologram name)
+subset PkgName of Str is export where
+{
+    Holovault::Grammar.parse($_, :rule<pkg_name>);
+}
+
 # processor
 subset Processor of Str is export where { %processors.keys.grep($_) };
 

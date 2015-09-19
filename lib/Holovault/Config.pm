@@ -78,7 +78,7 @@ has IO::Path $.holograms_dir =
                          !! self!resolve_holograms_dir;
 
 # holograms requested
-has Str @.holograms =
+has PkgName @.holograms =
     %*ENV<HOLOGRAMS> ?? self.gen_holograms(%*ENV<HOLOGRAMS>)
                      !! prompt_holograms();
 
@@ -108,10 +108,10 @@ method gen_graphics(Str:D $g) returns Graphics:D
     my Graphics $graphics = $g or die "Sorry, invalid graphics card type";
 }
 
-# split holograms space separated into array of Str and return array
-method gen_holograms(Str:D $holograms) returns Array[Str:D]
+# split holograms space separated into array of PkgNames and return array
+method gen_holograms(Str:D $holograms) returns Array[PkgName:D]
 {
-    my Str @holograms = $holograms.split(' ');
+    my PkgName @holograms = $holograms.split(' ');
 }
 
 # confirm directory $directory exists and is readable, and return IO::Path
@@ -395,7 +395,7 @@ sub prompt_graphics() returns Graphics:D
     );
 }
 
-sub prompt_holograms() returns Array[Str]
+sub prompt_holograms()
 {
     # default response
     my Str $response_default = "";
@@ -415,12 +415,15 @@ sub prompt_holograms() returns Array[Str]
     $help_text .= trim;
 
     # prompt user
-    my Str @holograms = tprompt(
+    my Str @h = tprompt(
         Str,
         $response_default,
         :$prompt_text,
         :$help_text
     ).split(' ');
+
+    # optionally return holograms
+    my PkgName @holograms = @h if @h[0] ~~ PkgName;
 }
 
 sub prompt_keymap() returns Keymap:D

@@ -26,11 +26,13 @@ regex host_name
     $
 }
 
-# LUKS encrypted volume device mapper name validation
-token vault_name
+# archlinux pkgname validation
+token pkg_name
 {
-    <alpha> ** 1
-    <+alnum +[-]> ** 0..15
+    # see pacman source: scripts/libmakepkg/lint_pkgbuild/pkgname.sh.in
+    # pkgnames are not allowed to start with a period or hyphen
+    <+alnum +[+] +[@]>
+    <+alnum +[+] +[@] +[.] +[-]>*
 }
 
 # linux username validation
@@ -46,6 +48,13 @@ regex user_name
     <alpha> ** 1
     <+alnum +[-]> ** 0..30
     <+alnum +[-] +[$]>?
+}
+
+# LUKS encrypted volume device mapper name validation
+token vault_name
+{
+    <alpha> ** 1
+    <+alnum +[-]> ** 0..15
 }
 
 # vim: ft=perl6
