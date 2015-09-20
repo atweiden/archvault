@@ -722,7 +722,8 @@ method ls_holograms(Str :$holograms_dir)
     }
 
     # if clause because holograms dir may not resolve to anything
-    my Str @holograms_found = qqx{
+    my Str @holograms_found;
+    @holograms_found = qqx{
         find $dir -mindepth 1 -maxdepth 1 -type d | sed 's!^./!!'
     }.trim.sort if $dir;
 
@@ -768,11 +769,9 @@ method ls_timezones() returns Array[Timezone:D]
 {
     # equivalent to `timedatectl list-timezones --no-pager`
     # see: src/basic/time-util.c in systemd source code
-    my Timezone @timezones = qx{
-        cat /usr/share/zoneinfo/zone.tab \
-            | perl -ne 'print unless /^#/' \
-            | awk '\{print $3\}'
-    }.trim.split("\n").sort;
+    my Timezone @timezones = qx!
+        perl -ne 'print unless /^#/' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
+    !.trim.split("\n").sort;
     push @timezones, "UTC";
 }
 
