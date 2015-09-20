@@ -1,6 +1,18 @@
 use v6;
 unit grammar Holovault::Grammar;
 
+# match a single lowercase alphanumeric character, or an underscore
+token alnum_lower
+{
+    <+alpha_lower +digit>
+}
+
+# match a single lowercase alphabetic character, or an underscore
+token alpha_lower
+{
+    <+lower +[_]>
+}
+
 # hostname (machine name)
 regex host_name
 {
@@ -43,11 +55,11 @@ regex user_name
     # - username cannot be 'root' (handled in Types.pm subset definition)
     # - username must start with a lower case letter or an underscore,
     #   followed by lower case letters, digits, underscores, or
-    #   dashes.
+    #   dashes
     # - username may end with a dollar sign
-    <alpha> ** 1
-    <+alnum +[-]> ** 0..30
-    <+alnum +[-] +[$]>?
+    <alpha_lower> ** 1
+    <+alnum_lower +[-]> ** 0..30
+    <+alnum_lower +[-] +[$]>?
 }
 
 # LUKS encrypted volume device mapper name validation
