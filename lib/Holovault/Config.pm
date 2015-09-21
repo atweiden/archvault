@@ -769,9 +769,9 @@ method ls_timezones() returns Array[Timezone:D]
 {
     # equivalent to `timedatectl list-timezones --no-pager`
     # see: src/basic/time-util.c in systemd source code
-    my Timezone @timezones = qx!
-        perl -ne 'print unless /^#/' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
-    !.trim.split("\n").sort;
+    my Timezone @timezones = qx«
+        sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
+    ».trim.split("\n").sort;
     push @timezones, "UTC";
 }
 
