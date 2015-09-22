@@ -725,7 +725,7 @@ method ls_holograms(Str :$holograms_dir)
     my Str @holograms_found;
     @holograms_found = qqx{
         find $dir -mindepth 1 -maxdepth 1 -type d | sed 's!^./!!'
-    }.trim.sort if $dir;
+    }.trim.split("\n").sort if $dir;
 
     # return holograms only if found readable dir not empty
     @holograms_found if @holograms_found[0];
