@@ -52,14 +52,17 @@ regex user_name
 {
     # from `man 8 useradd` line 255:
     # - username must be between 1 and 32 characters long
-    # - username cannot be 'root' (handled in Types.pm subset definition)
+    # - username cannot be 'root'
     # - username must start with a lower case letter or an underscore,
     #   followed by lower case letters, digits, underscores, or
     #   dashes
     # - username may end with a dollar sign
-    <alpha_lower> ** 1
-    <+alnum_lower +[-]> ** 0..30
-    <+alnum_lower +[-] +[$]>?
+    (
+        <alpha_lower> ** 1
+        <+alnum_lower +[-]> ** 0..30
+        <+alnum_lower +[-] +[$]>?
+    )
+    { $0 !~~ 'root' or fail }
 }
 
 # LUKS encrypted volume device mapper name validation

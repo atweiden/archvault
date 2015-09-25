@@ -1045,7 +1045,7 @@ subset Timezone of Str is export where { @timezones.grep($_) };
 # linux username
 subset UserName of Str is export where
 {
-    $_ !~~ /root/ && Holovault::Grammar.parse($_, :rule<user_name>);
+    Holovault::Grammar.parse($_, :rule<user_name>);
 }
 
 # LUKS encrypted volume device mapper name
