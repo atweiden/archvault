@@ -567,7 +567,7 @@ multi sub prompt_name(Bool :$vault! where *.so) returns VaultName:D
 method !prompt_partition() returns Str:D
 {
     # get list of partitions
-    my Str @partitions = self.ls_partitions.map({ $_ = "/dev/$_" });
+    my Str @partitions = self.ls_partitions».subst(/(.*)/, -> $/ { "/dev/$0" });
 
     my Str $default_item = '/dev/sdb';
     my Str $prompt_text = 'Select partition for installing Arch:';
