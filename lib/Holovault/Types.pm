@@ -689,6 +689,7 @@ constant @timezones =
     'America/Edmonton',
     'America/Eirunepe',
     'America/El_Salvador',
+    'America/Fort_Nelson',
     'America/Fortaleza',
     'America/Glace_Bay',
     'America/Godthab',
