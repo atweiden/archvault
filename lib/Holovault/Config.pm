@@ -93,25 +93,25 @@ has Bool $.augment = %*ENV<AUGMENT>.Bool || False;
 # return sha512 salt of password for linux user
 method gen_digest(Str:D $password) returns Str:D
 {
-    my Str $digest = qqx{openssl passwd -1 -salt sha512 $password}.trim;
+    my Str:D $digest = qqx{openssl passwd -1 -salt sha512 $password}.trim;
 }
 
 # confirm disk type $d is valid DiskType and return DiskType
 method gen_disk_type(Str:D $d) returns DiskType:D
 {
-    my DiskType $disk_type = $d or die "Sorry, invalid disk type";
+    my DiskType:D $disk_type = $d or die "Sorry, invalid disk type";
 }
 
 # confirm graphics card type $g is valid Graphics and return Graphics
 method gen_graphics(Str:D $g) returns Graphics:D
 {
-    my Graphics $graphics = $g or die "Sorry, invalid graphics card type";
+    my Graphics:D $graphics = $g or die "Sorry, invalid graphics card type";
 }
 
 # split holograms space separated into array of PkgNames and return array
 method gen_holograms(Str:D $holograms) returns Array[PkgName:D]
 {
-    my PkgName @holograms = $holograms.split(/\s+/).unique;
+    my PkgName:D @holograms = $holograms.split(/\s+/).unique;
 }
 
 # confirm directory $directory exists and is readable, and return IO::Path
@@ -119,7 +119,7 @@ method gen_holograms_dir_handle(Str:D $directory) returns IO::Path:D
 {
     if is_permissible($directory)
     {
-        my IO::Path $dir_handle = $directory.IO;
+        my IO::Path:D $dir_handle = $directory.IO;
     }
     else
     {
@@ -131,53 +131,53 @@ method gen_holograms_dir_handle(Str:D $directory) returns IO::Path:D
 # confirm hostname $h is valid HostName and return HostName
 method gen_host_name(Str:D $h) returns HostName:D
 {
-    my HostName $host_name = $h or die "Sorry, invalid hostname";
+    my HostName:D $host_name = $h or die "Sorry, invalid hostname";
 }
 
 # confirm keymap $k is valid Keymap and return Keymap
 method gen_keymap(Str:D $k) returns Keymap:D
 {
-    my Keymap $keymap = $k or die "Sorry, invalid keymap";
+    my Keymap:D $keymap = $k or die "Sorry, invalid keymap";
 }
 
 # confirm locale $l is valid Locale and return Locale
 method gen_locale(Str:D $l) returns Locale:D
 {
-    my Locale $locale = $l or die "Sorry, invalid locale";
+    my Locale:D $locale = $l or die "Sorry, invalid locale";
 }
 
 # confirm processor $p is valid Processor and return Processor
 method gen_processor(Str:D $p) returns Processor:D
 {
-    my Processor $processor = $p or die "Sorry, invalid processor";
+    my Processor:D $processor = $p or die "Sorry, invalid processor";
 }
 
 # confirm timezone $t is valid Timezone and return Timezone
 method gen_timezone(Str:D $t) returns Timezone:D
 {
-    my Timezone $timezone = $t or die "Sorry, invalid timezone";
+    my Timezone:D $timezone = $t or die "Sorry, invalid timezone";
 }
 
 # confirm user name $u is valid UserName and return UserName
 method gen_user_name(Str:D $u) returns UserName:D
 {
-    my UserName $user_name = $u or die "Sorry, invalid username";
+    my UserName:D $user_name = $u or die "Sorry, invalid username";
 }
 
 # confirm vault name $v is valid VaultName and return VaultName
 method gen_vault_name(Str:D $v) returns VaultName:D
 {
-    my VaultName $vault_name = $v or die "Sorry, invalid vault name";
+    my VaultName:D $vault_name = $v or die "Sorry, invalid vault name";
 }
 
 # confirm vault pass $v is valid VaultPass and return VaultPass
 method gen_vault_pass(Str:D $v) returns VaultPass:D
 {
-    my VaultPass $vault_pass = $v or die "Sorry, invalid vault pass";
+    my VaultPass:D $vault_pass = $v or die "Sorry, invalid vault pass";
 }
 
 # does directory exist and is directory readable?
-sub is_permissible(Str:D $directory) returns Bool
+sub is_permissible(Str:D $directory) returns Bool:D
 {
     $directory.IO.d && $directory.IO.r ?? True !! False;
 }
@@ -736,7 +736,7 @@ method ls_keymaps() returns Array[Keymap:D]
 {
     # equivalent to `localectl list-keymaps --no-pager`
     # see: src/basic/def.h in systemd source code
-    my Keymap @keymaps = qx{
+    my Keymap:D @keymaps = qx{
         find /usr/share/kbd/keymaps -type f \
                \( ! -name "*compose*" \)    \
             -a \( ! -name "*.doc*"    \)    \
@@ -751,7 +751,7 @@ method ls_keymaps() returns Array[Keymap:D]
 # list locales
 method ls_locales() returns Array[Locale:D]
 {
-    my Locale @locales = qx{
+    my Locale:D @locales = qx{
         find /usr/share/i18n/locales -type f -printf '%f\n'
     }.trim.split("\n").sort;
 }
@@ -759,7 +759,7 @@ method ls_locales() returns Array[Locale:D]
 # list block devices (partitions)
 method ls_partitions() returns Array[Str:D]
 {
-    my Str @partitions = qx{
+    my Str:D @partitions = qx{
         lsblk --output NAME --nodeps --noheadings --raw
     }.trim.split("\n").sort;
 }
@@ -769,7 +769,7 @@ method ls_timezones() returns Array[Timezone:D]
 {
     # equivalent to `timedatectl list-timezones --no-pager`
     # see: src/basic/time-util.c in systemd source code
-    my Timezone @timezones = qx«
+    my Timezone:D @timezones = qx«
         sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
     ».trim.split("\n").sort;
     push @timezones, "UTC";
