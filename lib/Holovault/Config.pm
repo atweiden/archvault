@@ -131,49 +131,51 @@ method gen_holograms_dir_handle(Str:D $directory) returns IO::Path:D
 # confirm hostname $h is valid HostName and return HostName
 method gen_host_name(Str:D $h) returns HostName:D
 {
-    my HostName:D $host_name = $h or die "Sorry, invalid hostname";
+    my HostName:D $host_name = $h or die "Sorry, invalid hostname 「$h」";
 }
 
 # confirm keymap $k is valid Keymap and return Keymap
 method gen_keymap(Str:D $k) returns Keymap:D
 {
-    my Keymap:D $keymap = $k or die "Sorry, invalid keymap";
+    my Keymap:D $keymap = $k or die "Sorry, invalid keymap 「$k」";
 }
 
 # confirm locale $l is valid Locale and return Locale
 method gen_locale(Str:D $l) returns Locale:D
 {
-    my Locale:D $locale = $l or die "Sorry, invalid locale";
+    my Locale:D $locale = $l or die "Sorry, invalid locale 「$l」";
 }
 
 # confirm processor $p is valid Processor and return Processor
 method gen_processor(Str:D $p) returns Processor:D
 {
-    my Processor:D $processor = $p or die "Sorry, invalid processor";
+    my Processor:D $processor = $p or die "Sorry, invalid processor 「$p」";
 }
 
 # confirm timezone $t is valid Timezone and return Timezone
 method gen_timezone(Str:D $t) returns Timezone:D
 {
-    my Timezone:D $timezone = $t or die "Sorry, invalid timezone";
+    my Timezone:D $timezone = $t or die "Sorry, invalid timezone 「$t」";
 }
 
 # confirm user name $u is valid UserName and return UserName
 method gen_user_name(Str:D $u) returns UserName:D
 {
-    my UserName:D $user_name = $u or die "Sorry, invalid username";
+    my UserName:D $user_name = $u or die "Sorry, invalid username 「$u」";
 }
 
 # confirm vault name $v is valid VaultName and return VaultName
 method gen_vault_name(Str:D $v) returns VaultName:D
 {
-    my VaultName:D $vault_name = $v or die "Sorry, invalid vault name";
+    my VaultName:D $vault_name = $v or die "Sorry, invalid vault name 「$v」";
 }
 
 # confirm vault pass $v is valid VaultPass and return VaultPass
 method gen_vault_pass(Str:D $v) returns VaultPass:D
 {
-    my VaultPass:D $vault_pass = $v or die "Sorry, invalid vault pass";
+    my VaultPass:D $vault_pass = $v
+        or die "Sorry, invalid vault pass."
+            ~ " Length needed: 1-512. Length given: {$v.chars}";
 }
 
 # does directory exist and is directory readable?

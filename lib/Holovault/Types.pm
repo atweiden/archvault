@@ -1055,7 +1055,7 @@ subset VaultName of Str is export where
     Holovault::Grammar.parse($_, :rule<vault_name>);
 }
 
-# LUKS encrypted volume password must be <= 512 characters
-subset VaultPass of Str is export where *.chars <= 512;
+# LUKS encrypted volume password must be 1-512 characters
+subset VaultPass of Str is export where { 0 < .chars <= 512 };
 
 # vim: ft=perl6 fdm=marker fdl=0
