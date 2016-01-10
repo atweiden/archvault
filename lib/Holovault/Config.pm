@@ -247,13 +247,13 @@ multi sub dprompt(
         !;
 
         # confirm selection
-        my Bool $confirmed = qqx!
+        my Bool $confirmed = shell("
             dialog \\
                 --stdout \\
                 --defaultno \\
                 --title 'ARE YOU SURE?' \\
                 --yesno 'Use $confirm_topic «$response»?' 8 35
-        !.defined || False;
+        ").exitcode == 0 ?? True !! False;
 
         last if $confirmed;
     }
@@ -290,13 +290,13 @@ multi sub dprompt(
         !;
 
         # confirm selection
-        my Bool $confirmed = qqx!
+        my Bool $confirmed = shell("
             dialog \\
                 --stdout \\
                 --defaultno \\
                 --title 'ARE YOU SURE?' \\
                 --yesno 'Use $confirm_topic «$response»?' 8 35
-        !.defined || False;
+        ").exitcode == 0 ?? True !! False;
 
         last if $confirmed;
     }
