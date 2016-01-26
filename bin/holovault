@@ -115,9 +115,9 @@ multi sub MAIN(
             # create 2MB EF02 BIOS boot sector
             # create 128MB sized partition for /boot
             # create max sized partition for LUKS encrypted volume
-            shell "sgdisk --zap-all --clear --mbrtogpt \
-                          --new=1:0:+2M --typecode=1:EF02 \
-                          --new=2:0:+128M --typecode=2:8300 \
+            shell "sgdisk --zap-all --clear --mbrtogpt \\
+                          --new=1:0:+2M --typecode=1:EF02 \\
+                          --new=2:0:+128M --typecode=2:8300 \\
                           --new=3:0:0 --typecode=3:8300 $partition";
         }
 
@@ -141,12 +141,12 @@ multi sub MAIN(
             {
                 # make LUKS encrypted volume without prompt for vault password
                 shell "expect <<'EOF'
-                         spawn cryptsetup --cipher aes-xts-plain64 \
-                                          --key-size 512           \
-                                          --hash sha512            \
-                                          --iter-time 5000         \
-                                          --use-random             \
-                                          --verify-passphrase      \
+                         spawn cryptsetup --cipher aes-xts-plain64 \\
+                                          --key-size 512           \\
+                                          --hash sha512            \\
+                                          --iter-time 5000         \\
+                                          --use-random             \\
+                                          --verify-passphrase      \\
                                           luksFormat $partition-vault
                          expect \"Are you sure*\" \{ send \"YES\r\" \}
                          expect \"Enter*\" \{ send \"$vault-pass\r\" \}
@@ -173,13 +173,13 @@ multi sub MAIN(
                     # create LUKS encrypted volume, prompt user for
                     # vault password
                     my Proc $cryptsetup-luks-format =
-                        shell "expect -c 'spawn cryptsetup \
-                                              --cipher aes-xts-plain64 \
-                                              --key-size 512           \
-                                              --hash sha512            \
-                                              --iter-time 5000         \
-                                              --use-random             \
-                                              --verify-passphrase      \
+                        shell "expect -c 'spawn cryptsetup \\
+                                              --cipher aes-xts-plain64 \\
+                                              --key-size 512           \\
+                                              --hash sha512            \\
+                                              --iter-time 5000         \\
+                                              --use-random             \\
+                                              --verify-passphrase      \\
                                               luksFormat $partition-vault;
                                           expect \"Are you sure*\" \{
                                             send \"YES\r\"
@@ -204,7 +204,7 @@ multi sub MAIN(
 
                     # open vault with prompt for vault password
                     my Proc $cryptsetup-luks-open =
-                        shell "cryptsetup luksOpen $partition-vault \
+                        shell "cryptsetup luksOpen $partition-vault \\
                                  $vault-name";
 
                     # loop until passphrase works
@@ -227,9 +227,9 @@ multi sub MAIN(
 
             # mount main btrfs filesystem on open vault
             '/mnt2'.IO.mkdir;
-            shell "mount \
-                     -t btrfs \
-                     -o rw,noatime,nodiratime,compress=lzo,space_cache \
+            shell "mount \\
+                     -t btrfs \\
+                     -o rw,noatime,nodiratime,compress=lzo,space_cache \\
                      /dev/mapper/$vault-name /mnt2";
 
             # create btrfs subvolumes
@@ -247,14 +247,14 @@ multi sub MAIN(
             for @btrfs-dirs -> $btrfs-dir
             {
                 "/mnt/$btrfs-dir".IO.mkdir;
-                shell "mount \
-                         -t btrfs \
-                         -o rw, \
-                            noatime, \
-                            nodiratime, \
-                            compress=lzo, \
-                            space_cache, \
-                            subvol=@$btrfs-dir \
+                shell "mount \\
+                         -t btrfs \\
+                         -o rw, \\
+                            noatime, \\
+                            nodiratime, \\
+                            compress=lzo, \\
+                            space_cache, \\
+                            subvol=@$btrfs-dir \\
                          /dev/mapper/$vault-name /mnt/$btrfs-dir";
             }
 
@@ -345,22 +345,22 @@ multi sub MAIN(
         # creating new user with password from secure password digest...
         my Str $user-name = $CONF.user-name;
         my Str $user-pass-digest = $CONF.user-pass-digest;
-        shell "arch-chroot /mnt useradd \
-                                  -m \
-                                  -p '$user-pass-digest' \
-                                  -s /bin/bash \
-                                  -g users \
-                                  -G audio, \
-                                     games, \
-                                     log, \
-                                     lp, \
-                                     network, \
-                                     optical, \
-                                     power, \
-                                     scanner, \
+        shell "arch-chroot /mnt useradd \\
+                                  -m \\
+                                  -p '$user-pass-digest' \\
+                                  -s /bin/bash \\
+                                  -g users \\
+                                  -G audio, \\
+                                     games, \\
+                                     log, \\
+                                     lp, \\
+                                     network, \\
+                                     optical, \\
+                                     power, \\
+                                     scanner, \\
                                      storage, \
-                                     video, \
-                                     wheel \
+                                     video, \\
+                                     wheel \\
                                   $user-name";
     }
 
