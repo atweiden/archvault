@@ -1022,7 +1022,7 @@ subset Graphics of Str is export where { %graphics.keys.grep($_) };
 # hostname (machine name)
 subset HostName of Str is export where
 {
-    Holovault::Grammar.parse($_, :rule<host_name>);
+    Holovault::Grammar.parse($_, :rule<host-name>);
 }
 
 # keymap
@@ -1034,7 +1034,7 @@ subset Locale of Str is export where { %locales.keys.grep($_) };
 # pkgname (hologram name)
 subset PkgName of Str is export where
 {
-    Holovault::Grammar.parse($_, :rule<pkg_name>);
+    Holovault::Grammar.parse($_, :rule<pkg-name>);
 }
 
 # processor
@@ -1046,13 +1046,13 @@ subset Timezone of Str is export where { @timezones.grep($_) };
 # linux username
 subset UserName of Str is export where
 {
-    Holovault::Grammar.parse($_, :rule<user_name>);
+    Holovault::Grammar.parse($_, :rule<user-name>);
 }
 
 # LUKS encrypted volume device mapper name
 subset VaultName of Str is export where
 {
-    Holovault::Grammar.parse($_, :rule<vault_name>);
+    Holovault::Grammar.parse($_, :rule<vault-name>);
 }
 
 # LUKS encrypted volume password must be 1-512 characters

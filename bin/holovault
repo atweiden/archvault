@@ -42,61 +42,61 @@ multi sub MAIN(
         # if --augment, initialize $CONF.augment to True
         %cfg<augment> = $augment if $augment;
 
-        # if --disktype, initialize $CONF.disk_type to DiskType
-        %cfg<disk_type> = Holovault::Config.gen_disk_type($disktype)
+        # if --disktype, initialize $CONF.disk-type to DiskType
+        %cfg<disk-type> = Holovault::Config.gen-disk-type($disktype)
             if $disktype;
 
         # if --graphics, initialize $CONF.graphics to Graphics
-        %cfg<graphics> = Holovault::Config.gen_graphics($graphics) if $graphics;
+        %cfg<graphics> = Holovault::Config.gen-graphics($graphics) if $graphics;
 
         # if --holograms, initialize $CONF.holograms to space split array
-        %cfg<holograms> = Holovault::Config.gen_holograms($holograms)
+        %cfg<holograms> = Holovault::Config.gen-holograms($holograms)
             if $holograms;
 
         # if --holograms-dir, ensure dir is readable and initialze
-        # $CONF.holograms_dir to IO::Handle
-        %cfg<holograms_dir> =
-            Holovault::Config.gen_holograms_dir_handle($holograms-dir)
+        # $CONF.holograms-dir to IO::Handle
+        %cfg<holograms-dir> =
+            Holovault::Config.gen-holograms-dir-handle($holograms-dir)
                 if $holograms-dir;
 
         # if --hostname, initialize $CONF.hostname to HostName
-        %cfg<host_name> = Holovault::Config.gen_host_name($hostname)
+        %cfg<host-name> = Holovault::Config.gen-host-name($hostname)
             if $hostname;
 
         # if --keymap, initialize $CONF.keymap to Keymap
-        %cfg<keymap> = Holovault::Config.gen_keymap($keymap) if $keymap;
+        %cfg<keymap> = Holovault::Config.gen-keymap($keymap) if $keymap;
 
         # if --locale, initialize $CONF.locale to Locale
-        %cfg<locale> = Holovault::Config.gen_locale($locale) if $locale;
+        %cfg<locale> = Holovault::Config.gen-locale($locale) if $locale;
 
-        # if --vaultname, initialize $CONF.vault_name to VaultName
-        %cfg<vault_name> = Holovault::Config.gen_vault_name($vaultname)
+        # if --vaultname, initialize $CONF.vault-name to VaultName
+        %cfg<vault-name> = Holovault::Config.gen-vault-name($vaultname)
             if $vaultname;
 
-        # if --vaultpass, initialize $CONF.vault_pass to VaultPass
-        %cfg<vault_pass> = Holovault::Config.gen_vault_pass($vaultpass)
+        # if --vaultpass, initialize $CONF.vault-pass to VaultPass
+        %cfg<vault-pass> = Holovault::Config.gen-vault-pass($vaultpass)
             if $vaultpass;
 
         # if --partition, initialize $CONF.partition to Partition
         %cfg<partition> = $partition if $partition;
 
         # if --processor, initialize $CONF.processor to Processor
-        %cfg<processor> = Holovault::Config.gen_processor($processor)
+        %cfg<processor> = Holovault::Config.gen-processor($processor)
             if $processor;
 
-        # if --rootpass, initialize $CONF.root_pass_diges to sha512 digest
-        %cfg<root_pass_digest> = Holovault::Config.gen_digest($rootpass)
+        # if --rootpass, initialize $CONF.root-pass-digest to sha512 digest
+        %cfg<root-pass-digest> = Holovault::Config.gen-digest($rootpass)
             if $rootpass;
 
         # if --timezone, initialize $CONF.timezone to Timezone
-        %cfg<timezone> = Holovault::Config.gen_timezone($timezone) if $timezone;
+        %cfg<timezone> = Holovault::Config.gen-timezone($timezone) if $timezone;
 
-        # if --username, initialize $CONF.user_name to UserName
-        %cfg<user_name> = Holovault::Config.gen_user_name($username)
+        # if --username, initialize $CONF.user-name to UserName
+        %cfg<user-name> = Holovault::Config.gen-user-name($username)
             if $username;
 
-        # if --userpass, initialize $CONF.user_pass_digest to sha512 digest
-        %cfg<user_pass_digest> = Holovault::Config.gen_digest($userpass)
+        # if --userpass, initialize $CONF.user-pass-digest to sha512 digest
+        %cfg<user-pass-digest> = Holovault::Config.gen-digest($userpass)
             if $userpass;
 
         # instantiate global config, prompting for user input as needed
@@ -106,7 +106,7 @@ multi sub MAIN(
     say $CONF.perl;
 
     # secure disk configuration
-    sub configure_disk()
+    sub configure-disk()
     {
         # partition disk with gdisk
         sub mkdisk(Str:D :$partition = $CONF.partition)
@@ -127,17 +127,17 @@ multi sub MAIN(
         # create vault with cryptsetup
         sub mkvault(
             Str:D :$partition = $CONF.partition,
-            Str:D :$vault_name = $CONF.vault_name
+            Str:D :$vault-name = $CONF.vault-name
         )
         {
             # target partition for vault
-            my Str $partition_vault = $partition ~ "3";
+            my Str $partition-vault = $partition ~ "3";
 
             # load kernel modules for cryptsetup
             shell 'modprobe dm_mod dm-crypt';
 
             # was LUKS encrypted volume password given in cmdline flag?
-            if my Str $vault_pass = $CONF.vault_pass
+            if my Str $vault-pass = $CONF.vault-pass
             {
                 # make LUKS encrypted volume without prompt for vault password
                 shell "expect <<'EOF'
@@ -147,17 +147,17 @@ multi sub MAIN(
                                           --iter-time 5000         \
                                           --use-random             \
                                           --verify-passphrase      \
-                                          luksFormat $partition_vault
+                                          luksFormat $partition-vault
                          expect \"Are you sure*\" \{ send \"YES\r\" \}
-                         expect \"Enter*\" \{ send \"$vault_pass\r\" \}
-                         expect \"Verify*\" \{ send \"$vault_pass\r\" \}
+                         expect \"Enter*\" \{ send \"$vault-pass\r\" \}
+                         expect \"Verify*\" \{ send \"$vault-pass\r\" \}
                          expect eof
                        EOF";
 
                 # open vault without prompt for vault password
                 shell "expect <<'EOF'
-                         spawn cryptsetup luksOpen $partition_vault $vault_name
-                         expect \"Enter*\" \{ send \"$vault_pass\r\" \}
+                         spawn cryptsetup luksOpen $partition-vault $vault-name
+                         expect \"Enter*\" \{ send \"$vault-pass\r\" \}
                          expect eof
                        EOF";
             }
@@ -172,7 +172,7 @@ multi sub MAIN(
 
                     # create LUKS encrypted volume, prompt user for
                     # vault password
-                    my Proc $cryptsetup_luks_format =
+                    my Proc $cryptsetup-luks-format =
                         shell "expect -c 'spawn cryptsetup \
                                               --cipher aes-xts-plain64 \
                                               --key-size 512           \
@@ -180,7 +180,7 @@ multi sub MAIN(
                                               --iter-time 5000         \
                                               --use-random             \
                                               --verify-passphrase      \
-                                              luksFormat $partition_vault;
+                                              luksFormat $partition-vault;
                                           expect \"Are you sure*\" \{
                                             send \"YES\r\"
                                           \};
@@ -192,7 +192,7 @@ multi sub MAIN(
                     # - returns exit code 0 if success
                     # - returns exit code 1 if SIGINT
                     # - returns exit code 2 if wrong password
-                    last if $cryptsetup_luks_format.exitcode == 0;
+                    last if $cryptsetup-luks-format.exitcode == 0;
                 }
 
                 while True
@@ -203,15 +203,15 @@ multi sub MAIN(
                     say "Opening LUKS vault...";
 
                     # open vault with prompt for vault password
-                    my Proc $cryptsetup_luks_open =
-                        shell "cryptsetup luksOpen $partition_vault \
-                                 $vault_name";
+                    my Proc $cryptsetup-luks-open =
+                        shell "cryptsetup luksOpen $partition-vault \
+                                 $vault-name";
 
                     # loop until passphrase works
                     # - returns exit code 0 if success
                     # - returns exit code 1 if SIGINT
                     # - returns exit code 2 if wrong password
-                    last if $cryptsetup_luks_open.exitcode == 0;
+                    last if $cryptsetup-luks-open.exitcode == 0;
                 }
             }
         }
@@ -220,17 +220,17 @@ multi sub MAIN(
         mkvault();
 
         # create and mount btrfs volumes on open vault
-        sub mkbtrfs(Str:D :$vault_name = $CONF.vault_name)
+        sub mkbtrfs(Str:D :$vault-name = $CONF.vault-name)
         {
             # create btrfs filesystem on opened vault
-            shell "mkfs.btrfs /dev/mapper/$vault_name";
+            shell "mkfs.btrfs /dev/mapper/$vault-name";
 
             # mount main btrfs filesystem on open vault
             '/mnt2'.IO.mkdir;
             shell "mount \
                      -t btrfs \
                      -o rw,noatime,nodiratime,compress=lzo,space_cache \
-                     /dev/mapper/$vault_name /mnt2";
+                     /dev/mapper/$vault-name /mnt2";
 
             # create btrfs subvolumes
             chdir '/mnt2';
@@ -243,10 +243,10 @@ multi sub MAIN(
             chdir '/';
 
             # mount btrfs subvolumes, starting with root / ('')
-            my Str @btrfs_dirs = '', 'home', 'opt', 'srv', 'usr', 'var';
-            for @btrfs_dirs -> $btrfs_dir
+            my Str @btrfs-dirs = '', 'home', 'opt', 'srv', 'usr', 'var';
+            for @btrfs-dirs -> $btrfs-dir
             {
-                "/mnt/$btrfs_dir".IO.mkdir;
+                "/mnt/$btrfs-dir".IO.mkdir;
                 shell "mount \
                          -t btrfs \
                          -o rw, \
@@ -254,8 +254,8 @@ multi sub MAIN(
                             nodiratime, \
                             compress=lzo, \
                             space_cache, \
-                            subvol=@$btrfs_dir \
-                         /dev/mapper/$vault_name /mnt/$btrfs_dir";
+                            subvol=@$btrfs-dir \
+                         /dev/mapper/$vault-name /mnt/$btrfs-dir";
             }
 
             # unmount /mnt2 and remove
@@ -270,14 +270,14 @@ multi sub MAIN(
         sub mkbootpart(Str:D :$partition = $CONF.partition)
         {
             # target partition for boot
-            my Str $partition_boot = $partition ~ 2;
+            my Str $partition-boot = $partition ~ 2;
 
             # create ext2 boot partition
-            shell "mkfs.ext2 $partition_boot";
+            shell "mkfs.ext2 $partition-boot";
 
             # mount ext2 boot partition in /mnt/boot
             '/mnt/boot'.IO.mkdir;
-            shell "mount $partition_boot /mnt/boot";
+            shell "mount $partition-boot /mnt/boot";
         }
 
         # create boot partition
@@ -285,10 +285,10 @@ multi sub MAIN(
     }
 
     # bootstrap initial chroot with pacstrap
-    sub pacstrap_base()
+    sub pacstrap-base()
     {
         # base packages
-        my Str @packages_base =
+        my Str @packages-base =
             'abs',
             'arch-install-scripts',
             'base',
@@ -329,25 +329,25 @@ multi sub MAIN(
             'zsh';
 
         # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
-        push @packages_base, 'intel-ucode' if $CONF.processor ~~ 'intel';
+        push @packages-base, 'intel-ucode' if $CONF.processor ~~ 'intel';
 
         # download and install packages with pacman in chroot
-        shell "pacstrap /mnt @packages_base[]";
+        shell "pacstrap /mnt @packages-base[]";
     }
 
     # secure user configuration
-    sub configure_users()
+    sub configure-users()
     {
         # updating root password...
-        my Str $root_pass_digest = $CONF.root_pass_digest;
-        shell "arch-chroot /mnt usermod -p '$root_pass_digest' root";
+        my Str $root-pass-digest = $CONF.root-pass-digest;
+        shell "arch-chroot /mnt usermod -p '$root-pass-digest' root";
 
         # creating new user with password from secure password digest...
-        my Str $user_name = $CONF.user_name;
-        my Str $user_pass_digest = $CONF.user_pass_digest;
+        my Str $user-name = $CONF.user-name;
+        my Str $user-pass-digest = $CONF.user-pass-digest;
         shell "arch-chroot /mnt useradd \
                                   -m \
-                                  -p '$user_pass_digest' \
+                                  -p '$user-pass-digest' \
                                   -s /bin/bash \
                                   -g users \
                                   -G audio, \
@@ -361,7 +361,7 @@ multi sub MAIN(
                                      storage, \
                                      video, \
                                      wheel \
-                                  $user_name";
+                                  $user-name";
     }
 
     sub customize()
@@ -380,12 +380,12 @@ multi sub MAIN(
 
 multi sub MAIN('ls', 'holograms', Str :$holograms-dir)
 {
-    .say for Holovault::Config.ls_holograms(:holograms_dir($holograms-dir));
+    .say for Holovault::Config.ls-holograms(:holograms-dir($holograms-dir));
 }
-multi sub MAIN('ls', 'keymaps') { .say for Holovault::Config.ls_keymaps; }
-multi sub MAIN('ls', 'locales') { .say for Holovault::Config.ls_locales; }
-multi sub MAIN('ls', 'partitions') { .say for Holovault::Config.ls_partitions; }
-multi sub MAIN('ls', 'timezones') { .say for Holovault::Config.ls_timezones; }
+multi sub MAIN('ls', 'keymaps') { .say for Holovault::Config.ls-keymaps; }
+multi sub MAIN('ls', 'locales') { .say for Holovault::Config.ls-locales; }
+multi sub MAIN('ls', 'partitions') { .say for Holovault::Config.ls-partitions; }
+multi sub MAIN('ls', 'timezones') { .say for Holovault::Config.ls-timezones; }
 
 
 

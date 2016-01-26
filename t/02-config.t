@@ -6,11 +6,11 @@ plan 1;
 # ensure sha512 digest of empty password is correct
 subtest
 {
-    my Str $blank_pass_digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
-    my Str $pass_digest = qx{openssl passwd -1 -salt sha512 ''}.trim;
+    my Str $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
+    my Str $pass-digest = qx{openssl passwd -1 -salt sha512 ''}.trim;
     is(
-        $pass_digest,
-        $blank_pass_digest,
+        $pass-digest,
+        $blank-pass-digest,
         q:to/EOF/
         ♪ [blank pass digest verification] - 1 of 1
         ┏━━━━━━━━━━━━━┓
