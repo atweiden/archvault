@@ -238,12 +238,13 @@ multi sub MAIN(
             shell 'btrfs subvolume create @home';
             shell 'btrfs subvolume create @opt';
             shell 'btrfs subvolume create @srv';
+            shell 'btrfs subvolume create @tmp';
             shell 'btrfs subvolume create @usr';
             shell 'btrfs subvolume create @var';
             chdir '/';
 
             # mount btrfs subvolumes, starting with root / ('')
-            my Str @btrfs-dirs = '', 'home', 'opt', 'srv', 'usr', 'var';
+            my Str @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
             for @btrfs-dirs -> $btrfs-dir
             {
                 "/mnt/$btrfs-dir".IO.mkdir;
