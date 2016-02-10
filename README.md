@@ -45,7 +45,7 @@ kbd                  | keymap data in `/usr/share/kbd/keymaps`         | Y
 kmod                 | `modprobe`                                      | Y
 openssl              | user password salts                             | Y
 pacman               | `makepkg`, `pacman`                             | Y
-rakudo               | `holovault` Perl 6 runtime                      | N
+rakudo               | `holovault` Perl6 runtime                       | N
 reflector            | https-only mirrors                              | N
 sed                  | `sed`                                           | Y
 tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab` | Y
