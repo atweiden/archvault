@@ -19,9 +19,6 @@ sub setup()
     run qw<haveged -w 1024>;
     run qw<pacman-key --init>;
     run qw<pacman-key --populate archlinux>;
-    # https://wiki.archlinux.org/index.php/ArchHaskell#.5Bhaskell-core.5D
-    run qw<pacman-key -r 0x32B0B4534209170B>;
-    run qw<pacman-key --lsign-key 0x32B0B4534209170B>;
     run qw<pkill haveged>;
 
     # fetch dependencies needed prior to pacstrap
