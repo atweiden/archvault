@@ -181,7 +181,7 @@ method gen-vault-pass(Str:D $v) returns VaultPass:D
 # does directory exist and is directory readable?
 sub is-permissible(Str:D $directory) returns Bool:D
 {
-    $directory.IO.d && $directory.IO.r ?? True !! False;
+    $directory.IO.d && $directory.IO.r;
 }
 
 # resolve holograms dir
@@ -253,7 +253,7 @@ multi sub dprompt(
                 --defaultno \\
                 --title 'ARE YOU SURE?' \\
                 --yesno 'Use $confirm-topic «$response»?' 8 35
-        ").exitcode == 0 ?? True !! False;
+        ").exitcode == 0;
 
         last if $confirmed;
     }
@@ -296,7 +296,7 @@ multi sub dprompt(
                 --defaultno \\
                 --title 'ARE YOU SURE?' \\
                 --yesno 'Use $confirm-topic «$response»?' 8 35
-        ").exitcode == 0 ?? True !! False;
+        ").exitcode == 0;
 
         last if $confirmed;
     }
