@@ -1,2 +1,36 @@
 - check for active internet connection
-- check for root privs
+- stuff that should be done with holo:
+  - sudoers
+  - hostname
+  - DNSCrypt
+  - locale
+  - keymap
+  - hwclock
+  - tmpfiles.d
+  - sleep.conf
+  - modprobe.conf
+  - mkinitcpio.conf
+  - sysctl.conf
+  - hidepid
+  - securetty
+  - iptables
+  - ssh
+  - power mgt
+  - pkg suites
+- stuff that should be done with holovault:
+  - in general, anything that can't be customized in a file with autoconf
+    style `@vars@` or LibraryMake style `%vars%`
+    - timezone: pure symlink
+    - chattrify
+    - gpg key imports
+- unresolved:
+  - AUR pkgs?
+  - vimplugs?
+  - dotfiles?
+  - hologram-base-disk-type-ssd?
+  - hologram-base-graphics-nvidia?
+  - hologram-base-graphics-radeon?
+  - hologram-base-processor-intel?
+- consider using:
+  - https://github.com/kuerbis/Term-Choose-p6
+  - https://github.com/wbiker/io-prompt
