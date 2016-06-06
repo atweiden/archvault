@@ -141,22 +141,22 @@ multi sub USAGE('install')
                 install
 
     optional arguments:
-      --augment                   drop to Bash console mid-execution
-      --disktype=DISK_TYPE        hard drive type
-      --graphics=GRAPHICS         graphics card type
-      --holograms=HOLOGRAMS       holograms (space separated)
-      --holograms-dir=DIR_PATH    path to dir containing hologram subdirs
-      --hostname=HOSTNAME         hostname
-      --keymap=KEYMAP             keymap
-      --locale=LOCALE             locale
-      --partition=DEVICE_PATH     partition target for install
-      --processor=PROCESSOR       processor type
-      --rootpass=PASSWORD         root password
-      --timezone=TIMEZONE         timezone
-      --username=USERNAME         user name
-      --userpass=PASSWORD         user password
-      --vaultname=VAULT_NAME      vault name
-      --vaultpass=PASSWORD        vault password
+      --augment                    drop to Bash console mid-execution
+      --disktype=<disktype>        hard drive type
+      --graphics=<graphics>        graphics card type
+      --holograms=<holograms>      holograms
+      --holograms-dir=<dir>        directory containing hologram subdirs
+      --hostname=<hostname>        hostname
+      --keymap=<keymap>            keymap
+      --locale=<locale>            locale
+      --partition=<device-path>    partition target for install
+      --processor=<processor>      processor type
+      --rootpass=<password>        root password
+      --timezone=<timezone>        timezone
+      --username=<username>        user name
+      --userpass=<password>        user password
+      --vaultname=<vault-name>     vault name
+      --vaultpass=<password>       vault password
     EOF
     say $HELP.trim;
 }
