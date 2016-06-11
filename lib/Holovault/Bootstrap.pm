@@ -31,9 +31,6 @@ sub bootstrap() is export
 
 sub setup()
 {
-    # verify root permissions
-    $*USER == 0 or die 'root priviledges required';
-
     # initialize pacman-keys
     run qw<haveged -w 1024>;
     run qw<pacman-key --init>;
@@ -331,14 +328,7 @@ sub configure-users()
 
     my Str $sudoers = qq:to/EOF/;
     $user-name ALL=(ALL) ALL
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/loadkeys
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/pacman
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/pacmatic
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/reboot
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/shutdown
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/wifi-menu
     EOF
-    $sudoers .= trim-trailing;
     spurt '/mnt/etc/sudoers', $sudoers, :append;
 }
 
@@ -367,7 +357,6 @@ sub set-nameservers()
     nameserver 8.8.8.8
     nameserver 8.8.4.4
     EOF
-    $resolv-conf-head .= trim;
     spurt '/mnt/etc/resolv.conf.head', $resolv-conf-head;
 }
 
@@ -388,7 +377,6 @@ sub set-locale()
     LANG=$locale.UTF-8
     LC_TIME=$locale.UTF-8
     EOF
-    $locale-conf .= trim;
     spurt '/mnt/etc/locale.conf', $locale-conf;
 }
 
@@ -400,7 +388,6 @@ sub set-keymap()
     FONT=Lat2-Terminus16
     FONT_MAP=
     EOF
-    $vconsole .= trim;
     spurt '/mnt/etc/vconsole.conf', $vconsole;
 }
 
@@ -438,7 +425,6 @@ sub configure-tmpfiles()
     X /tmp/systemd-private-*/tmp
     X /var/tmp/systemd-private-*/tmp
     EOF
-    $tmp-conf .= trim;
     spurt '/mnt/etc/tmpfiles.d/tmp.conf', $tmp-conf;
 }
 
@@ -472,7 +458,6 @@ sub configure-system-sleep()
     HibernateState=mem
     HybridSleepState=mem
     EOF
-    $sleep-conf .= trim;
     spurt '/mnt/etc/systemd/sleep.conf', $sleep-conf;
 }
 
@@ -488,7 +473,6 @@ sub configure-modprobe()
     blacklist firewire-core
     blacklist thunderbolt
     EOF
-    $modprobe-conf .= trim;
     spurt '/mnt/etc/modprobe.d/modprobe.conf', $modprobe-conf;
 }
 
@@ -619,7 +603,7 @@ sub install-bootloader()
         arch-chroot
         /mnt
         cp
-        /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo
+        /usr/share/locale/en@quot/LC_MESSAGES/grub.mo
         /boot/grub/locale/en.mo
     >;
     run qw<
@@ -728,7 +712,6 @@ sub configure-sysctl()
     # Disable SysRq key to avoid console security issues.
     kernel.sysrq = 0
     EOF
-    $sysctl-conf .= trim;
     spurt '/mnt/etc/sysctl.conf', $sysctl-conf;
 
     if $Holovault::CONF.disk-type eq 'SSD'
@@ -762,13 +745,11 @@ sub configure-hidepid()
     [Service]
     SupplementaryGroups=proc
     EOF
-    $hidepid-conf .= trim;
 
     my Str $fstab-hidepid = q:to/EOF/;
     # /proc with hidepid (https://wiki.archlinux.org/index.php/Security#hidepid)
     proc                                      /proc       procfs      hidepid=2,gid=proc                                              0 0
     EOF
-    $fstab-hidepid .= trim-trailing;
 
     mkdir '/mnt/etc/systemd/system/systemd-logind.service.d';
     spurt
@@ -798,7 +779,6 @@ sub configure-securetty()
 
     # End of file
     EOF
-    $securetty .= trim;
     spurt '/mnt/etc/securetty', $securetty;
 
     my Str $shell-timeout = q:to/EOF/;
@@ -808,7 +788,6 @@ sub configure-securetty()
       /dev/tty[0-9]*) export TMOUT;;
     esac
     EOF
-    $shell-timeout .= trim;
     spurt '/mnt/etc/profile.d/shell-timeout.sh', $shell-timeout;
 }
 
@@ -846,7 +825,6 @@ sub configure-iptables()
     -A FORWARD -j REJECT
     COMMIT
     EOF
-    $iptables-test-rules .= trim;
     spurt 'iptables.test.rules', $iptables-test-rules;
 
     shell 'iptables-save > /mnt/etc/iptables/iptables.up.rules';
@@ -865,7 +843,7 @@ sub enable-systemd-services()
 
 sub disable-btrfs-cow()
 {
-    chattrify('/var/log/journal', 0o755, 'root', 'systemd-journal');
+    chattrify('/mnt/var/log/journal', 0o755, 'root', 'systemd-journal');
 }
 
 sub chattrify(
@@ -903,6 +881,7 @@ sub customize()
 sub unmount()
 {
     shell 'umount /mnt/{boot,home,opt,srv,tmp,usr,var,}';
+    run qqw<cryptsetup luksClose $vault-name>;
 }
 
 # vim: ft=perl6 fdm=marker fdl=0
