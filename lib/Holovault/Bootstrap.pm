@@ -881,6 +881,7 @@ sub customize()
 sub unmount()
 {
     shell 'umount /mnt/{boot,home,opt,srv,tmp,usr,var,}';
+    my Str $vault-name = $Holovault::CONF.vault-name;
     run qqw<cryptsetup luksClose $vault-name>;
 }
 
