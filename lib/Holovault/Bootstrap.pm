@@ -18,6 +18,7 @@ sub bootstrap() is export
     configure-pacman();
     configure-system-sleep();
     configure-modprobe();
+    generate-initramfs();
     install-bootloader();
     configure-sysctl();
     configure-hidepid();
