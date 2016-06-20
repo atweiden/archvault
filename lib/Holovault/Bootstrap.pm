@@ -141,7 +141,7 @@ sub mkvault(
     }
     else
     {
-        while True
+        loop
         {
             # hacky output to inform user of password entry
             # context until i can implement advanced expect
@@ -173,7 +173,7 @@ sub mkvault(
             last if $cryptsetup-luks-format.exitcode == 0;
         }
 
-        while True
+        loop
         {
             # hacky output to inform user of password entry
             # context until i can implement advanced expect

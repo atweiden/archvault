@@ -232,7 +232,7 @@ multi sub dprompt(
 {
     my T $response;
 
-    while True
+    loop
     {
         # prompt for selection
         $response = qqx!
@@ -276,7 +276,7 @@ multi sub dprompt(
 {
     my T $response;
 
-    while True
+    loop
     {
         # prompt for selection
         $response = qqx!
@@ -334,7 +334,7 @@ sub tprompt(
         }
     }
 
-    while True
+    loop
     {
         # display help text (optional)
         say $help-text if $help-text;
@@ -418,7 +418,7 @@ sub prompt-holograms()
     $help-text .= trim;
 
     my PkgName @holograms;
-    while True
+    loop
     {
         # prompt user
         my Str @h = tprompt(
@@ -599,7 +599,7 @@ sub prompt-pass-digest(Bool :$root) returns Str:D
     my Str $pass-digest;
 
     # loop until a non-blank password is entered twice in a row
-    while True
+    loop
     {
         # reading secure password digest into memory...
         print "Enter $subject "; # Enter Root / User Password
