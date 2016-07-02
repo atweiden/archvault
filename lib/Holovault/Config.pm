@@ -83,7 +83,7 @@ has PkgName @.holograms =
                      !! prompt-holograms();
 
 # augment
-has Bool $.augment = %*ENV<AUGMENT>.Bool || False;
+has Bool $.augment = ?%*ENV<AUGMENT>;
 
 
 # -----------------------------------------------------------------------------
@@ -117,15 +117,11 @@ method gen-holograms(Str:D $holograms) returns Array[PkgName:D]
 # confirm directory $directory exists and is readable, and return IO::Path
 method gen-holograms-dir-handle(Str:D $directory) returns IO::Path:D
 {
-    if is-permissible($directory)
+    unless is-permissible($directory)
     {
-        my IO::Path:D $dir-handle = $directory.IO;
+        die "Sorry, directory 「$directory」 does not exist or is unreadable.";
     }
-    else
-    {
-        say "Sorry, directory 「$directory」 does not exist or is unreadable.";
-        exit;
-    }
+    my IO::Path:D $dir-handle = $directory.IO;
 }
 
 # confirm hostname $h is valid HostName and return HostName
@@ -224,9 +220,9 @@ multi sub dprompt(
     T :$default-item! where *.defined, # default response
     Str:D :$title!, # menu title
     Str:D :$prompt-text!, # question posed to user
-    Int:D :$height = 80,
-    Int:D :$width = 80,
-    Int:D :$menu-height = 24,
+    UInt:D :$height = 80,
+    UInt:D :$width = 80,
+    UInt:D :$menu-height = 24,
     Str:D :$confirm-topic! # context string for confirm text
 ) returns Any:D
 {
@@ -268,9 +264,9 @@ multi sub dprompt(
     T :$default-item! where *.defined, # default response
     Str:D :$title!, # menu title
     Str:D :$prompt-text!, # question posed to user
-    Int:D :$height = 80,
-    Int:D :$width = 80,
-    Int:D :$menu-height = 24,
+    UInt:D :$height = 80,
+    UInt:D :$width = 80,
+    UInt:D :$menu-height = 24,
     Str:D :$confirm-topic! # context string for confirm text
 ) returns Any:D
 {
@@ -349,7 +345,7 @@ sub tprompt(
         }
 
         # retry if response is invalid
-        unless $response ~~ T
+        unless $response.isa(T)
         {
             say 'Sorry, invalid response. Please try again.';
             next;
@@ -606,7 +602,7 @@ sub prompt-pass-digest(Bool :$root) returns Str:D
         $pass-digest = qx{openssl passwd -1 -salt sha512}.trim;
 
         # verifying secure password digest is not empty...
-        if $pass-digest ~~ $blank-pass-digest
+        if $pass-digest eqv $blank-pass-digest
         {
             # password is empty, try again
             say "$subject password cannot be blank. Please try again";
@@ -616,7 +612,7 @@ sub prompt-pass-digest(Bool :$root) returns Str:D
         # verifying secure password digest...
         print "Retype $subject "; # Retype Root / User Password
         my Str $pass-digest-confirm = qx{openssl passwd -1 -salt sha512}.trim;
-        if $pass-digest ~~ $pass-digest-confirm
+        if $pass-digest eqv $pass-digest-confirm
         {
             last;
         }

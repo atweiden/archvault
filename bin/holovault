@@ -71,9 +71,9 @@ multi sub MAIN(
 # ls
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('ls', 'holograms', Str :$holograms-dir)
+multi sub MAIN('ls', 'holograms', *%opts (Str :$holograms-dir))
 {
-    .say for Holovault::Config.ls-holograms(:holograms-dir($holograms-dir));
+    .say for Holovault::Config.ls-holograms(|%opts);
 }
 multi sub MAIN('ls', 'keymaps') { .say for Holovault::Config.ls-keymaps; }
 multi sub MAIN('ls', 'locales') { .say for Holovault::Config.ls-locales; }

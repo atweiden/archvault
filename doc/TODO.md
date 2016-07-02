@@ -1,4 +1,5 @@
 - stuff that should be done with holo:
+  - pacman.conf
   - sudoers
   - hostname
   - DNSCrypt
@@ -35,6 +36,8 @@
 - idea: check for active internet connection
 - idea: exception handling
 - idea: exceptions dump config to TOML file for easier recovery of bootstrap
+- idea: rework holograms-dir handling
+  - replace sub is-permissible with File::Presence
 - idea: Holovault parses Holo TOML definitions to learn AUR pkg
   dependencies
   - or use `mksrcinfo` and parse `.SRCINFO`

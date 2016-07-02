@@ -26,7 +26,7 @@ sub bootstrap() is export
     configure-iptables();
     enable-systemd-services();
     disable-btrfs-cow();
-    customize() if $Holovault::CONF.augment;
+    augment() if $Holovault::CONF.augment;
     unmount();
 }
 
@@ -850,7 +850,7 @@ sub disable-btrfs-cow()
 sub chattrify(
     Str $directory,
     # permissions should be octal: https://doc.perl6.org/routine/chmod
-    Int $permissions,
+    UInt $permissions,
     Str $user,
     Str $group
 )
@@ -873,7 +873,7 @@ sub chattrify(
 }
 
 # interactive console
-sub customize()
+sub augment()
 {
     # launch fully interactive Bash console, type 'exit' to exit
     shell 'expect -c "spawn /bin/bash; interact"';

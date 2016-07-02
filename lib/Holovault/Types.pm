@@ -12,7 +12,7 @@ unit class Holovault::Types;
 
 # disktypes {{{
 
-our %disktypes =
+constant %disktypes =
     'HDD' => '"Spinning disk drive"',
     'SSD' => '"Solid state disk drive"',
     'USB' => '"USB drive"';
@@ -20,7 +20,7 @@ our %disktypes =
 # end disktypes }}}
 # graphics {{{
 
-our %graphics =
+constant %graphics =
     'INTEL'  => '"Integrated or unknown graphics card"',
     'NVIDIA' => '"Nvidia dedicated/switchable GPU"',
     'RADEON' => '"Radeon dedicated/switchable GPU"';
@@ -28,7 +28,7 @@ our %graphics =
 # end graphics }}}
 # keymaps {{{
 
-our %keymaps =
+constant %keymaps =
     'ANSI-dvorak'              => '"ANSI Dvorak keymap"',
     'amiga-de'                 => '"German keymap for Linux/m68k for Amiga 2000/3000/4000 keyboards"',
     'amiga-us'                 => '"US keymap for Amiga keyboards"',
@@ -247,7 +247,7 @@ our %keymaps =
 # end keymaps }}}
 # locales {{{
 
-our %locales =
+constant %locales =
     'POSIX'                 => '"POSIX Standard Locale"',
     'aa_DJ'                 => '"Afar language locale for Djibouti (Cadu/Laaqo Dialects)"',
     'aa_ER'                 => '"Afar language locale for Eritrea (Cadu/Laaqo Dialects)"',
@@ -579,7 +579,7 @@ our %locales =
 # end locales }}}
 # processors {{{
 
-our %processors =
+constant %processors =
     'INTEL' => '"Intel processors"',
     'OTHER' => '"All other processors"';
 
