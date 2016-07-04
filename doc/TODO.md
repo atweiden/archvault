@@ -45,6 +45,12 @@
 - idea: make users double-check config settings in `dialog` menu before
   proceeding with installation
 - idea: copytoram
+- idea: configure /etc/systemd/system.conf.d/limits.conf
+  - https://github.com/oconnor663/arch/blob/master/limits.sh
+- idea: use ntp
+  - `timedatectl set-ntp true`
+- idea: grubshift
+  - https://github.com/oconnor663/arch/blob/master/grubshift.sh
 
 - consider using:
   - https://github.com/kuerbis/Term-Choose-p6
