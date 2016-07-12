@@ -12,23 +12,25 @@ unit class Holovault::Types;
 
 # disktypes {{{
 
-constant %disktypes =
+constant %disktypes = %(
     'HDD' => '"Spinning disk drive"',
     'SSD' => '"Solid state disk drive"',
-    'USB' => '"USB drive"';
+    'USB' => '"USB drive"'
+);
 
 # end disktypes }}}
 # graphics {{{
 
-constant %graphics =
+constant %graphics = %(
     'INTEL'  => '"Integrated or unknown graphics card"',
     'NVIDIA' => '"Nvidia dedicated/switchable GPU"',
-    'RADEON' => '"Radeon dedicated/switchable GPU"';
+    'RADEON' => '"Radeon dedicated/switchable GPU"'
+);
 
 # end graphics }}}
 # keymaps {{{
 
-constant %keymaps =
+constant %keymaps = %(
     'ANSI-dvorak'              => '"ANSI Dvorak keymap"',
     'amiga-de'                 => '"German keymap for Linux/m68k for Amiga 2000/3000/4000 keyboards"',
     'amiga-us'                 => '"US keymap for Amiga keyboards"',
@@ -242,12 +244,13 @@ constant %keymaps =
     'us-acentos'               => '"Equivalente ao mapa us, incluindo dead_keys e composies dos caracteres acentuados"',
     'wangbe'                   => '"AZERTY keymap for Wang Belgium keyboards"',
     'wangbe2'                  => '"AZERTY keymap for Wang Belgium keyboards"',
-    'windowkeys'               => '"Extra 105 Windows keys"';
+    'windowkeys'               => '"Extra 105 Windows keys"'
+);
 
 # end keymaps }}}
 # locales {{{
 
-constant %locales =
+constant %locales = %(
     'POSIX'                 => '"POSIX Standard Locale"',
     'aa_DJ'                 => '"Afar language locale for Djibouti (Cadu/Laaqo Dialects)"',
     'aa_ER'                 => '"Afar language locale for Eritrea (Cadu/Laaqo Dialects)"',
@@ -574,14 +577,16 @@ constant %locales =
     'zh_HK'                 => '"Chinese language locale for Hong Kong"',
     'zh_SG'                 => '"Chinese language locale for Singapore"',
     'zh_TW'                 => '"Chinese language locale for Taiwan R.O.C."',
-    'zu_ZA'                 => '"Zulu locale for South Africa"';
+    'zu_ZA'                 => '"Zulu locale for South Africa"'
+);
 
 # end locales }}}
 # processors {{{
 
-constant %processors =
+constant %processors = %(
     'INTEL' => '"Intel processors"',
-    'OTHER' => '"All other processors"';
+    'OTHER' => '"All other processors"'
+);
 
 # end processors }}}
 # timezones {{{
