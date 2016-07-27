@@ -345,7 +345,7 @@ sub tprompt(
         }
 
         # retry if response is invalid
-        unless $response.isa(T)
+        unless $response ~~ T
         {
             say 'Sorry, invalid response. Please try again.';
             next;
