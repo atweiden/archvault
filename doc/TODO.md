@@ -3,6 +3,11 @@
   - sudoers
   - hostname
   - DNSCrypt
+    - create user `_dnscrypt`
+    - edit `/usr/lib/systemd/system/dnscrypt-proxy.service`
+      - specify `--ephemeral-key`
+      - specify `--resolver-name`
+      - specify `--user`
   - locale
   - keymap
   - hwclock
@@ -45,7 +50,7 @@
 - idea: make users double-check config settings in `dialog` menu before
   proceeding with installation
 - idea: copytoram
-- idea: configure /etc/systemd/system.conf.d/limits.conf
+- idea: configure `/etc/systemd/system.conf.d/limits.conf`
   - https://github.com/oconnor663/arch/blob/master/limits.sh
 - idea: use ntp
   - `timedatectl set-ntp true`
