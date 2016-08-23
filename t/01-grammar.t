@@ -27,4 +27,4 @@ use Holovault::Grammar;
 # asdfghkjlzxcvbnmqwertyuiopzzzzzz$
 # 33 chars incl dollar sign at the end does not
 
-# vim: ft=perl6
+# vim: set filetype=perl6 foldmethod=marker foldlevel=0:
