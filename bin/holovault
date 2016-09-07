@@ -112,7 +112,7 @@ multi sub USAGE()
       ls                          List discovered holograms, keymaps, locales,
                                   partitions, timezones
 
-    optional arguments:
+    Options:
       -h, --help                  print this help message
       --version                   print version and exit
     EOF
@@ -140,7 +140,7 @@ multi sub USAGE('install')
                 --augment                             \
                 install
 
-    optional arguments:
+    Options:
       --augment                    drop to Bash console mid-execution
       --disktype=<disktype>        hard drive type
       --graphics=<graphics>        graphics card type
