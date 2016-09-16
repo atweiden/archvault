@@ -10,80 +10,80 @@ unit class Holovault::Config;
 # - defaults are geared towards live media installation
 
 # name for normal user (default: live)
-has UserName $.user-name =
+has UserName:D $.user-name =
     %*ENV<USER_NAME> ?? self.gen-user-name(%*ENV<USER_NAME>)
                      !! prompt-name(:user);
 
 # sha512 password digest for normal user
-has Str $.user-pass-digest =
+has Str:D $.user-pass-digest =
     %*ENV<USER_PASS> ?? self.gen-digest(%*ENV<USER_PASS>)
                      !! prompt-pass-digest();
 
 # sha512 password digest for root user
-has Str $.root-pass-digest =
+has Str:D $.root-pass-digest =
     %*ENV<ROOT_PASS> ?? self.gen-digest(%*ENV<ROOT_PASS>)
                      !! prompt-pass-digest(:root);
 
 # name for LUKS encrypted volume (default: vault)
-has VaultName $.vault-name =
+has VaultName:D $.vault-name =
     %*ENV<VAULT_NAME> ?? self.gen-vault-name(%*ENV<VAULT_NAME>)
                       !! prompt-name(:vault);
 
 # password for LUKS encrypted volume
-has VaultPass $.vault-pass =
+has VaultPass:D $.vault-pass =
     %*ENV<VAULT_PASS> ?? self.gen-vault-pass(%*ENV<VAULT_PASS>)
                       !! Nil;
 
 # name for host (default: vault)
-has HostName $.host-name =
+has HostName:D $.host-name =
     %*ENV<HOST_NAME> ?? self.gen-host-name(%*ENV<HOST_NAME>)
                      !! prompt-name(:host);
 
 # device path of target partition (default: /dev/sdb)
-has Str $.partition = %*ENV<PARTITION> || self!prompt-partition;
+has Str:D $.partition = %*ENV<PARTITION> || self!prompt-partition;
 
 # type of processor (default: other)
-has Processor $.processor =
+has Processor:D $.processor =
     %*ENV<PROCESSOR> ?? self.gen-processor(%*ENV<PROCESSOR>)
                      !! prompt-processor();
 
 # type of graphics card (default: intel)
-has Graphics $.graphics =
+has Graphics:D $.graphics =
     %*ENV<GRAPHICS> ?? self.gen-graphics(%*ENV<GRAPHICS>)
                     !! prompt-graphics();
 
 # type of hard drive (default: usb)
-has DiskType $.disk-type =
+has DiskType:D $.disk-type =
     %*ENV<DISK_TYPE> ?? self.gen-disk-type(%*ENV<DISK_TYPE>)
                      !! prompt-disk-type();
 
 # locale (default: en_US)
-has Locale $.locale =
+has Locale:D $.locale =
     %*ENV<LOCALE> ?? self.gen-locale(%*ENV<LOCALE>)
                   !! prompt-locale();
 
 # keymap (default: us)
-has Keymap $.keymap =
+has Keymap:D $.keymap =
     %*ENV<KEYMAP> ?? self.gen-keymap(%*ENV<KEYMAP>)
                   !! prompt-keymap();
 
 # timezone (default: America/Los_Angeles)
-has Timezone $.timezone =
+has Timezone:D $.timezone =
     %*ENV<TIMEZONE> ?? self.gen-timezone(%*ENV<TIMEZONE>)
                     !! prompt-timezone();
 
 # directory in which to search for holograms requested
-has IO::Path $.holograms-dir =
+has IO::Path:D $.holograms-dir =
     %*ENV<HOLOGRAMS_DIR> ?? self.gen-holograms-dir-handle(%*ENV<HOLOGRAMS_DIR>)
                          !! self!resolve-holograms-dir;
 
 # holograms requested
-has PkgName @.holograms =
+has PkgName:D @.holograms =
     %*ENV<HOLOGRAMS> ?? self.gen-holograms(%*ENV<HOLOGRAMS>)
                      !! prompt-holograms();
 
 # augment
-has Bool $.augment = ?%*ENV<AUGMENT>;
+has Bool:D $.augment = ?%*ENV<AUGMENT>;
 
 
 # -----------------------------------------------------------------------------
@@ -243,7 +243,7 @@ multi sub dprompt(
         !;
 
         # confirm selection
-        my Bool $confirmed = shell("
+        my Bool:D $confirmed = shell("
             dialog \\
                 --stdout \\
                 --defaultno \\
@@ -286,7 +286,7 @@ multi sub dprompt(
         !;
 
         # confirm selection
-        my Bool $confirmed = shell("
+        my Bool:D $confirmed = shell("
             dialog \\
                 --stdout \\
                 --defaultno \\
@@ -352,7 +352,7 @@ sub tprompt(
         }
 
         # prompt for confirmation
-        my Str $confirmation =
+        my Str:D $confirmation =
             prompt "Confirm «{$response.split(/\s+/).join(', ')}» [y/N]: ";
         last if is-confirmed($confirmation);
     }
@@ -362,12 +362,12 @@ sub tprompt(
 
 sub prompt-disk-type() returns DiskType:D
 {
-    my DiskType $default-item = 'USB';
-    my Str $prompt-text = 'Select disk type:';
-    my Str $title = 'DISK TYPE SELECTION';
-    my Str $confirm-topic = 'disk type selected';
+    my DiskType:D $default-item = 'USB';
+    my Str:D $prompt-text = 'Select disk type:';
+    my Str:D $title = 'DISK TYPE SELECTION';
+    my Str:D $confirm-topic = 'disk type selected';
 
-    my DiskType $disk-type = dprompt(
+    my DiskType:D $disk-type = dprompt(
         DiskType,
         %Holovault::Types::disktypes,
         :$default-item,
@@ -379,12 +379,12 @@ sub prompt-disk-type() returns DiskType:D
 
 sub prompt-graphics() returns Graphics:D
 {
-    my Graphics $default-item = 'INTEL';
-    my Str $prompt-text = 'Select graphics card type:';
-    my Str $title = 'GRAPHICS CARD TYPE SELECTION';
-    my Str $confirm-topic = 'graphics card type selected';
+    my Graphics:D $default-item = 'INTEL';
+    my Str:D $prompt-text = 'Select graphics card type:';
+    my Str:D $title = 'GRAPHICS CARD TYPE SELECTION';
+    my Str:D $confirm-topic = 'graphics card type selected';
 
-    my Graphics $graphics = dprompt(
+    my Graphics:D $graphics = dprompt(
         Graphics,
         %Holovault::Types::graphics,
         :$default-item,
@@ -397,13 +397,13 @@ sub prompt-graphics() returns Graphics:D
 sub prompt-holograms()
 {
     # default response
-    my Str $response-default = "";
+    my Str:D $response-default = "";
 
     # prompt text
-    my Str $prompt-text = "Holograms (optional): ";
+    my Str:D $prompt-text = "Holograms (optional): ";
 
     # help text
-    my Str $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/;
     Determining holograms requested...
 
     Enter pkgname of holograms, space-separated, e.g. hologram-simple
@@ -413,11 +413,11 @@ sub prompt-holograms()
     EOF
     $help-text .= trim;
 
-    my PkgName @holograms;
+    my PkgName:D @holograms;
     loop
     {
         # prompt user
-        my Str @h = tprompt(
+        my Str:D @h = tprompt(
             Str,
             $response-default,
             :$prompt-text,
@@ -437,8 +437,8 @@ sub prompt-holograms()
         else
         {
             # display non-fatal error message and loop
-            my Str @invalid-hologram-names = (@h (-) @h.grep(PkgName)).keys;
-            my Str $msg = qq:to/EOF/;
+            my Str:D @invalid-hologram-names = (@h (-) @h.grep(PkgName)).keys;
+            my Str:D $msg = qq:to/EOF/;
             Sorry, invalid hologram name(s) given:
 
             {@invalid-hologram-names.join(', ')}
@@ -455,12 +455,12 @@ sub prompt-holograms()
 
 sub prompt-keymap() returns Keymap:D
 {
-    my Keymap $default-item = 'us';
-    my Str $prompt-text = 'Select keymap:';
-    my Str $title = 'KEYMAP SELECTION';
-    my Str $confirm-topic = 'keymap selected';
+    my Keymap:D $default-item = 'us';
+    my Str:D $prompt-text = 'Select keymap:';
+    my Str:D $title = 'KEYMAP SELECTION';
+    my Str:D $confirm-topic = 'keymap selected';
 
-    my Keymap $keymap = dprompt(
+    my Keymap:D $keymap = dprompt(
         Keymap,
         %Holovault::Types::keymaps,
         :$default-item,
@@ -472,12 +472,12 @@ sub prompt-keymap() returns Keymap:D
 
 sub prompt-locale() returns Locale:D
 {
-    my Locale $default-item = 'en_US';
-    my Str $prompt-text = 'Select locale:';
-    my Str $title = 'LOCALE SELECTION';
-    my Str $confirm-topic = 'locale selected';
+    my Locale:D $default-item = 'en_US';
+    my Str:D $prompt-text = 'Select locale:';
+    my Str:D $title = 'LOCALE SELECTION';
+    my Str:D $confirm-topic = 'locale selected';
 
-    my Locale $locale = dprompt(
+    my Locale:D $locale = dprompt(
         Locale,
         %Holovault::Types::locales,
         :$default-item,
@@ -487,16 +487,16 @@ sub prompt-locale() returns Locale:D
     );
 }
 
-multi sub prompt-name(Bool :$host! where *.so) returns HostName:D
+multi sub prompt-name(Bool:D :$host! where *.so) returns HostName:D
 {
     # default response
-    my HostName $response-default = "vault";
+    my HostName:D $response-default = "vault";
 
     # prompt text
-    my Str $prompt-text = "Enter hostname [vault]: ";
+    my Str:D $prompt-text = "Enter hostname [vault]: ";
 
     # help text
-    my Str $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/;
     Determining hostname...
 
     Leave blank if you don't know what this is
@@ -504,7 +504,7 @@ multi sub prompt-name(Bool :$host! where *.so) returns HostName:D
     $help-text .= trim;
 
     # prompt user
-    my HostName $host-name = tprompt(
+    my HostName:D $host-name = tprompt(
         HostName,
         $response-default,
         :$prompt-text,
@@ -512,16 +512,16 @@ multi sub prompt-name(Bool :$host! where *.so) returns HostName:D
     );
 }
 
-multi sub prompt-name(Bool :$user! where *.so) returns UserName:D
+multi sub prompt-name(Bool:D :$user! where *.so) returns UserName:D
 {
     # default response
-    my UserName $response-default = "live";
+    my UserName:D $response-default = "live";
 
     # prompt text
-    my Str $prompt-text = "Enter username [live]: ";
+    my Str:D $prompt-text = "Enter username [live]: ";
 
     # help text
-    my Str $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/;
     Determining username...
 
     Leave blank if you don't know what this is
@@ -529,7 +529,7 @@ multi sub prompt-name(Bool :$user! where *.so) returns UserName:D
     $help-text .= trim;
 
     # prompt user
-    my UserName $user-name = tprompt(
+    my UserName:D $user-name = tprompt(
         UserName,
         $response-default,
         :$prompt-text,
@@ -537,16 +537,16 @@ multi sub prompt-name(Bool :$user! where *.so) returns UserName:D
     );
 }
 
-multi sub prompt-name(Bool :$vault! where *.so) returns VaultName:D
+multi sub prompt-name(Bool:D :$vault! where *.so) returns VaultName:D
 {
     # default response
-    my VaultName $response-default = "vault";
+    my VaultName:D $response-default = "vault";
 
     # prompt text
-    my Str $prompt-text = "Enter vault name [vault]: ";
+    my Str:D $prompt-text = "Enter vault name [vault]: ";
 
     # help text
-    my Str $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/;
     Determining name of LUKS encrypted volume...
 
     Leave blank if you don't know what this is
@@ -554,7 +554,7 @@ multi sub prompt-name(Bool :$vault! where *.so) returns VaultName:D
     $help-text .= trim;
 
     # prompt user
-    my VaultName $vault-name = tprompt(
+    my VaultName:D $vault-name = tprompt(
         VaultName,
         $response-default,
         :$prompt-text,
@@ -565,14 +565,15 @@ multi sub prompt-name(Bool :$vault! where *.so) returns VaultName:D
 method !prompt-partition() returns Str:D
 {
     # get list of partitions
-    my Str @partitions = self.ls-partitions».subst(/(.*)/, -> $/ { "/dev/$0" });
+    my Str:D @partitions =
+        self.ls-partitions».subst(/(.*)/, -> $/ { "/dev/$0" });
 
-    my Str $default-item = '/dev/sdb';
-    my Str $prompt-text = 'Select partition for installing Arch:';
-    my Str $title = 'PARTITION SELECTION';
-    my Str $confirm-topic = 'partition selected';
+    my Str:D $default-item = '/dev/sdb';
+    my Str:D $prompt-text = 'Select partition for installing Arch:';
+    my Str:D $title = 'PARTITION SELECTION';
+    my Str:D $confirm-topic = 'partition selected';
 
-    my Str $partition = dprompt(
+    my Str:D $partition = dprompt(
         Str,
         @partitions,
         :$default-item,
@@ -586,10 +587,10 @@ method !prompt-partition() returns Str:D
 sub prompt-pass-digest(Bool :$root) returns Str:D
 {
     # sha512 digest of empty password, for verifying passwords aren't blank
-    my Str $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
+    my Str:D $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
 
     # for "Enter Root / User Password" input prompts
-    my Str $subject = $root ?? "Root" !! "User";
+    my Str:D $subject = $root ?? 'Root' !! 'User';
 
     # store sha512 digest of password
     my Str $pass-digest;
@@ -611,7 +612,7 @@ sub prompt-pass-digest(Bool :$root) returns Str:D
 
         # verifying secure password digest...
         print "Retype $subject "; # Retype Root / User Password
-        my Str $pass-digest-confirm = qx{openssl passwd -1 -salt sha512}.trim;
+        my Str:D $pass-digest-confirm = qx{openssl passwd -1 -salt sha512}.trim;
         if $pass-digest eqv $pass-digest-confirm
         {
             last;
@@ -629,12 +630,12 @@ sub prompt-pass-digest(Bool :$root) returns Str:D
 
 sub prompt-processor() returns Processor:D
 {
-    my Processor $default-item = 'OTHER';
-    my Str $prompt-text = 'Select processor:';
-    my Str $title = 'PROCESSOR SELECTION';
-    my Str $confirm-topic = 'processor selected';
+    my Processor:D $default-item = 'OTHER';
+    my Str:D $prompt-text = 'Select processor:';
+    my Str:D $title = 'PROCESSOR SELECTION';
+    my Str:D $confirm-topic = 'processor selected';
 
-    my Processor $processor = dprompt(
+    my Processor:D $processor = dprompt(
         Processor,
         %Holovault::Types::processors,
         :$default-item,
@@ -647,18 +648,18 @@ sub prompt-processor() returns Processor:D
 sub prompt-timezone() returns Timezone:D
 {
     # get list of timezones
-    my Timezone @timezones = @Holovault::Types::timezones;
+    my Timezone:D @timezones = @Holovault::Types::timezones;
 
     # get list of timezone regions
-    my Str @regions = @timezones».subst(/'/'\N*$/, '').unique;
+    my Str:D @regions = @timezones».subst(/'/'\N*$/, '').unique;
 
     # prompt choose region
     my Str $region;
     {
-        my Str $default-item = 'America';
-        my Str $prompt-text = 'Select region:';
-        my Str $title = 'TIMEZONE REGION SELECTION';
-        my Str $confirm-topic = 'timezone region selected';
+        my Str:D $default-item = 'America';
+        my Str:D $prompt-text = 'Select region:';
+        my Str:D $title = 'TIMEZONE REGION SELECTION';
+        my Str:D $confirm-topic = 'timezone region selected';
 
         $region = dprompt(
             Str,
@@ -671,16 +672,16 @@ sub prompt-timezone() returns Timezone:D
     }
 
     # get list of timezone region subregions
-    my Str @subregions =
+    my Str:D @subregions =
         @timezones.grep(/$region/)».subst(/^$region'/'/, '').sort;
 
     # prompt choose subregion
     my Str $subregion;
     {
-        my Str $default-item = 'Los_Angeles';
-        my Str $prompt-text = 'Select subregion:';
-        my Str $title = 'TIMEZONE SUBREGION SELECTION';
-        my Str $confirm-topic = 'timezone subregion selected';
+        my Str:D $default-item = 'Los_Angeles';
+        my Str:D $prompt-text = 'Select subregion:';
+        my Str:D $title = 'TIMEZONE SUBREGION SELECTION';
+        my Str:D $confirm-topic = 'timezone subregion selected';
 
         $subregion = dprompt(
             Str,
@@ -692,7 +693,7 @@ sub prompt-timezone() returns Timezone:D
         );
     }
 
-    my Timezone $timezone = @timezones.grep("$region/$subregion")[0];
+    my Timezone:D $timezone = @timezones.grep("$region/$subregion")[0];
 }
 
 
@@ -720,7 +721,7 @@ method ls-holograms(Str :$holograms-dir)
     }
 
     # if clause because holograms dir may not resolve to anything
-    my Str @holograms-found;
+    my Str:D @holograms-found;
     @holograms-found = qqx{
         find $dir -mindepth 1 -maxdepth 1 -type d | sed 's!^./!!'
     }.trim.split("\n").sort if $dir;

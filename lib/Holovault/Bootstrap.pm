@@ -39,7 +39,7 @@ sub setup()
     run qw<pkill haveged>;
 
     # fetch dependencies needed prior to pacstrap
-    my Str @deps = qw<
+    my Str:D @deps = qw<
         arch-install-scripts
         base-devel
         btrfs-progs
@@ -109,13 +109,13 @@ sub mkvault(
 )
 {
     # target partition for vault
-    my Str $partition-vault = $partition ~ "3";
+    my Str:D $partition-vault = $partition ~ "3";
 
     # load kernel modules for cryptsetup
     run qw<modprobe dm_mod dm-crypt>;
 
     # was LUKS encrypted volume password given in cmdline flag?
-    if my Str $vault-pass = $Holovault::CONF.vault-pass
+    if my Str:D $vault-pass = $Holovault::CONF.vault-pass
     {
         # make LUKS encrypted volume without prompt for vault password
         shell "expect <<'EOF'
@@ -150,7 +150,7 @@ sub mkvault(
 
             # create LUKS encrypted volume, prompt user for
             # vault password
-            my Proc $cryptsetup-luks-format =
+            my Proc:D $cryptsetup-luks-format =
                 shell "expect -c 'spawn cryptsetup \\
                                         --cipher aes-xts-plain64 \\
                                         --key-size 512           \\
@@ -181,7 +181,7 @@ sub mkvault(
             say 'Opening LUKS vault...';
 
             # open vault with prompt for vault password
-            my Proc $cryptsetup-luks-open =
+            my Proc:D $cryptsetup-luks-open =
                 shell "cryptsetup luksOpen $partition-vault $vault-name";
 
             # loop until passphrase works
@@ -221,7 +221,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
     chdir '/';
 
     # mount btrfs subvolumes, starting with root / ('')
-    my Str @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
+    my Str:D @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
     for @btrfs-dirs -> $btrfs-dir
     {
         mkdir "/mnt/$btrfs-dir";
@@ -243,7 +243,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
 sub mkbootpart(Str:D :$partition = $Holovault::CONF.partition)
 {
     # target partition for boot
-    my Str $partition-boot = $partition ~ 2;
+    my Str:D $partition-boot = $partition ~ 2;
 
     # create ext2 boot partition
     run qqw<mkfs.ext2 $partition-boot>;
@@ -257,7 +257,7 @@ sub mkbootpart(Str:D :$partition = $Holovault::CONF.partition)
 sub pacstrap-base()
 {
     # base packages
-    my Str @packages-base = qw<
+    my Str:D @packages-base = qw<
         abs
         arch-install-scripts
         base
@@ -309,12 +309,12 @@ sub pacstrap-base()
 sub configure-users()
 {
     # updating root password...
-    my Str $root-pass-digest = $Holovault::CONF.root-pass-digest;
+    my Str:D $root-pass-digest = $Holovault::CONF.root-pass-digest;
     run qqw<arch-chroot /mnt usermod -p $root-pass-digest root>;
 
     # creating new user with password from secure password digest...
-    my Str $user-name = $Holovault::CONF.user-name;
-    my Str $user-pass-digest = $Holovault::CONF.user-pass-digest;
+    my Str:D $user-name = $Holovault::CONF.user-name;
+    my Str:D $user-pass-digest = $Holovault::CONF.user-pass-digest;
     run qqw<
         arch-chroot
         /mnt
@@ -327,7 +327,7 @@ sub configure-users()
         $user-name
     >;
 
-    my Str $sudoers = qq:to/EOF/;
+    my Str:D $sudoers = qq:to/EOF/;
     $user-name ALL=(ALL) ALL
     EOF
     spurt '/mnt/etc/sudoers', $sudoers, :append;
@@ -345,7 +345,7 @@ sub set-hostname()
 
 sub set-nameservers()
 {
-    my Str $resolv-conf-head = q:to/EOF/;
+    my Str:D $resolv-conf-head = q:to/EOF/;
     # DNSCrypt
     options edns0
     nameserver 127.0.0.1
@@ -363,9 +363,9 @@ sub set-nameservers()
 
 sub set-locale()
 {
-    my Str $locale = $Holovault::CONF.locale;
+    my Str:D $locale = $Holovault::CONF.locale;
 
-    my Str $sed-cmd =
+    my Str:D $sed-cmd =
           q{s,}
         ~ qq{^#\\($locale\\.UTF-8 UTF-8\\)}
         ~ q{,}
@@ -374,7 +374,7 @@ sub set-locale()
     shell "sed -i '$sed-cmd' /mnt/etc/locale.gen";
     run qw<arch-chroot /mnt locale-gen>;
 
-    my Str $locale-conf = qq:to/EOF/;
+    my Str:D $locale-conf = qq:to/EOF/;
     LANG=$locale.UTF-8
     LC_TIME=$locale.UTF-8
     EOF
@@ -383,8 +383,8 @@ sub set-locale()
 
 sub set-keymap()
 {
-    my Str $keymap = $Holovault::CONF.keymap;
-    my Str $vconsole = qq:to/EOF/;
+    my Str:D $keymap = $Holovault::CONF.keymap;
+    my Str:D $vconsole = qq:to/EOF/;
     KEYMAP=$keymap
     FONT=Lat2-Terminus16
     FONT_MAP=
@@ -412,7 +412,7 @@ sub configure-tmpfiles()
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
     run qw<arch-chroot /mnt systemctl mask tmp.mount>;
-    my Str $tmp-conf = q:to/EOF/;
+    my Str:D $tmp-conf = q:to/EOF/;
     # see tmpfiles.d(5)
     # always enable /tmp folder cleaning
     D! /tmp 1777 root root 0
@@ -431,7 +431,7 @@ sub configure-tmpfiles()
 
 sub configure-pacman()
 {
-    my Str $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
+    my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
     shell "sed -i '$sed-cmd' /mnt/etc/pacman.conf";
 
     $sed-cmd = '';
@@ -450,7 +450,7 @@ sub configure-pacman()
 
 sub configure-system-sleep()
 {
-    my Str $sleep-conf = q:to/EOF/;
+    my Str:D $sleep-conf = q:to/EOF/;
     [Sleep]
     SuspendMode=mem
     HibernateMode=mem
@@ -464,7 +464,7 @@ sub configure-system-sleep()
 
 sub configure-modprobe()
 {
-    my Str $modprobe-conf = q:to/EOF/;
+    my Str:D $modprobe-conf = q:to/EOF/;
     alias floppy off
     blacklist fd0
     blacklist floppy
@@ -481,7 +481,7 @@ sub generate-initramfs()
 {
     # MODULES {{{
 
-    my Str @modules;
+    my Str:D @modules;
     push @modules, $Holovault::CONF.processor eq 'INTEL'
         ?? 'crc32c-intel'
         !! 'crc32c';
@@ -489,7 +489,7 @@ sub generate-initramfs()
     push @modules, 'nouveau' if $Holovault::CONF.graphics eq 'NVIDIA';
     push @modules, 'radeon' if $Holovault::CONF.graphics eq 'RADEON';
     push @modules, |qw<lz4 lz4_compress>; # for systemd-swap lz4
-    my Str $sed-cmd =
+    my Str:D $sed-cmd =
           q{s,}
         ~ q{^MODULES.*}
         ~ q{,}
@@ -503,7 +503,7 @@ sub generate-initramfs()
 
     # HOOKS {{{
 
-    my Str @hooks = qw<
+    my Str:D @hooks = qw<
         base
         udev
         autodetect
@@ -545,12 +545,12 @@ sub install-bootloader()
 {
     # GRUB_CMDLINE_LINUX {{{
 
-    my Str $vault-name = $Holovault::CONF.vault-name;
-    my Str $vault-uuid = qqx<
+    my Str:D $vault-name = $Holovault::CONF.vault-name;
+    my Str:D $vault-uuid = qqx<
         blkid -s UUID -o value {$Holovault::CONF.partition}3
     >.trim;
 
-    my Str $grub-cmdline-linux =
+    my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
             ~ ' rootflags=subvol=@';
     $grub-cmdline-linux ~= ' elevator=noop'
@@ -558,7 +558,7 @@ sub install-bootloader()
     $grub-cmdline-linux ~= ' radeon.dpm=1'
         if $Holovault::CONF.graphics eq 'RADEON';
 
-    my Str $sed-cmd =
+    my Str:D $sed-cmd =
           q{s,}
         ~ q{^\(GRUB_CMDLINE_LINUX\)=.*}
         ~ q{,}
@@ -617,7 +617,7 @@ sub install-bootloader()
 
 sub configure-sysctl()
 {
-    my Str $sysctl-conf = q:to/EOF/;
+    my Str:D $sysctl-conf = q:to/EOF/;
     # Configuration file for runtime kernel parameters.
     # See sysctl.conf(5) for more information.
 
@@ -742,12 +742,12 @@ sub configure-sysctl()
 
 sub configure-hidepid()
 {
-    my Str $hidepid-conf = q:to/EOF/;
+    my Str:D $hidepid-conf = q:to/EOF/;
     [Service]
     SupplementaryGroups=proc
     EOF
 
-    my Str $fstab-hidepid = q:to/EOF/;
+    my Str:D $fstab-hidepid = q:to/EOF/;
     # /proc with hidepid (https://wiki.archlinux.org/index.php/Security#hidepid)
     proc                                      /proc       procfs      hidepid=2,gid=proc                                              0 0
     EOF
@@ -762,7 +762,7 @@ sub configure-hidepid()
 
 sub configure-securetty()
 {
-    my Str $securetty = q:to/EOF/;
+    my Str:D $securetty = q:to/EOF/;
     #
     # /etc/securetty
     # https://wiki.archlinux.org/index.php/Security#Denying_console_login_as_root
@@ -782,7 +782,7 @@ sub configure-securetty()
     EOF
     spurt '/mnt/etc/securetty', $securetty;
 
-    my Str $shell-timeout = q:to/EOF/;
+    my Str:D $shell-timeout = q:to/EOF/;
     TMOUT="$(( 60*10 ))";
     [[ -z "$DISPLAY" ]] && export TMOUT;
     case $( /usr/bin/tty ) in
@@ -794,7 +794,7 @@ sub configure-securetty()
 
 sub configure-iptables()
 {
-    my Str $iptables-test-rules = q:to/EOF/;
+    my Str:D $iptables-test-rules = q:to/EOF/;
     *filter
     #| Allow all loopback (lo0) traffic, and drop all traffic to 127/8 that doesn't use lo0
     -A INPUT -i lo -j ACCEPT
@@ -848,18 +848,18 @@ sub disable-btrfs-cow()
 }
 
 sub chattrify(
-    Str $directory,
+    Str:D $directory where *.so,
     # permissions should be octal: https://doc.perl6.org/routine/chmod
-    UInt $permissions,
-    Str $user,
-    Str $group
+    UInt:D $permissions,
+    Str:D $user where *.so,
+    Str:D $group where *.so
 )
 {
-    my Str $orig-dir = ~$directory.IO.resolve;
+    my Str:D $orig-dir = ~$directory.IO.resolve;
     die 'directory failed exists readable directory test'
         unless $orig-dir.IO.e && $orig-dir.IO.r && $orig-dir.IO.d;
 
-    my Str $backup-dir = $orig-dir ~ '-old';
+    my Str:D $backup-dir = $orig-dir ~ '-old';
 
     rename $orig-dir, $backup-dir;
     mkdir $orig-dir;
@@ -882,7 +882,7 @@ sub augment()
 sub unmount()
 {
     shell 'umount /mnt/{boot,home,opt,srv,tmp,usr,var,}';
-    my Str $vault-name = $Holovault::CONF.vault-name;
+    my Str:D $vault-name = $Holovault::CONF.vault-name;
     run qqw<cryptsetup luksClose $vault-name>;
 }
 

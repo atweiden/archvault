@@ -114,7 +114,7 @@ method install(
 )
 {
     # verify root permissions
-    $*USER == 0 or die 'root priviledges required';
+    $*USER == 0 or die 'root privileges required';
 
     mkconf(|%opts);
     bootstrap();

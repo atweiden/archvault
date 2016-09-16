@@ -75,10 +75,10 @@ multi sub MAIN('ls', 'holograms', *%opts (Str :$holograms-dir))
 {
     .say for Holovault::Config.ls-holograms(|%opts);
 }
-multi sub MAIN('ls', 'keymaps') { .say for Holovault::Config.ls-keymaps; }
-multi sub MAIN('ls', 'locales') { .say for Holovault::Config.ls-locales; }
-multi sub MAIN('ls', 'partitions') { .say for Holovault::Config.ls-partitions; }
-multi sub MAIN('ls', 'timezones') { .say for Holovault::Config.ls-timezones; }
+multi sub MAIN('ls', 'keymaps') { .say for Holovault::Config.ls-keymaps }
+multi sub MAIN('ls', 'locales') { .say for Holovault::Config.ls-locales }
+multi sub MAIN('ls', 'partitions') { .say for Holovault::Config.ls-partitions }
+multi sub MAIN('ls', 'timezones') { .say for Holovault::Config.ls-timezones }
 
 
 
