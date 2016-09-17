@@ -42,22 +42,22 @@ multi sub MAIN('help', Str $command)
 multi sub MAIN(
     'install',
     *%opts (
-        Bool :$augment,
-        Str :$disktype,
-        Str :$graphics,
-        Str :$holograms,
-        Str :$holograms-dir,
-        Str :$hostname,
-        Str :$keymap,
-        Str :$locale,
-        Str :$partition,
-        Str :$processor,
-        Str :$rootpass,
-        Str :$timezone,
-        Str :$username,
-        Str :$userpass,
-        Str :$vaultname,
-        Str :$vaultpass,
+        Bool :augment($),
+        Str :disktype($),
+        Str :graphics($),
+        Str :holograms($),
+        Str :holograms-dir($),
+        Str :hostname($),
+        Str :keymap($),
+        Str :locale($),
+        Str :partition($),
+        Str :processor($),
+        Str :rootpass($),
+        Str :timezone($),
+        Str :username($),
+        Str :userpass($),
+        Str :vaultname($),
+        Str :vaultpass($)
     )
 )
 {
@@ -71,7 +71,7 @@ multi sub MAIN(
 # ls
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('ls', 'holograms', *%opts (Str :$holograms-dir))
+multi sub MAIN('ls', 'holograms', *%opts (Str :holograms-dir($)))
 {
     .say for Holovault::Config.ls-holograms(|%opts);
 }
@@ -87,7 +87,7 @@ multi sub MAIN('ls', 'timezones') { .say for Holovault::Config.ls-timezones }
 # version
 # -----------------------------------------------------------------------------
 
-multi sub MAIN(Bool:D :$version! where *.so)
+multi sub MAIN(Bool:D :version($)! where *.so)
 {
     say 'v' ~ $Holovault::VERSION;
     exit;

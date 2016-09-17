@@ -23,7 +23,7 @@ sub mkconf(
     Str :$username,
     Str :$userpass,
     Str :$vaultname,
-    Str :$vaultpass,
+    Str :$vaultpass
 )
 {
     my %cfg;
@@ -94,22 +94,22 @@ sub mkconf(
 
 method install(
     *%opts (
-        Bool :$augment,
-        Str :$disktype,
-        Str :$graphics,
-        Str :$holograms,
-        Str :$holograms-dir,
-        Str :$hostname,
-        Str :$keymap,
-        Str :$locale,
-        Str :$partition,
-        Str :$processor,
-        Str :$rootpass,
-        Str :$timezone,
-        Str :$username,
-        Str :$userpass,
-        Str :$vaultname,
-        Str :$vaultpass,
+        Bool :augment($),
+        Str :disktype($),
+        Str :graphics($),
+        Str :holograms($),
+        Str :holograms-dir($),
+        Str :hostname($),
+        Str :keymap($),
+        Str :locale($),
+        Str :partition($),
+        Str :processor($),
+        Str :rootpass($),
+        Str :timezone($),
+        Str :username($),
+        Str :userpass($),
+        Str :vaultname($),
+        Str :vaultpass($)
     )
 )
 {
