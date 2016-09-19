@@ -428,7 +428,7 @@ sub prompt-holograms()
         last if @h[0] ~~ "";
 
         # were all holograms input valid pkgnames (hologram names)?
-        if @h.grep(PkgName).elems == @h.elems
+        if @h.grep(PkgName:D).elems == @h.elems
         {
             @holograms = @h;
             last;
@@ -437,7 +437,7 @@ sub prompt-holograms()
         else
         {
             # display non-fatal error message and loop
-            my Str:D @invalid-hologram-names = (@h (-) @h.grep(PkgName)).keys;
+            my Str:D @invalid-hologram-names = (@h (-) @h.grep(PkgName:D)).keys;
             my Str:D $msg = qq:to/EOF/;
             Sorry, invalid hologram name(s) given:
 
