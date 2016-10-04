@@ -889,6 +889,7 @@ constant @timezones =
     'Asia/Vientiane',
     'Asia/Vladivostok',
     'Asia/Yakutsk',
+    'Asia/Yangon',
     'Asia/Yekaterinburg',
     'Asia/Yerevan',
     'Atlantic/Azores',
