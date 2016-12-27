@@ -4,10 +4,10 @@
   - hostname
   - DNSCrypt
     - create user `_dnscrypt`
-    - edit `/usr/lib/systemd/system/dnscrypt-proxy.service`
-      - specify `--ephemeral-key`
-      - specify `--resolver-name`
-      - specify `--user`
+    - edit `/etc/dnscrypt-proxy.conf`
+      - specify `EphemeralKeys`
+      - specify `ResolverName`
+      - specify `User`
   - locale
   - keymap
   - hwclock

@@ -9,6 +9,7 @@ sub bootstrap() is export
     configure-users();
     genfstab();
     set-hostname();
+    configure-dnscrypt-proxy();
     set-nameservers();
     set-locale();
     set-keymap();
@@ -341,6 +342,61 @@ sub genfstab()
 sub set-hostname()
 {
     spurt '/mnt/etc/hostname', $Holovault::CONF.host-name;
+}
+
+sub configure-dnscrypt-proxy()
+{
+    # create user _dnscrypt
+    run qqw<
+        arch-chroot
+        /mnt
+        useradd
+        -m
+        -d /usr/share/dnscrypt-proxy
+        -g dnscrypt
+        -s /bin/nologin
+        _dnscrypt
+    >;
+
+    # ResolverName {{{
+
+    my Str:D $sed-cmd =
+          q{s,}
+        ~ q{^ResolverName please.*}
+        ~ q{,}
+        ~ q{ResolverName ns0.dnscrypt.is}
+        ~ q{,};
+    shell "sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf";
+
+    # end ResolverName }}}
+
+    $sed-cmd = '';
+
+    # User {{{
+
+    $sed-cmd =
+          q{s,}
+        ~ q{^# User.*}
+        ~ q{,}
+        ~ q{User _dnscrypt}
+        ~ q{,};
+    shell "sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf";
+
+    # end User }}}
+
+    $sed-cmd = '';
+
+    # EphemeralKeys {{{
+
+    $sed-cmd =
+          q{s,}
+        ~ q{EphemeralKeys off}
+        ~ q{,}
+        ~ q{EphemeralKeys on}
+        ~ q{,};
+    shell "sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf";
+
+    # end EphemeralKeys }}}
 }
 
 sub set-nameservers()
@@ -718,7 +774,7 @@ sub configure-sysctl()
     if $Holovault::CONF.disk-type eq 'SSD'
         || $Holovault::CONF.disk-type eq 'USB'
     {
-        my Str $sed-cmd =
+        my Str:D $sed-cmd =
               q{s,}
             ~ q{^#\(vm.vfs_cache_pressure\).*}
             ~ q{,}
