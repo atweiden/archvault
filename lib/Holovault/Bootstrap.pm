@@ -529,6 +529,8 @@ sub configure-modprobe()
     blacklist pcspkr
     blacklist firewire-core
     blacklist thunderbolt
+    blacklist mei
+    blacklist mei-me
     EOF
     spurt '/mnt/etc/modprobe.d/modprobe.conf', $modprobe-conf;
 }
