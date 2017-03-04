@@ -770,6 +770,7 @@ constant @timezones =
     'America/Port_of_Spain',
     'America/Porto_Velho',
     'America/Puerto_Rico',
+    'America/Punta_Arenas',
     'America/Rainy_River',
     'America/Rankin_Inlet',
     'America/Recife',
