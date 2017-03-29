@@ -91,31 +91,31 @@ has Bool:D $.augment = ?%*ENV<AUGMENT>;
 # -----------------------------------------------------------------------------
 
 # return sha512 salt of password for linux user
-method gen-digest(Str:D $password) returns Str:D
+method gen-digest(Str:D $password --> Str:D)
 {
     my Str:D $digest = qqx{openssl passwd -1 -salt sha512 $password}.trim;
 }
 
 # confirm disk type $d is valid DiskType and return DiskType
-method gen-disk-type(Str:D $d) returns DiskType:D
+method gen-disk-type(Str:D $d --> DiskType:D)
 {
     my DiskType:D $disk-type = $d or die "Sorry, invalid disk type";
 }
 
 # confirm graphics card type $g is valid Graphics and return Graphics
-method gen-graphics(Str:D $g) returns Graphics:D
+method gen-graphics(Str:D $g --> Graphics:D)
 {
     my Graphics:D $graphics = $g or die "Sorry, invalid graphics card type";
 }
 
 # split holograms space separated into array of PkgNames and return array
-method gen-holograms(Str:D $holograms) returns Array[PkgName:D]
+method gen-holograms(Str:D $holograms --> Array[PkgName:D])
 {
     my PkgName:D @holograms = $holograms.split(/\s+/).unique;
 }
 
 # confirm directory $directory exists and is readable, and return IO::Path
-method gen-holograms-dir-handle(Str:D $directory) returns IO::Path:D
+method gen-holograms-dir-handle(Str:D $directory --> IO::Path:D)
 {
     unless is-permissible($directory)
     {
@@ -125,49 +125,49 @@ method gen-holograms-dir-handle(Str:D $directory) returns IO::Path:D
 }
 
 # confirm hostname $h is valid HostName and return HostName
-method gen-host-name(Str:D $h) returns HostName:D
+method gen-host-name(Str:D $h --> HostName:D)
 {
     my HostName:D $host-name = $h or die "Sorry, invalid hostname 「$h」";
 }
 
 # confirm keymap $k is valid Keymap and return Keymap
-method gen-keymap(Str:D $k) returns Keymap:D
+method gen-keymap(Str:D $k --> Keymap:D)
 {
     my Keymap:D $keymap = $k or die "Sorry, invalid keymap 「$k」";
 }
 
 # confirm locale $l is valid Locale and return Locale
-method gen-locale(Str:D $l) returns Locale:D
+method gen-locale(Str:D $l --> Locale:D)
 {
     my Locale:D $locale = $l or die "Sorry, invalid locale 「$l」";
 }
 
 # confirm processor $p is valid Processor and return Processor
-method gen-processor(Str:D $p) returns Processor:D
+method gen-processor(Str:D $p --> Processor:D)
 {
     my Processor:D $processor = $p or die "Sorry, invalid processor 「$p」";
 }
 
 # confirm timezone $t is valid Timezone and return Timezone
-method gen-timezone(Str:D $t) returns Timezone:D
+method gen-timezone(Str:D $t --> Timezone:D)
 {
     my Timezone:D $timezone = $t or die "Sorry, invalid timezone 「$t」";
 }
 
 # confirm user name $u is valid UserName and return UserName
-method gen-user-name(Str:D $u) returns UserName:D
+method gen-user-name(Str:D $u --> UserName:D)
 {
     my UserName:D $user-name = $u or die "Sorry, invalid username 「$u」";
 }
 
 # confirm vault name $v is valid VaultName and return VaultName
-method gen-vault-name(Str:D $v) returns VaultName:D
+method gen-vault-name(Str:D $v --> VaultName:D)
 {
     my VaultName:D $vault-name = $v or die "Sorry, invalid vault name 「$v」";
 }
 
 # confirm vault pass $v is valid VaultPass and return VaultPass
-method gen-vault-pass(Str:D $v) returns VaultPass:D
+method gen-vault-pass(Str:D $v --> VaultPass:D)
 {
     my VaultPass:D $vault-pass = $v
         or die "Sorry, invalid vault pass."
@@ -175,14 +175,14 @@ method gen-vault-pass(Str:D $v) returns VaultPass:D
 }
 
 # does directory exist and is directory readable?
-sub is-permissible(Str:D $directory) returns Bool:D
+sub is-permissible(Str:D $directory --> Bool:D)
 {
     $directory.IO.d && $directory.IO.r;
 }
 
 # resolve holograms dir
 # does not need to return a defined IO::Path since holograms are optional
-method !resolve-holograms-dir() returns IO::Path
+method !resolve-holograms-dir(--> IO::Path)
 {
     my IO::Path $dir-handle;
 
@@ -224,7 +224,8 @@ multi sub dprompt(
     UInt:D :$width = 80,
     UInt:D :$menu-height = 24,
     Str:D :$confirm-topic! # context string for confirm text
-) returns Any:D
+    --> Any:D
+)
 {
     my T $response;
 
@@ -268,7 +269,8 @@ multi sub dprompt(
     UInt:D :$width = 80,
     UInt:D :$menu-height = 24,
     Str:D :$confirm-topic! # context string for confirm text
-) returns Any:D
+    --> Any:D
+)
 {
     my T $response;
 
@@ -306,12 +308,13 @@ sub tprompt(
     T $response-default where *.defined, # default response
     Str:D :$prompt-text!, # question posed to user
     Str :$help-text # optional help text to display before prompt
-) returns Any:D
+    --> Any:D
+)
 {
     my $response;
 
     # check for affirmative confirmation
-    sub is-confirmed(Str:D $confirmation) returns Bool:D
+    sub is-confirmed(Str:D $confirmation --> Bool:D)
     {
         # was response negatory or empty?
         if $confirmation ~~ /:i n[o]?/ or $confirmation.chars == 0
@@ -360,7 +363,7 @@ sub tprompt(
     $response;
 }
 
-sub prompt-disk-type() returns DiskType:D
+sub prompt-disk-type(--> DiskType:D)
 {
     my DiskType:D $default-item = 'USB';
     my Str:D $prompt-text = 'Select disk type:';
@@ -377,7 +380,7 @@ sub prompt-disk-type() returns DiskType:D
     );
 }
 
-sub prompt-graphics() returns Graphics:D
+sub prompt-graphics(--> Graphics:D)
 {
     my Graphics:D $default-item = 'INTEL';
     my Str:D $prompt-text = 'Select graphics card type:';
@@ -453,7 +456,7 @@ sub prompt-holograms()
     @holograms if @holograms;
 }
 
-sub prompt-keymap() returns Keymap:D
+sub prompt-keymap(--> Keymap:D)
 {
     my Keymap:D $default-item = 'us';
     my Str:D $prompt-text = 'Select keymap:';
@@ -470,7 +473,7 @@ sub prompt-keymap() returns Keymap:D
     );
 }
 
-sub prompt-locale() returns Locale:D
+sub prompt-locale(--> Locale:D)
 {
     my Locale:D $default-item = 'en_US';
     my Str:D $prompt-text = 'Select locale:';
@@ -487,7 +490,7 @@ sub prompt-locale() returns Locale:D
     );
 }
 
-multi sub prompt-name(Bool:D :$host! where *.so) returns HostName:D
+multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
 {
     # default response
     my HostName:D $response-default = "vault";
@@ -512,7 +515,7 @@ multi sub prompt-name(Bool:D :$host! where *.so) returns HostName:D
     );
 }
 
-multi sub prompt-name(Bool:D :$user! where *.so) returns UserName:D
+multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
 {
     # default response
     my UserName:D $response-default = "live";
@@ -537,7 +540,7 @@ multi sub prompt-name(Bool:D :$user! where *.so) returns UserName:D
     );
 }
 
-multi sub prompt-name(Bool:D :$vault! where *.so) returns VaultName:D
+multi sub prompt-name(Bool:D :$vault! where *.so --> VaultName:D)
 {
     # default response
     my VaultName:D $response-default = "vault";
@@ -562,7 +565,7 @@ multi sub prompt-name(Bool:D :$vault! where *.so) returns VaultName:D
     );
 }
 
-method !prompt-partition() returns Str:D
+method !prompt-partition(--> Str:D)
 {
     # get list of partitions
     my Str:D @partitions =
@@ -584,7 +587,7 @@ method !prompt-partition() returns Str:D
 }
 
 # generate sha512 password digest from user input
-sub prompt-pass-digest(Bool :$root) returns Str:D
+sub prompt-pass-digest(Bool :$root --> Str:D)
 {
     # sha512 digest of empty password, for verifying passwords aren't blank
     my Str:D $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
@@ -628,7 +631,7 @@ sub prompt-pass-digest(Bool :$root) returns Str:D
     $pass-digest;
 }
 
-sub prompt-processor() returns Processor:D
+sub prompt-processor(--> Processor:D)
 {
     my Processor:D $default-item = 'OTHER';
     my Str:D $prompt-text = 'Select processor:';
@@ -645,7 +648,7 @@ sub prompt-processor() returns Processor:D
     );
 }
 
-sub prompt-timezone() returns Timezone:D
+sub prompt-timezone(--> Timezone:D)
 {
     # get list of timezones
     my Timezone:D @timezones = @Holovault::Types::timezones;
@@ -731,7 +734,7 @@ method ls-holograms(Str :$holograms-dir)
 }
 
 # list keymaps
-method ls-keymaps() returns Array[Keymap:D]
+method ls-keymaps(--> Array[Keymap:D])
 {
     # equivalent to `localectl list-keymaps --no-pager`
     # see: src/basic/def.h in systemd source code
@@ -748,7 +751,7 @@ method ls-keymaps() returns Array[Keymap:D]
 }
 
 # list locales
-method ls-locales() returns Array[Locale:D]
+method ls-locales(--> Array[Locale:D])
 {
     my Locale:D @locales = qx{
         find /usr/share/i18n/locales -type f -printf '%f\n'
@@ -756,7 +759,7 @@ method ls-locales() returns Array[Locale:D]
 }
 
 # list block devices (partitions)
-method ls-partitions() returns Array[Str:D]
+method ls-partitions(--> Array[Str:D])
 {
     my Str:D @partitions = qx{
         lsblk --output NAME --nodeps --noheadings --raw
@@ -764,7 +767,7 @@ method ls-partitions() returns Array[Str:D]
 }
 
 # list timezones
-method ls-timezones() returns Array[Timezone:D]
+method ls-timezones(--> Array[Timezone:D])
 {
     # equivalent to `timedatectl list-timezones --no-pager`
     # see: src/basic/time-util.c in systemd source code
