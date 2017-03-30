@@ -6,7 +6,6 @@
     - create user `_dnscrypt`
     - edit `/etc/dnscrypt-proxy.conf`
       - specify `EphemeralKeys`
-      - specify `ResolverName`
       - specify `User`
   - locale
   - keymap

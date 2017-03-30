@@ -358,23 +358,9 @@ sub configure-dnscrypt-proxy()
         _dnscrypt
     >;
 
-    # ResolverName {{{
-
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^ResolverName please.*}
-        ~ q{,}
-        ~ q{ResolverName ns0.dnscrypt.is}
-        ~ q{,};
-    shell "sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf";
-
-    # end ResolverName }}}
-
-    $sed-cmd = '';
-
     # User {{{
 
-    $sed-cmd =
+    my Str:D $sed-cmd =
           q{s,}
         ~ q{^# User.*}
         ~ q{,}
