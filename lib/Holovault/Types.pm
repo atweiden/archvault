@@ -12,7 +12,7 @@ unit class Holovault::Types;
 
 # disktypes {{{
 
-constant %disktypes = %(
+constant %disktypes = Map.new(
     'HDD' => '"Spinning disk drive"',
     'SSD' => '"Solid state disk drive"',
     'USB' => '"USB drive"'
@@ -21,7 +21,7 @@ constant %disktypes = %(
 # end disktypes }}}
 # graphics {{{
 
-constant %graphics = %(
+constant %graphics = Map.new(
     'INTEL'  => '"Integrated or unknown graphics card"',
     'NVIDIA' => '"Nvidia dedicated/switchable GPU"',
     'RADEON' => '"Radeon dedicated/switchable GPU"'
@@ -30,7 +30,7 @@ constant %graphics = %(
 # end graphics }}}
 # keymaps {{{
 
-constant %keymaps = %(
+constant %keymaps = Map.new(
     'ANSI-dvorak'              => '"ANSI Dvorak keymap"',
     'amiga-de'                 => '"German keymap for Linux/m68k for Amiga 2000/3000/4000 keyboards"',
     'amiga-us'                 => '"US keymap for Amiga keyboards"',
@@ -253,7 +253,7 @@ constant %keymaps = %(
 # end keymaps }}}
 # locales {{{
 
-constant %locales = %(
+constant %locales = Map.new(
     'POSIX'                 => '"POSIX Standard Locale"',
     'aa_DJ'                 => '"Afar language locale for Djibouti (Cadu/Laaqo Dialects)"',
     'aa_ER'                 => '"Afar language locale for Eritrea (Cadu/Laaqo Dialects)"',
@@ -593,7 +593,7 @@ constant %locales = %(
 # end locales }}}
 # processors {{{
 
-constant %processors = %(
+constant %processors = Map.new(
     'INTEL' => '"Intel processors"',
     'OTHER' => '"All other processors"'
 );
