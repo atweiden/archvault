@@ -888,7 +888,7 @@ sub enable-systemd-services()
 
 sub disable-btrfs-cow()
 {
-    chattrify('/mnt/var/log/journal', 0o755, 'root', 'systemd-journal');
+    chattrify('/mnt/var/log', 0o755, 'root', 'root');
 }
 
 sub chattrify(
