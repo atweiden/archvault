@@ -259,8 +259,8 @@ sub pacstrap-base()
 {
     # base packages
     my Str:D @packages-base = qw<
-        abs
         arch-install-scripts
+        asp
         base
         base-devel
         bash-completion
