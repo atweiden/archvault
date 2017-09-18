@@ -631,6 +631,15 @@ sub install-bootloader()
 
     # end GRUB_SAVEDEFAULT }}}
 
+    $sed-cmd = '';
+
+    # GRUB_ENABLE_CRYPTODISK {{{
+
+    $sed-cmd = 's,^#\(GRUB_ENABLE_CRYPTODISK\),\1,';
+    run qqw<sed -i $sed-cmd /mnt/etc/default/grub>;
+
+    # end GRUB_ENABLE_CRYPTODISK }}}
+
     # GRUB_DISABLE_SUBMENU {{{
 
     spurt '/mnt/etc/default/grub', 'GRUB_DISABLE_SUBMENU=y', :append;
