@@ -537,7 +537,7 @@ sub generate-initramfs()
           q{s,}
         ~ q{^MODULES.*}
         ~ q{,}
-        ~ q{MODULES=\"} ~ @modules.join(' ') ~ q{\"}
+        ~ q{MODULES=(} ~ @modules.join(' ') ~ q{)}
         ~ q{,};
     shell "sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf";
 
@@ -567,7 +567,7 @@ sub generate-initramfs()
           q{s,}
         ~ q{^HOOKS.*}
         ~ q{,}
-        ~ q{HOOKS=\"} ~ @hooks.join(' ') ~ q{\"}
+        ~ q{HOOKS=(} ~ @hooks.join(' ') ~ q{)}
         ~ q{,};
     shell "sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf";
 
@@ -577,7 +577,7 @@ sub generate-initramfs()
 
     # FILES {{{
 
-    $sed-cmd = 's,^FILES.*,FILES=\"/etc/modprobe.d/modprobe.conf\",';
+    $sed-cmd = 's,^FILES.*,FILES=(/etc/modprobe.d/modprobe.conf),';
     run qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>;
 
     # end FILES }}}
