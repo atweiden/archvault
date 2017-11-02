@@ -13,23 +13,19 @@ use Holovault;
 # help
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('help', Str $command)
+multi sub MAIN('help', 'install')
 {
-    given $command
-    {
-        when 'install'
-        {
-            USAGE('install');
-        }
-        when 'ls'
-        {
-            USAGE('ls');
-        }
-        default
-        {
-            USAGE();
-        }
-    }
+    USAGE('install');
+}
+
+multi sub MAIN('help', 'ls')
+{
+    USAGE('ls');
+}
+
+multi sub MAIN('help', $?)
+{
+    USAGE();
 }
 
 
