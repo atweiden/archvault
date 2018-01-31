@@ -20,6 +20,7 @@ sub bootstrap() is export
     configure-system-sleep();
     configure-modprobe();
     generate-initramfs();
+    configure-io-schedulers();
     install-bootloader();
     configure-sysctl();
     configure-hidepid();
@@ -591,6 +592,18 @@ sub generate-initramfs()
     run qw<arch-chroot /mnt mkinitcpio -p linux>;
 }
 
+sub configure-io-schedulers()
+{
+    my Str:D $io-schedulers = q:to/EOF/;
+    # set scheduler for non-rotating disks
+    ACTION=="add|change", KERNEL=="sd[a-z]|mmcblk[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
+    # set scheduler for rotating disks
+    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
+    EOF
+    mkdir '/mnt/etc/udev/rules.d';
+    spurt '/mnt/etc/udev/rules.d/60-io-schedulers.rules', $io-schedulers;
+}
+
 sub install-bootloader()
 {
     # GRUB_CMDLINE_LINUX {{{
@@ -603,8 +616,6 @@ sub install-bootloader()
     my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
             ~ ' rootflags=subvol=@';
-    $grub-cmdline-linux ~= ' elevator=noop'
-        if $Holovault::CONF.disk-type eq 'SSD';
     $grub-cmdline-linux ~= ' radeon.dpm=1'
         if $Holovault::CONF.graphics eq 'RADEON';
 
