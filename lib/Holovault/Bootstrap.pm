@@ -205,7 +205,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
     run qqw<
         mount
         -t btrfs
-        -o rw,noatime,nodiratime,compress=lzo,space_cache
+        -o rw,noatime,compress=lzo,space_cache
         /dev/mapper/$vault-name
         /mnt2
     >;
@@ -229,7 +229,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
         run qqw<
             mount
             -t btrfs
-            -o rw,noatime,nodiratime,compress=lzo,space_cache,subvol=@$btrfs-dir
+            -o rw,noatime,compress=lzo,space_cache,subvol=@$btrfs-dir
             /dev/mapper/$vault-name
             /mnt/$btrfs-dir
         >;
