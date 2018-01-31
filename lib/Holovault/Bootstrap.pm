@@ -201,7 +201,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
     # create btrfs filesystem on opened vault
     run qqw<mkfs.btrfs /dev/mapper/$vault-name>;
 
-    my Str:D $mount-options = 'rw,noatime,compress=zstd,space_cache';
+    my Str:D $mount-options = 'rw,lazytime,compress=zstd,space_cache';
     $mount-options ~= ',ssd' if $Holovault::CONF.disk-type eq 'SSD';
 
     # mount main btrfs filesystem on open vault
@@ -225,7 +225,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
     run qw<btrfs subvolume create @var>;
     chdir '/';
 
-    my Str:D $mount-options = 'rw,noatime,compress=zstd,space_cache';
+    my Str:D $mount-options = 'rw,lazytime,compress=zstd,space_cache';
     $mount-options ~= ',ssd' if $Holovault::CONF.disk-type eq 'SSD';
 
     # mount btrfs subvolumes, starting with root / ('')
