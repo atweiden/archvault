@@ -35,10 +35,10 @@ sub bootstrap() is export
 sub setup()
 {
     # initialize pacman-keys
-    run qw<haveged -w 1024>;
-    run qw<pacman-key --init>;
-    run qw<pacman-key --populate archlinux>;
-    run qw<pkill haveged>;
+    run(qw<haveged -w 1024>);
+    run(qw<pacman-key --init>);
+    run(qw<pacman-key --populate archlinux>);
+    run(qw<pkill haveged>);
 
     # fetch dependencies needed prior to pacstrap
     my Str:D @deps = qw<
@@ -51,20 +51,21 @@ sub setup()
         kbd
         reflector
     >;
-    run qw<pacman -Sy --needed --noconfirm>, @deps;
+    run(qw<pacman -Sy --needed --noconfirm>, @deps);
 
     # use readable font
-    run qw<setfont Lat2-Terminus16>;
+    run(qw<setfont Lat2-Terminus16>);
 
     # rank mirrors
-    rename '/etc/pacman.d/mirrorlist', '/etc/pacman.d/mirrorlist.bak';
-    run qw<
+    rename('/etc/pacman.d/mirrorlist', '/etc/pacman.d/mirrorlist.bak');
+    run(qw<
         reflector
         --threads 3
         --protocol https
         --fastest 8
+        --number 8
         --save /etc/pacman.d/mirrorlist
-    >;
+    >);
 }
 
 # secure disk configuration
@@ -90,7 +91,7 @@ sub sgdisk(Str:D :$partition = $Holovault::CONF.partition)
     # create 2MB EF02 BIOS boot sector
     # create 128MB sized partition for /boot
     # create max sized partition for LUKS encrypted volume
-    run qw<
+    run(qw<
         sgdisk
         --zap-all
         --clear
@@ -101,7 +102,7 @@ sub sgdisk(Str:D :$partition = $Holovault::CONF.partition)
         --typecode=2:8300
         --new=3:0:0
         --typecode=3:8300
-    >, $partition;
+    >, $partition);
 }
 
 # create vault with cryptsetup
@@ -111,16 +112,16 @@ sub mkvault(
 )
 {
     # target partition for vault
-    my Str:D $partition-vault = $partition ~ "3";
+    my Str:D $partition-vault = $partition ~ '3';
 
     # load kernel modules for cryptsetup
-    run qw<modprobe dm_mod dm-crypt>;
+    run(qw<modprobe dm_mod dm-crypt>);
 
     # was LUKS encrypted volume password given in cmdline flag?
     if my Str:D $vault-pass = $Holovault::CONF.vault-pass
     {
         # make LUKS encrypted volume without prompt for vault password
-        shell "expect <<'EOF'
+        shell("expect <<'EOF'
                     spawn cryptsetup --cipher aes-xts-plain64 \\
                                      --key-size 512           \\
                                      --hash sha512            \\
@@ -132,14 +133,14 @@ sub mkvault(
                     expect \"Enter*\" \{ send \"$vault-pass\r\" \}
                     expect \"Verify*\" \{ send \"$vault-pass\r\" \}
                     expect eof
-               EOF";
+               EOF");
 
         # open vault without prompt for vault password
-        shell "expect <<'EOF'
+        shell("expect <<'EOF'
                     spawn cryptsetup luksOpen $partition-vault $vault-name
                     expect \"Enter*\" \{ send \"$vault-pass\r\" \}
                     expect eof
-               EOF";
+               EOF");
     }
     else
     {
@@ -148,12 +149,12 @@ sub mkvault(
             # hacky output to inform user of password entry
             # context until i can implement advanced expect
             # cryptsetup luksFormat program output interception
-            say 'Creating LUKS vault...';
+            say('Creating LUKS vault...');
 
             # create LUKS encrypted volume, prompt user for
             # vault password
             my Proc:D $cryptsetup-luks-format =
-                shell "expect -c 'spawn cryptsetup \\
+                shell("expect -c 'spawn cryptsetup \\
                                         --cipher aes-xts-plain64 \\
                                         --key-size 512           \\
                                         --hash sha512            \\
@@ -166,7 +167,7 @@ sub mkvault(
                                     \};
                                     interact;
                                     catch wait result;
-                                    exit [lindex \$result 3]'";
+                                    exit [lindex \$result 3]'");
 
             # loop until passphrases match
             # - returns exit code 0 if success
@@ -180,11 +181,11 @@ sub mkvault(
             # hacky output to inform user of password entry
             # context until i can implement advanced expect
             # cryptsetup luksOpen program output interception
-            say 'Opening LUKS vault...';
+            say('Opening LUKS vault...');
 
             # open vault with prompt for vault password
             my Proc:D $cryptsetup-luks-open =
-                shell "cryptsetup luksOpen $partition-vault $vault-name";
+                shell("cryptsetup luksOpen $partition-vault $vault-name");
 
             # loop until passphrase works
             # - returns exit code 0 if success
@@ -199,50 +200,50 @@ sub mkvault(
 sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
 {
     # create btrfs filesystem on opened vault
-    run qqw<mkfs.btrfs /dev/mapper/$vault-name>;
+    run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
 
     # set mount options
     my Str:D $mount-options = 'rw,lazytime,compress=zstd,space_cache';
     $mount-options ~= ',ssd' if $Holovault::CONF.disk-type eq 'SSD';
 
     # mount main btrfs filesystem on open vault
-    mkdir '/mnt2';
-    run qqw<
+    mkdir('/mnt2');
+    run(qqw<
         mount
         -t btrfs
         -o $mount-options
         /dev/mapper/$vault-name
         /mnt2
-    >;
+    >);
 
     # create btrfs subvolumes
-    chdir '/mnt2';
-    run qw<btrfs subvolume create @>;
-    run qw<btrfs subvolume create @home>;
-    run qw<btrfs subvolume create @opt>;
-    run qw<btrfs subvolume create @srv>;
-    run qw<btrfs subvolume create @tmp>;
-    run qw<btrfs subvolume create @usr>;
-    run qw<btrfs subvolume create @var>;
-    chdir '/';
+    chdir('/mnt2');
+    run(qw<btrfs subvolume create @>);
+    run(qw<btrfs subvolume create @home>);
+    run(qw<btrfs subvolume create @opt>);
+    run(qw<btrfs subvolume create @srv>);
+    run(qw<btrfs subvolume create @tmp>);
+    run(qw<btrfs subvolume create @usr>);
+    run(qw<btrfs subvolume create @var>);
+    chdir('/');
 
     # mount btrfs subvolumes, starting with root / ('')
     my Str:D @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
     for @btrfs-dirs -> $btrfs-dir
     {
-        mkdir "/mnt/$btrfs-dir";
-        run qqw<
+        mkdir("/mnt/$btrfs-dir");
+        run(qqw<
             mount
             -t btrfs
             -o $mount-options,subvol=@$btrfs-dir
             /dev/mapper/$vault-name
             /mnt/$btrfs-dir
-        >;
+        >);
     }
 
     # unmount /mnt2 and remove
-    run qw<umount /mnt2>;
-    '/mnt2'.IO.rmdir;
+    run(qw<umount /mnt2>);
+    rmdir('/mnt2');
 }
 
 # create and mount boot partition
@@ -252,11 +253,11 @@ sub mkbootpart(Str:D :$partition = $Holovault::CONF.partition)
     my Str:D $partition-boot = $partition ~ 2;
 
     # create ext2 boot partition
-    run qqw<mkfs.ext2 $partition-boot>;
+    run(qqw<mkfs.ext2 $partition-boot>);
 
     # mount ext2 boot partition in /mnt/boot
-    mkdir '/mnt/boot';
-    run qqw<mount $partition-boot /mnt/boot>;
+    mkdir('/mnt/boot');
+    run(qqw<mount $partition-boot /mnt/boot>);
 }
 
 # bootstrap initial chroot with pacstrap
@@ -305,10 +306,10 @@ sub pacstrap-base()
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
-    push @packages-base, 'intel-ucode' if $Holovault::CONF.processor eq 'intel';
+    push(@packages-base, 'intel-ucode') if $Holovault::CONF.processor eq 'intel';
 
     # download and install packages with pacman in chroot
-    run qw<pacstrap /mnt>, @packages-base;
+    run(qw<pacstrap /mnt>, @packages-base);
 }
 
 # secure user configuration
@@ -316,12 +317,12 @@ sub configure-users()
 {
     # updating root password...
     my Str:D $root-pass-digest = $Holovault::CONF.root-pass-digest;
-    run qqw<arch-chroot /mnt usermod -p $root-pass-digest root>;
+    run(qqw<arch-chroot /mnt usermod -p $root-pass-digest root>);
 
     # creating new user with password from secure password digest...
     my Str:D $user-name = $Holovault::CONF.user-name;
     my Str:D $user-pass-digest = $Holovault::CONF.user-pass-digest;
-    run qqw<
+    run(qqw<
         arch-chroot
         /mnt
         useradd
@@ -331,28 +332,28 @@ sub configure-users()
         -g users
         -G audio,games,log,lp,network,optical,power,scanner,storage,video,wheel
         $user-name
-    >;
+    >);
 
     my Str:D $sudoers = qq:to/EOF/;
     $user-name ALL=(ALL) ALL
     EOF
-    spurt '/mnt/etc/sudoers', $sudoers, :append;
+    spurt('/mnt/etc/sudoers', $sudoers, :append);
 }
 
 sub genfstab()
 {
-    shell 'genfstab -U -p /mnt >> /mnt/etc/fstab';
+    shell('genfstab -U -p /mnt >> /mnt/etc/fstab');
 }
 
 sub set-hostname()
 {
-    spurt '/mnt/etc/hostname', $Holovault::CONF.host-name;
+    spurt('/mnt/etc/hostname', $Holovault::CONF.host-name);
 }
 
 sub configure-dnscrypt-proxy()
 {
     # create user _dnscrypt
-    run qqw<
+    run(qqw<
         arch-chroot
         /mnt
         useradd
@@ -361,7 +362,7 @@ sub configure-dnscrypt-proxy()
         -g dnscrypt
         -s /bin/nologin
         _dnscrypt
-    >;
+    >);
 
     # User {{{
 
@@ -371,7 +372,7 @@ sub configure-dnscrypt-proxy()
         ~ q{,}
         ~ q{User _dnscrypt}
         ~ q{,};
-    shell "sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf";
+    shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
 
     # end User }}}
 
@@ -385,7 +386,7 @@ sub configure-dnscrypt-proxy()
         ~ q{,}
         ~ q{EphemeralKeys on}
         ~ q{,};
-    shell "sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf";
+    shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
 
     # end EphemeralKeys }}}
 }
@@ -405,7 +406,7 @@ sub set-nameservers()
     nameserver 8.8.8.8
     nameserver 8.8.4.4
     EOF
-    spurt '/mnt/etc/resolv.conf.head', $resolv-conf-head;
+    spurt('/mnt/etc/resolv.conf.head', $resolv-conf-head);
 }
 
 sub set-locale()
@@ -418,14 +419,14 @@ sub set-locale()
         ~ q{,}
         ~ q{\1}
         ~ q{,};
-    shell "sed -i '$sed-cmd' /mnt/etc/locale.gen";
-    run qw<arch-chroot /mnt locale-gen>;
+    shell("sed -i '$sed-cmd' /mnt/etc/locale.gen");
+    run(qw<arch-chroot /mnt locale-gen>);
 
     my Str:D $locale-conf = qq:to/EOF/;
     LANG=$locale.UTF-8
     LC_TIME=$locale.UTF-8
     EOF
-    spurt '/mnt/etc/locale.conf', $locale-conf;
+    spurt('/mnt/etc/locale.conf', $locale-conf);
 }
 
 sub set-keymap()
@@ -436,29 +437,29 @@ sub set-keymap()
     FONT=Lat2-Terminus16
     FONT_MAP=
     EOF
-    spurt '/mnt/etc/vconsole.conf', $vconsole;
+    spurt('/mnt/etc/vconsole.conf', $vconsole);
 }
 
 sub set-timezone()
 {
-    run qqw<
+    run(qqw<
         arch-chroot
         /mnt
         ln
         -s /usr/share/zoneinfo/{$Holovault::CONF.timezone}
         /etc/localtime
-    >;
+    >);
 }
 
 sub set-hwclock()
 {
-    run qw<arch-chroot /mnt hwclock --systohc --utc>;
+    run(qw<arch-chroot /mnt hwclock --systohc --utc>);
 }
 
 sub configure-tmpfiles()
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
-    run qw<arch-chroot /mnt systemctl mask tmp.mount>;
+    run(qw<arch-chroot /mnt systemctl mask tmp.mount>);
     my Str:D $tmp-conf = q:to/EOF/;
     # see tmpfiles.d(5)
     # always enable /tmp folder cleaning
@@ -473,25 +474,25 @@ sub configure-tmpfiles()
     X /tmp/systemd-private-*/tmp
     X /var/tmp/systemd-private-*/tmp
     EOF
-    spurt '/mnt/etc/tmpfiles.d/tmp.conf', $tmp-conf;
+    spurt('/mnt/etc/tmpfiles.d/tmp.conf', $tmp-conf);
 }
 
 sub configure-pacman()
 {
     my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
-    shell "sed -i '$sed-cmd' /mnt/etc/pacman.conf";
+    shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
 
     $sed-cmd = '';
 
     $sed-cmd = '/^CheckSpace.*/a ILoveCandy';
-    shell "sed -i '$sed-cmd' /mnt/etc/pacman.conf";
+    shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
 
     $sed-cmd = '';
 
     if $*KERNEL.bits == 64
     {
         $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
-        shell "sed -i '$sed-cmd' /mnt/etc/pacman.conf";
+        shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
     }
 }
 
@@ -506,7 +507,7 @@ sub configure-system-sleep()
     HibernateState=mem
     HybridSleepState=mem
     EOF
-    spurt '/mnt/etc/systemd/sleep.conf', $sleep-conf;
+    spurt('/mnt/etc/systemd/sleep.conf', $sleep-conf);
 }
 
 sub configure-modprobe()
@@ -523,7 +524,7 @@ sub configure-modprobe()
     blacklist mei
     blacklist mei-me
     EOF
-    spurt '/mnt/etc/modprobe.d/modprobe.conf', $modprobe-conf;
+    spurt('/mnt/etc/modprobe.d/modprobe.conf', $modprobe-conf);
 }
 
 sub generate-initramfs()
@@ -531,20 +532,22 @@ sub generate-initramfs()
     # MODULES {{{
 
     my Str:D @modules;
-    push @modules, $Holovault::CONF.processor eq 'INTEL'
-        ?? 'crc32c-intel'
-        !! 'crc32c';
-    push @modules, 'i915' if $Holovault::CONF.graphics eq 'INTEL';
-    push @modules, 'nouveau' if $Holovault::CONF.graphics eq 'NVIDIA';
-    push @modules, 'radeon' if $Holovault::CONF.graphics eq 'RADEON';
-    push @modules, |qw<lz4 lz4_compress>; # for systemd-swap lz4
+    push(
+        @modules,
+        $Holovault::CONF.processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c'
+    );
+    push(@modules, 'i915') if $Holovault::CONF.graphics eq 'INTEL';
+    push(@modules, 'nouveau') if $Holovault::CONF.graphics eq 'NVIDIA';
+    push(@modules, 'radeon') if $Holovault::CONF.graphics eq 'RADEON';
+    # for systemd-swap lz4
+    push(@modules, |qw<lz4 lz4_compress>);
     my Str:D $sed-cmd =
           q{s,}
         ~ q{^MODULES.*}
         ~ q{,}
         ~ q{MODULES=(} ~ @modules.join(' ') ~ q{)}
         ~ q{,};
-    shell "sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf";
+    shell("sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf");
 
     # end MODULES }}}
 
@@ -574,7 +577,7 @@ sub generate-initramfs()
         ~ q{,}
         ~ q{HOOKS=(} ~ @hooks.join(' ') ~ q{)}
         ~ q{,};
-    shell "sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf";
+    shell("sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf");
 
     # end HOOKS }}}
 
@@ -583,11 +586,11 @@ sub generate-initramfs()
     # FILES {{{
 
     $sed-cmd = 's,^FILES.*,FILES=(/etc/modprobe.d/modprobe.conf),';
-    run qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>;
+    run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
 
     # end FILES }}}
 
-    run qw<arch-chroot /mnt mkinitcpio -p linux>;
+    run(qw<arch-chroot /mnt mkinitcpio -p linux>);
 }
 
 sub configure-io-schedulers()
@@ -598,8 +601,8 @@ sub configure-io-schedulers()
     # set scheduler for rotating disks
     ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
     EOF
-    mkdir '/mnt/etc/udev/rules.d';
-    spurt '/mnt/etc/udev/rules.d/60-io-schedulers.rules', $io-schedulers;
+    mkdir('/mnt/etc/udev/rules.d');
+    spurt('/mnt/etc/udev/rules.d/60-io-schedulers.rules', $io-schedulers);
 }
 
 sub install-bootloader()
@@ -624,7 +627,7 @@ sub install-bootloader()
         ~ q{\1=\"} ~ $grub-cmdline-linux ~ q{\"}
         ~ q{,};
 
-    shell "sed -i '$sed-cmd' /mnt/etc/default/grub";
+    shell("sed -i '$sed-cmd' /mnt/etc/default/grub");
 
     # end GRUB_CMDLINE_LINUX }}}
 
@@ -633,7 +636,7 @@ sub install-bootloader()
     # GRUB_DEFAULT {{{
 
     $sed-cmd = 's,^\(GRUB_DEFAULT\)=.*,\1=saved,';
-    run qqw<sed -i $sed-cmd /mnt/etc/default/grub>;
+    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
 
     # end GRUB_DEFAULT }}}
 
@@ -642,7 +645,7 @@ sub install-bootloader()
     # GRUB_SAVEDEFAULT {{{
 
     $sed-cmd = 's,^#\(GRUB_SAVEDEFAULT\),\1,';
-    run qqw<sed -i $sed-cmd /mnt/etc/default/grub>;
+    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
 
     # end GRUB_SAVEDEFAULT }}}
 
@@ -651,36 +654,36 @@ sub install-bootloader()
     # GRUB_ENABLE_CRYPTODISK {{{
 
     $sed-cmd = 's,^#\(GRUB_ENABLE_CRYPTODISK\),\1,';
-    run qqw<sed -i $sed-cmd /mnt/etc/default/grub>;
+    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
 
     # end GRUB_ENABLE_CRYPTODISK }}}
 
     # GRUB_DISABLE_SUBMENU {{{
 
-    spurt '/mnt/etc/default/grub', 'GRUB_DISABLE_SUBMENU=y', :append;
+    spurt('/mnt/etc/default/grub', 'GRUB_DISABLE_SUBMENU=y', :append);
 
     # end GRUB_DISABLE_SUBMENU }}}
 
-    run qw<
+    run(qw<
         arch-chroot
         /mnt
         grub-install
         --target=i386-pc
         --recheck
-    >, $Holovault::CONF.partition;
-    run qw<
+    >, $Holovault::CONF.partition);
+    run(qw<
         arch-chroot
         /mnt
         cp
         /usr/share/locale/en@quot/LC_MESSAGES/grub.mo
         /boot/grub/locale/en.mo
-    >;
-    run qw<
+    >);
+    run(qw<
         arch-chroot
         /mnt
         grub-mkconfig
         -o /boot/grub/grub.cfg
-    >;
+    >);
 }
 
 sub configure-sysctl()
@@ -781,7 +784,7 @@ sub configure-sysctl()
     # Disable SysRq key to avoid console security issues.
     kernel.sysrq = 0
     EOF
-    spurt '/mnt/etc/sysctl.conf', $sysctl-conf;
+    spurt('/mnt/etc/sysctl.conf', $sysctl-conf);
 
     if $Holovault::CONF.disk-type eq 'SSD'
         || $Holovault::CONF.disk-type eq 'USB'
@@ -792,7 +795,7 @@ sub configure-sysctl()
             ~ q{,}
             ~ q{\1 = 50}
             ~ q{,};
-        shell "sed -i '$sed-cmd' /mnt/etc/sysctl.conf";
+        shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
 
         $sed-cmd = '';
 
@@ -802,10 +805,10 @@ sub configure-sysctl()
             ~ q{,}
             ~ q{\1 = 1}
             ~ q{,};
-        shell "sed -i '$sed-cmd' /mnt/etc/sysctl.conf";
+        shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
     }
 
-    run qw<arch-chroot /mnt sysctl -p>;
+    run(qw<arch-chroot /mnt sysctl -p>);
 }
 
 sub configure-hidepid()
@@ -820,12 +823,13 @@ sub configure-hidepid()
     proc                                      /proc       procfs      hidepid=2,gid=proc                                              0 0
     EOF
 
-    mkdir '/mnt/etc/systemd/system/systemd-logind.service.d';
-    spurt
+    mkdir('/mnt/etc/systemd/system/systemd-logind.service.d');
+    spurt(
         '/mnt/etc/systemd/system/systemd-logind.service.d/hidepid.conf',
-        $hidepid-conf;
+        $hidepid-conf
+    );
 
-    spurt '/mnt/etc/fstab', $fstab-hidepid, :append;
+    spurt('/mnt/etc/fstab', $fstab-hidepid, :append);
 }
 
 sub configure-securetty()
@@ -848,7 +852,7 @@ sub configure-securetty()
 
     # End of file
     EOF
-    spurt '/mnt/etc/securetty', $securetty;
+    spurt('/mnt/etc/securetty', $securetty);
 
     my Str:D $shell-timeout = q:to/EOF/;
     TMOUT="$(( 60*10 ))";
@@ -857,7 +861,7 @@ sub configure-securetty()
       /dev/tty[0-9]*) export TMOUT;;
     esac
     EOF
-    spurt '/mnt/etc/profile.d/shell-timeout.sh', $shell-timeout;
+    spurt('/mnt/etc/profile.d/shell-timeout.sh', $shell-timeout);
 }
 
 sub configure-iptables()
@@ -894,20 +898,20 @@ sub configure-iptables()
     -A FORWARD -j REJECT
     COMMIT
     EOF
-    spurt 'iptables.test.rules', $iptables-test-rules;
+    spurt('iptables.test.rules', $iptables-test-rules);
 
-    shell 'iptables-save > /mnt/etc/iptables/iptables.up.rules';
-    shell 'iptables-restore < iptables.test.rules';
-    shell 'iptables-save > /mnt/etc/iptables/iptables.rules';
+    shell('iptables-save > /mnt/etc/iptables/iptables.up.rules');
+    shell('iptables-restore < iptables.test.rules');
+    shell('iptables-save > /mnt/etc/iptables/iptables.rules');
 }
 
 sub enable-systemd-services()
 {
-    run qw<arch-chroot /mnt systemctl enable cronie>;
-    run qw<arch-chroot /mnt systemctl enable dnscrypt-proxy>;
-    run qw<arch-chroot /mnt systemctl enable haveged>;
-    run qw<arch-chroot /mnt systemctl enable iptables>;
-    run qw<arch-chroot /mnt systemctl enable systemd-swap>;
+    run(qw<arch-chroot /mnt systemctl enable cronie>);
+    run(qw<arch-chroot /mnt systemctl enable dnscrypt-proxy>);
+    run(qw<arch-chroot /mnt systemctl enable haveged>);
+    run(qw<arch-chroot /mnt systemctl enable iptables>);
+    run(qw<arch-chroot /mnt systemctl enable systemd-swap>);
 }
 
 sub disable-btrfs-cow()
@@ -929,29 +933,29 @@ sub chattrify(
 
     my Str:D $backup-dir = $orig-dir ~ '-old';
 
-    rename $orig-dir, $backup-dir;
-    mkdir $orig-dir;
-    chmod $permissions, $orig-dir;
-    run qqw<chattr +C $orig-dir>;
+    rename($orig-dir, $backup-dir);
+    mkdir($orig-dir);
+    chmod($permissions, $orig-dir);
+    run(qqw<chattr +C $orig-dir>);
     dir($backup-dir).race.map(-> $file {
-        run qqw<cp -dpr --no-preserve=ownership $file $orig-dir>
+        run(qqw<cp -dpr --no-preserve=ownership $file $orig-dir>)
     });
-    run qqw<chown -R $user:$group $orig-dir>;
-    run qqw<rm -rf $backup-dir>;
+    run(qqw<chown -R $user:$group $orig-dir>);
+    run(qqw<rm -rf $backup-dir>);
 }
 
 # interactive console
 sub augment()
 {
     # launch fully interactive Bash console, type 'exit' to exit
-    shell 'expect -c "spawn /bin/bash; interact"';
+    shell('expect -c "spawn /bin/bash; interact"');
 }
 
 sub unmount()
 {
-    shell 'umount /mnt/{boot,home,opt,srv,tmp,usr,var,}';
+    shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
     my Str:D $vault-name = $Holovault::CONF.vault-name;
-    run qqw<cryptsetup luksClose $vault-name>;
+    run(qqw<cryptsetup luksClose $vault-name>);
 }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:

@@ -40,7 +40,7 @@ has HostName:D $.host-name =
                      !! prompt-name(:host);
 
 # device path of target partition (default: /dev/sdb)
-has Str:D $.partition = %*ENV<PARTITION> || self!prompt-partition;
+has Str:D $.partition = %*ENV<PARTITION> || self!prompt-partition();
 
 # type of processor (default: other)
 has Processor:D $.processor =
@@ -75,7 +75,7 @@ has Timezone:D $.timezone =
 # directory in which to search for holograms requested
 has IO::Path:D $.holograms-dir =
     %*ENV<HOLOGRAMS_DIR> ?? self.gen-holograms-dir-handle(%*ENV<HOLOGRAMS_DIR>)
-                         !! self!resolve-holograms-dir;
+                         !! self!resolve-holograms-dir();
 
 # holograms requested
 has PkgName:D @.holograms =
@@ -99,13 +99,13 @@ method gen-digest(Str:D $password --> Str:D)
 # confirm disk type $d is valid DiskType and return DiskType
 method gen-disk-type(Str:D $d --> DiskType:D)
 {
-    my DiskType:D $disk-type = $d or die "Sorry, invalid disk type";
+    my DiskType:D $disk-type = $d or die 'Sorry, invalid disk type';
 }
 
 # confirm graphics card type $g is valid Graphics and return Graphics
 method gen-graphics(Str:D $g --> Graphics:D)
 {
-    my Graphics:D $graphics = $g or die "Sorry, invalid graphics card type";
+    my Graphics:D $graphics = $g or die 'Sorry, invalid graphics card type';
 }
 
 # split holograms space separated into array of PkgNames and return array
@@ -170,14 +170,14 @@ method gen-vault-name(Str:D $v --> VaultName:D)
 method gen-vault-pass(Str:D $v --> VaultPass:D)
 {
     my VaultPass:D $vault-pass = $v
-        or die "Sorry, invalid vault pass."
-            ~ " Length needed: 1-512. Length given: {$v.chars}";
+        or die 'Sorry, invalid vault pass. Length needed: 1-512. '
+             ~ 'Length given: ' ~ $v.chars;
 }
 
 # does directory exist and is directory readable?
 sub is-permissible(Str:D $directory --> Bool:D)
 {
-    $directory.IO.d && $directory.IO.r;
+    $directory.IO.e && $directory.IO.d && $directory.IO.r;
 }
 
 # resolve holograms dir
@@ -215,15 +215,21 @@ method !resolve-holograms-dir(--> IO::Path)
 
 # dialog menu user input prompt with tags (keys) only
 multi sub dprompt(
-    ::T, # type of response expected
-    @menu, # menu (T $tag)
-    T :$default-item! where *.defined, # default response
-    Str:D :$title!, # menu title
-    Str:D :$prompt-text!, # question posed to user
+    # type of response expected
+    ::T,
+    # menu (T $tag)
+    @menu,
+    # default response
+    T :$default-item! where *.defined,
+    # menu title
+    Str:D :$title!,
+    # question posed to user
+    Str:D :$prompt-text!,
     UInt:D :$height = 80,
     UInt:D :$width = 80,
     UInt:D :$menu-height = 24,
-    Str:D :$confirm-topic! # context string for confirm text
+    # context string for confirm text
+    Str:D :$confirm-topic!
     --> Any:D
 )
 {
@@ -260,15 +266,21 @@ multi sub dprompt(
 
 # dialog menu user input prompt with tags (keys) and items (values)
 multi sub dprompt(
-    ::T, # type of response expected
-    %menu, # menu (T $tag => Str $item)
-    T :$default-item! where *.defined, # default response
-    Str:D :$title!, # menu title
-    Str:D :$prompt-text!, # question posed to user
+    # type of response expected
+    ::T,
+    # menu (T $tag => Str $item)
+    %menu,
+    # default response
+    T :$default-item! where *.defined,
+    # menu title
+    Str:D :$title!,
+    # question posed to user
+    Str:D :$prompt-text!,
     UInt:D :$height = 80,
     UInt:D :$width = 80,
     UInt:D :$menu-height = 24,
-    Str:D :$confirm-topic! # context string for confirm text
+    # context string for confirm text
+    Str:D :$confirm-topic!
     --> Any:D
 )
 {
@@ -304,10 +316,14 @@ multi sub dprompt(
 
 # user input prompt (text)
 sub tprompt(
-    ::T, # type of response expected
-    T $response-default where *.defined, # default response
-    Str:D :$prompt-text!, # question posed to user
-    Str :$help-text # optional help text to display before prompt
+    # type of response expected
+    ::T,
+    # default response
+    T $response-default where *.defined,
+    # question posed to user
+    Str:D :$prompt-text!,
+    # optional help text to display before prompt
+    Str :$help-text
     --> Any:D
 )
 {
@@ -336,10 +352,10 @@ sub tprompt(
     loop
     {
         # display help text (optional)
-        say $help-text if $help-text;
+        say($help-text) if $help-text;
 
         # prompt for response
-        $response = prompt $prompt-text;
+        $response = prompt($prompt-text);
 
         # if empty carriage return entered, use default response value
         unless $response
@@ -350,13 +366,13 @@ sub tprompt(
         # retry if response is invalid
         unless $response ~~ T
         {
-            say 'Sorry, invalid response. Please try again.';
+            say('Sorry, invalid response. Please try again.');
             next;
         }
 
         # prompt for confirmation
         my Str:D $confirmation =
-            prompt "Confirm «{$response.split(/\s+/).join(', ')}» [y/N]: ";
+            prompt("Confirm «{$response.split(/\s+/).join(', ')}» [y/N]: ");
         last if is-confirmed($confirmation);
     }
 
@@ -400,13 +416,13 @@ sub prompt-graphics(--> Graphics:D)
 sub prompt-holograms()
 {
     # default response
-    my Str:D $response-default = "";
+    my Str:D $response-default = '';
 
     # prompt text
-    my Str:D $prompt-text = "Holograms (optional): ";
+    my Str:D $prompt-text = 'Holograms (optional): ';
 
     # help text
-    my Str:D $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/.trim;
     Determining holograms requested...
 
     Enter pkgname of holograms, space-separated, e.g. hologram-simple
@@ -414,7 +430,6 @@ sub prompt-holograms()
 
     Leave blank if you don't want any or don't know what this is
     EOF
-    $help-text .= trim;
 
     my PkgName:D @holograms;
     loop
@@ -428,7 +443,7 @@ sub prompt-holograms()
         ).split(/\s+/).unique;
 
         # don't return anything if user input carriage return
-        last if @h[0] ~~ "";
+        last if @h[0] ~~ '';
 
         # were all holograms input valid pkgnames (hologram names)?
         if @h.grep(PkgName:D).elems == @h.elems
@@ -441,14 +456,14 @@ sub prompt-holograms()
         {
             # display non-fatal error message and loop
             my Str:D @invalid-hologram-names = (@h (-) @h.grep(PkgName:D)).keys;
-            my Str:D $msg = qq:to/EOF/;
+            my Str:D $msg = qq:to/EOF/.trim;
             Sorry, invalid hologram name(s) given:
 
             {@invalid-hologram-names.join(', ')}
 
             Please try again.
             EOF
-            say $msg.trim;
+            say($msg);
         }
     }
 
@@ -493,18 +508,17 @@ sub prompt-locale(--> Locale:D)
 multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
 {
     # default response
-    my HostName:D $response-default = "vault";
+    my HostName:D $response-default = 'vault';
 
     # prompt text
-    my Str:D $prompt-text = "Enter hostname [vault]: ";
+    my Str:D $prompt-text = 'Enter hostname [vault]: ';
 
     # help text
-    my Str:D $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/.trim;
     Determining hostname...
 
     Leave blank if you don't know what this is
     EOF
-    $help-text .= trim;
 
     # prompt user
     my HostName:D $host-name = tprompt(
@@ -518,18 +532,17 @@ multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
 multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
 {
     # default response
-    my UserName:D $response-default = "live";
+    my UserName:D $response-default = 'live';
 
     # prompt text
-    my Str:D $prompt-text = "Enter username [live]: ";
+    my Str:D $prompt-text = 'Enter username [live]: ';
 
     # help text
-    my Str:D $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/.trim;
     Determining username...
 
     Leave blank if you don't know what this is
     EOF
-    $help-text .= trim;
 
     # prompt user
     my UserName:D $user-name = tprompt(
@@ -543,18 +556,17 @@ multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
 multi sub prompt-name(Bool:D :$vault! where *.so --> VaultName:D)
 {
     # default response
-    my VaultName:D $response-default = "vault";
+    my VaultName:D $response-default = 'vault';
 
     # prompt text
-    my Str:D $prompt-text = "Enter vault name [vault]: ";
+    my Str:D $prompt-text = 'Enter vault name [vault]: ';
 
     # help text
-    my Str:D $help-text = q:to/EOF/;
+    my Str:D $help-text = q:to/EOF/.trim;
     Determining name of LUKS encrypted volume...
 
     Leave blank if you don't know what this is
     EOF
-    $help-text .= trim;
 
     # prompt user
     my VaultName:D $vault-name = tprompt(
@@ -569,7 +581,7 @@ method !prompt-partition(--> Str:D)
 {
     # get list of partitions
     my Str:D @partitions =
-        self.ls-partitions».subst(/(.*)/, -> $/ { "/dev/$0" });
+        self.ls-partitions()».subst(/(.*)/, -> $/ { "/dev/$0" });
 
     my Str:D $default-item = '/dev/sdb';
     my Str:D $prompt-text = 'Select partition for installing Arch:';
@@ -592,7 +604,7 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
     # sha512 digest of empty password, for verifying passwords aren't blank
     my Str:D $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
 
-    # for "Enter Root / User Password" input prompts
+    # for 'Enter Root / User Password' input prompts
     my Str:D $subject = $root ?? 'Root' !! 'User';
 
     # store sha512 digest of password
@@ -602,19 +614,21 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
     loop
     {
         # reading secure password digest into memory...
-        print "Enter $subject "; # Enter Root / User Password
+        # "Enter Root / User Password"
+        print("Enter $subject ");
         $pass-digest = qx{openssl passwd -1 -salt sha512}.trim;
 
         # verifying secure password digest is not empty...
         if $pass-digest eqv $blank-pass-digest
         {
             # password is empty, try again
-            say "$subject password cannot be blank. Please try again";
+            say("$subject password cannot be blank. Please try again");
             next;
         }
 
         # verifying secure password digest...
-        print "Retype $subject "; # Retype Root / User Password
+        # "Retype Root / User Password"
+        print("Retype $subject ");
         my Str:D $pass-digest-confirm = qx{openssl passwd -1 -salt sha512}.trim;
         if $pass-digest eqv $pass-digest-confirm
         {
@@ -623,7 +637,7 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
         else
         {
             # password not verified, try again
-            say "Please try again";
+            say('Please try again');
             next;
         }
     }
@@ -720,7 +734,7 @@ method ls-holograms(Str :$holograms-dir)
         # otherwise use resolve holograms dir with default methodology
         $dir = %*ENV<HOLOGRAMS_DIR>
             ?? self.gen-holograms-dir-handle(%*ENV<HOLOGRAMS_DIR>).Str
-            !! self!resolve-holograms-dir.Str;
+            !! self!resolve-holograms-dir().Str;
     }
 
     # if clause because holograms dir may not resolve to anything
@@ -774,7 +788,7 @@ method ls-timezones(--> Array[Timezone:D])
     my Timezone:D @timezones = qx«
         sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
     ».trim.split("\n").sort;
-    push @timezones, "UTC";
+    push(@timezones, 'UTC');
 }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:
