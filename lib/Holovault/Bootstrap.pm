@@ -250,7 +250,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
 sub mkbootpart(Str:D :$partition = $Holovault::CONF.partition)
 {
     # target partition for boot
-    my Str:D $partition-boot = $partition ~ 2;
+    my Str:D $partition-boot = $partition ~ '2';
 
     # create ext2 boot partition
     run(qqw<mkfs.ext2 $partition-boot>);
