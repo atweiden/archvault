@@ -229,7 +229,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
 
     # mount btrfs subvolumes, starting with root / ('')
     my Str:D @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
-    for @btrfs-dirs -> $btrfs-dir
+    @btrfs-dirs.map(-> $btrfs-dir
     {
         mkdir("/mnt/$btrfs-dir");
         run(qqw<
@@ -239,7 +239,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
             /dev/mapper/$vault-name
             /mnt/$btrfs-dir
         >);
-    }
+    });
 
     # unmount /mnt2 and remove
     run(qw<umount /mnt2>);
