@@ -1,6 +1,6 @@
 use v6;
-use Holovault::Types;
-unit class Holovault::Config;
+use Archvault::Types;
+unit class Archvault::Config;
 
 # -----------------------------------------------------------------------------
 # settings
@@ -72,16 +72,6 @@ has Timezone:D $.timezone is required =
     %*ENV<TIMEZONE> ?? self.gen-timezone(%*ENV<TIMEZONE>)
                     !! prompt-timezone();
 
-# directory in which to search for holograms requested
-has IO::Path:D $.holograms-dir is required =
-    %*ENV<HOLOGRAMS_DIR> ?? self.gen-holograms-dir-handle(%*ENV<HOLOGRAMS_DIR>)
-                         !! self!resolve-holograms-dir();
-
-# holograms requested
-has PkgName:D @.holograms is required =
-    %*ENV<HOLOGRAMS> ?? self.gen-holograms(%*ENV<HOLOGRAMS>)
-                     !! prompt-holograms();
-
 # augment
 has Bool:D $.augment is required = ?%*ENV<AUGMENT>;
 
@@ -106,22 +96,6 @@ method gen-disk-type(Str:D $d --> DiskType:D)
 method gen-graphics(Str:D $g --> Graphics:D)
 {
     my Graphics:D $graphics = $g or die 'Sorry, invalid graphics card type';
-}
-
-# split holograms space separated into array of PkgNames and return array
-method gen-holograms(Str:D $holograms --> Array[PkgName:D])
-{
-    my PkgName:D @holograms = $holograms.split(/\s+/).unique;
-}
-
-# confirm directory $directory exists and is readable, and return IO::Path
-method gen-holograms-dir-handle(Str:D $directory --> IO::Path:D)
-{
-    unless is-permissible($directory)
-    {
-        die "Sorry, directory 「$directory」 does not exist or is unreadable.";
-    }
-    my IO::Path:D $dir-handle = $directory.IO;
 }
 
 # confirm hostname $h is valid HostName and return HostName
@@ -172,40 +146,6 @@ method gen-vault-pass(Str:D $v --> VaultPass:D)
     my VaultPass:D $vault-pass = $v
         or die 'Sorry, invalid vault pass. Length needed: 1-512. '
              ~ 'Length given: ' ~ $v.chars;
-}
-
-# does directory exist and is directory readable?
-sub is-permissible(Str:D $directory --> Bool:D)
-{
-    $directory.IO.e && $directory.IO.d && $directory.IO.r;
-}
-
-# resolve holograms dir
-# does not need to return a defined IO::Path since holograms are optional
-method !resolve-holograms-dir(--> IO::Path)
-{
-    my IO::Path $dir-handle;
-
-    # is $PWD/holograms readable?
-    if is-permissible('holograms')
-    {
-        # set dir handle to $PWD/holograms
-        $dir-handle = 'holograms'.IO;
-    }
-    # is $HOME/.holograms readable?
-    elsif is-permissible("%*ENV<HOME>/.holograms")
-    {
-        # set dir handle to $HOME/.holograms
-        $dir-handle = "%*ENV<HOME>/.holograms".IO;
-    }
-    # is /etc/holograms readable?
-    elsif is-permissible('/etc/holograms')
-    {
-        # set dir handle to /etc/holograms
-        $dir-handle = '/etc/holograms'.IO;
-    }
-
-    $dir-handle;
 }
 
 
@@ -394,7 +334,7 @@ sub prompt-disk-type(--> DiskType:D)
 
     my DiskType:D $disk-type = dprompt(
         DiskType,
-        %Holovault::Types::disktypes,
+        %Archvault::Types::disktypes,
         :$default-item,
         :$prompt-text,
         :$title,
@@ -411,70 +351,12 @@ sub prompt-graphics(--> Graphics:D)
 
     my Graphics:D $graphics = dprompt(
         Graphics,
-        %Holovault::Types::graphics,
+        %Archvault::Types::graphics,
         :$default-item,
         :$prompt-text,
         :$title,
         :$confirm-topic
     );
-}
-
-sub prompt-holograms()
-{
-    # default response
-    my Str:D $response-default = '';
-
-    # prompt text
-    my Str:D $prompt-text = 'Holograms (optional): ';
-
-    # help text
-    my Str:D $help-text = q:to/EOF/.trim;
-    Determining holograms requested...
-
-    Enter pkgname of holograms, space-separated, e.g. hologram-simple
-    or configure-ovpn
-
-    Leave blank if you don't want any or don't know what this is
-    EOF
-
-    my PkgName:D @holograms;
-    loop
-    {
-        # prompt user
-        my Str:D @h = tprompt(
-            Str,
-            $response-default,
-            :$prompt-text,
-            :$help-text
-        ).split(/\s+/).unique;
-
-        # don't return anything if user input carriage return
-        last if @h[0] ~~ '';
-
-        # were all holograms input valid pkgnames (hologram names)?
-        if @h.grep(PkgName:D).elems == @h.elems
-        {
-            @holograms = @h;
-            last;
-        }
-        # user must've input at least one invalid hologram name
-        else
-        {
-            # display non-fatal error message and loop
-            my Str:D @invalid-hologram-names = (@h (-) @h.grep(PkgName:D)).keys;
-            my Str:D $msg = qq:to/EOF/.trim;
-            Sorry, invalid hologram name(s) given:
-
-            {@invalid-hologram-names.join(', ')}
-
-            Please try again.
-            EOF
-            say($msg);
-        }
-    }
-
-    # optionally return holograms if user input valid holograms
-    @holograms if @holograms;
 }
 
 sub prompt-keymap(--> Keymap:D)
@@ -486,7 +368,7 @@ sub prompt-keymap(--> Keymap:D)
 
     my Keymap:D $keymap = dprompt(
         Keymap,
-        %Holovault::Types::keymaps,
+        %Archvault::Types::keymaps,
         :$default-item,
         :$prompt-text,
         :$title,
@@ -503,7 +385,7 @@ sub prompt-locale(--> Locale:D)
 
     my Locale:D $locale = dprompt(
         Locale,
-        %Holovault::Types::locales,
+        %Archvault::Types::locales,
         :$default-item,
         :$prompt-text,
         :$title,
@@ -660,7 +542,7 @@ sub prompt-processor(--> Processor:D)
 
     my Processor:D $processor = dprompt(
         Processor,
-        %Holovault::Types::processors,
+        %Archvault::Types::processors,
         :$default-item,
         :$prompt-text,
         :$title,
@@ -671,7 +553,7 @@ sub prompt-processor(--> Processor:D)
 sub prompt-timezone(--> Timezone:D)
 {
     # get list of timezones
-    my Timezone:D @timezones = @Holovault::Types::timezones;
+    my Timezone:D @timezones = @Archvault::Types::timezones;
 
     # get list of timezone regions
     my Str:D @regions = @timezones».subst(/'/'\N*$/, '').unique;
@@ -721,35 +603,6 @@ sub prompt-timezone(--> Timezone:D)
 # -----------------------------------------------------------------------------
 # utilities
 # -----------------------------------------------------------------------------
-
-# list holograms
-method ls-holograms(Str :$holograms-dir)
-{
-    my Str $dir;
-    if $holograms-dir
-    {
-        # if holograms-dir option passed, make sure it's readable
-        # if so, use it
-        $dir = self.gen-holograms-dir-handle($holograms-dir).Str;
-    }
-    else
-    {
-        # if HOLOGRAMS_DIR env is set, make sure it's readable
-        # otherwise use resolve holograms dir with default methodology
-        $dir = %*ENV<HOLOGRAMS_DIR>
-            ?? self.gen-holograms-dir-handle(%*ENV<HOLOGRAMS_DIR>).Str
-            !! self!resolve-holograms-dir().Str;
-    }
-
-    # if clause because holograms dir may not resolve to anything
-    my Str:D @holograms-found;
-    @holograms-found = qqx{
-        find $dir -mindepth 1 -maxdepth 1 -type d | sed 's!^./!!'
-    }.trim.split("\n").sort if $dir;
-
-    # return holograms only if found readable dir not empty
-    @holograms-found if @holograms-found[0];
-}
 
 # list keymaps
 method ls-keymaps(--> Array[Keymap:D])

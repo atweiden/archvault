@@ -1,15 +1,14 @@
-Holovault
+Archvault
 =========
 
-Holo-provisioned Arch with FDE
+Bootstrap Arch with FDE
 
 
 Usage
 -----
 
 ```bash
-holovault --holograms="skreltoi amnesia"        \
-          --username="live"                     \
+archvault --username="live"                     \
           --userpass="your new user's password" \
           --rootpass="your root password"       \
           --vaultname="luckbox"                 \
@@ -45,7 +44,7 @@ kbd                  | keymap data in `/usr/share/kbd/keymaps`         | Y
 kmod                 | `modprobe`                                      | Y
 openssl              | user password salts                             | Y
 pacman               | `makepkg`, `pacman`                             | Y
-rakudo               | `holovault` Perl6 runtime                       | N
+rakudo               | `archvault` Perl6 runtime                       | N
 reflector            | https-only mirrors                              | N
 sed                  | `sed`                                           | Y
 tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab` | Y

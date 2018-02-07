@@ -1,6 +1,6 @@
 use v6;
-use Holovault::Grammar;
-unit class Holovault::Types;
+use Archvault::Grammar;
+unit class Archvault::Types;
 
 # -----------------------------------------------------------------------------
 # constants
@@ -1055,7 +1055,7 @@ subset Graphics of Str is export where { %graphics.keys.grep($_) };
 # hostname (machine name)
 subset HostName of Str is export where
 {
-    Holovault::Grammar.parse($_, :rule<host-name>);
+    Archvault::Grammar.parse($_, :rule<host-name>);
 }
 
 # keymap
@@ -1063,12 +1063,6 @@ subset Keymap of Str is export where { %keymaps.keys.grep($_) };
 
 # locale
 subset Locale of Str is export where { %locales.keys.grep($_) };
-
-# pkgname (hologram name)
-subset PkgName of Str is export where
-{
-    Holovault::Grammar.parse($_, :rule<pkg-name>);
-}
 
 # processor
 subset Processor of Str is export where { %processors.keys.grep($_) };
@@ -1079,13 +1073,13 @@ subset Timezone of Str is export where { @timezones.grep($_) };
 # linux username
 subset UserName of Str is export where
 {
-    Holovault::Grammar.parse($_, :rule<user-name>);
+    Archvault::Grammar.parse($_, :rule<user-name>);
 }
 
 # LUKS encrypted volume device mapper name
 subset VaultName of Str is export where
 {
-    Holovault::Grammar.parse($_, :rule<vault-name>);
+    Archvault::Grammar.parse($_, :rule<vault-name>);
 }
 
 # LUKS encrypted volume password must be 1-512 characters

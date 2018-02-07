@@ -1,5 +1,5 @@
 use v6;
-use Holovault::Grammar;
+use Archvault::Grammar;
 
 # test user name validation
 

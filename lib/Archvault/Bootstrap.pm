@@ -1,5 +1,5 @@
 use v6;
-unit module Holovault::Bootstrap;
+unit module Archvault::Bootstrap;
 
 sub bootstrap() is export
 {
@@ -28,7 +28,7 @@ sub bootstrap() is export
     configure-iptables();
     enable-systemd-services();
     disable-btrfs-cow();
-    augment() if $Holovault::CONF.augment;
+    augment() if $Archvault::CONF.augment;
     unmount();
 }
 
@@ -85,7 +85,7 @@ sub mkdisk()
 }
 
 # partition disk with gdisk
-sub sgdisk(Str:D :$partition = $Holovault::CONF.partition)
+sub sgdisk(Str:D :$partition = $Archvault::CONF.partition)
 {
     # erase existing partition table
     # create 2MB EF02 BIOS boot sector
@@ -107,9 +107,9 @@ sub sgdisk(Str:D :$partition = $Holovault::CONF.partition)
 
 # create vault with cryptsetup
 sub mkvault(
-    Str:D :$partition = $Holovault::CONF.partition,
-    Str:D :$vault-name = $Holovault::CONF.vault-name,
-    Str :$vault-pass = $Holovault::CONF.vault-pass
+    Str:D :$partition = $Archvault::CONF.partition,
+    Str:D :$vault-name = $Archvault::CONF.vault-name,
+    Str :$vault-pass = $Archvault::CONF.vault-pass
 )
 {
     # target partition for vault
@@ -253,14 +253,14 @@ sub loop-cryptsetup-cmdline-proc(Str:D $message, Str:D $cryptsetup-cmdline)
 }
 
 # create and mount btrfs volumes on open vault
-sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
+sub mkbtrfs(Str:D :$vault-name = $Archvault::CONF.vault-name)
 {
     # create btrfs filesystem on opened vault
     run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
 
     # set mount options
     my Str:D $mount-options = 'rw,lazytime,compress=zstd,space_cache';
-    $mount-options ~= ',ssd' if $Holovault::CONF.disk-type eq 'SSD';
+    $mount-options ~= ',ssd' if $Archvault::CONF.disk-type eq 'SSD';
 
     # mount main btrfs filesystem on open vault
     mkdir('/mnt2');
@@ -303,7 +303,7 @@ sub mkbtrfs(Str:D :$vault-name = $Holovault::CONF.vault-name)
 }
 
 # create and mount boot partition
-sub mkbootpart(Str:D :$partition = $Holovault::CONF.partition)
+sub mkbootpart(Str:D :$partition = $Archvault::CONF.partition)
 {
     # target partition for boot
     my Str:D $partition-boot = $partition ~ '2';
@@ -362,7 +362,7 @@ sub pacstrap-base()
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
-    push(@packages-base, 'intel-ucode') if $Holovault::CONF.processor eq 'intel';
+    push(@packages-base, 'intel-ucode') if $Archvault::CONF.processor eq 'intel';
 
     # download and install packages with pacman in chroot
     run(qw<pacstrap /mnt>, @packages-base);
@@ -372,12 +372,12 @@ sub pacstrap-base()
 sub configure-users()
 {
     # updating root password...
-    my Str:D $root-pass-digest = $Holovault::CONF.root-pass-digest;
+    my Str:D $root-pass-digest = $Archvault::CONF.root-pass-digest;
     run(qqw<arch-chroot /mnt usermod -p $root-pass-digest root>);
 
     # creating new user with password from secure password digest...
-    my Str:D $user-name = $Holovault::CONF.user-name;
-    my Str:D $user-pass-digest = $Holovault::CONF.user-pass-digest;
+    my Str:D $user-name = $Archvault::CONF.user-name;
+    my Str:D $user-pass-digest = $Archvault::CONF.user-pass-digest;
     run(qqw<
         arch-chroot
         /mnt
@@ -403,7 +403,7 @@ sub genfstab()
 
 sub set-hostname()
 {
-    spurt('/mnt/etc/hostname', $Holovault::CONF.host-name);
+    spurt('/mnt/etc/hostname', $Archvault::CONF.host-name);
 }
 
 sub configure-dnscrypt-proxy()
@@ -467,7 +467,7 @@ sub set-nameservers()
 
 sub set-locale()
 {
-    my Str:D $locale = $Holovault::CONF.locale;
+    my Str:D $locale = $Archvault::CONF.locale;
 
     my Str:D $sed-cmd =
           q{s,}
@@ -487,7 +487,7 @@ sub set-locale()
 
 sub set-keymap()
 {
-    my Str:D $keymap = $Holovault::CONF.keymap;
+    my Str:D $keymap = $Archvault::CONF.keymap;
     my Str:D $vconsole = qq:to/EOF/;
     KEYMAP=$keymap
     FONT=Lat2-Terminus16
@@ -502,7 +502,7 @@ sub set-timezone()
         arch-chroot
         /mnt
         ln
-        -s /usr/share/zoneinfo/{$Holovault::CONF.timezone}
+        -s /usr/share/zoneinfo/{$Archvault::CONF.timezone}
         /etc/localtime
     >);
 }
@@ -590,11 +590,11 @@ sub generate-initramfs()
     my Str:D @modules;
     push(
         @modules,
-        $Holovault::CONF.processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c'
+        $Archvault::CONF.processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c'
     );
-    push(@modules, 'i915') if $Holovault::CONF.graphics eq 'INTEL';
-    push(@modules, 'nouveau') if $Holovault::CONF.graphics eq 'NVIDIA';
-    push(@modules, 'radeon') if $Holovault::CONF.graphics eq 'RADEON';
+    push(@modules, 'i915') if $Archvault::CONF.graphics eq 'INTEL';
+    push(@modules, 'nouveau') if $Archvault::CONF.graphics eq 'NVIDIA';
+    push(@modules, 'radeon') if $Archvault::CONF.graphics eq 'RADEON';
     # for systemd-swap lz4
     push(@modules, |qw<lz4 lz4_compress>);
     my Str:D $sed-cmd =
@@ -624,7 +624,7 @@ sub generate-initramfs()
         shutdown
         usr
     >;
-    $Holovault::CONF.disk-type eq 'USB'
+    $Archvault::CONF.disk-type eq 'USB'
         ?? @hooks.splice(2, 0, 'block')
         !! @hooks.splice(4, 0, 'block');
     $sed-cmd =
@@ -665,16 +665,16 @@ sub install-bootloader()
 {
     # GRUB_CMDLINE_LINUX {{{
 
-    my Str:D $vault-name = $Holovault::CONF.vault-name;
+    my Str:D $vault-name = $Archvault::CONF.vault-name;
     my Str:D $vault-uuid = qqx<
-        blkid -s UUID -o value {$Holovault::CONF.partition}3
+        blkid -s UUID -o value {$Archvault::CONF.partition}3
     >.trim;
 
     my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
             ~ ' rootflags=subvol=@';
     $grub-cmdline-linux ~= ' radeon.dpm=1'
-        if $Holovault::CONF.graphics eq 'RADEON';
+        if $Archvault::CONF.graphics eq 'RADEON';
 
     my Str:D $sed-cmd =
           q{s,}
@@ -726,7 +726,7 @@ sub install-bootloader()
         grub-install
         --target=i386-pc
         --recheck
-    >, $Holovault::CONF.partition);
+    >, $Archvault::CONF.partition);
     run(qw<
         arch-chroot
         /mnt
@@ -842,8 +842,8 @@ sub configure-sysctl()
     EOF
     spurt('/mnt/etc/sysctl.conf', $sysctl-conf);
 
-    if $Holovault::CONF.disk-type eq 'SSD'
-        || $Holovault::CONF.disk-type eq 'USB'
+    if $Archvault::CONF.disk-type eq 'SSD'
+        || $Archvault::CONF.disk-type eq 'USB'
     {
         my Str:D $sed-cmd =
               q{s,}
@@ -1010,7 +1010,7 @@ sub augment()
 sub unmount()
 {
     shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
-    my Str:D $vault-name = $Holovault::CONF.vault-name;
+    my Str:D $vault-name = $Archvault::CONF.vault-name;
     run(qqw<cryptsetup luksClose $vault-name>);
 }
 
