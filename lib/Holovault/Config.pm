@@ -329,26 +329,6 @@ sub tprompt(
 {
     my $response;
 
-    # check for affirmative confirmation
-    sub is-confirmed(Str:D $confirmation --> Bool:D)
-    {
-        # was response negatory or empty?
-        if $confirmation ~~ /:i n[o]?/ or $confirmation.chars == 0
-        {
-            False;
-        }
-        # was response affirmative?
-        elsif $confirmation ~~ /:i y[e[s]?]?/
-        {
-            True;
-        }
-        # were unrecognized characters entered?
-        else
-        {
-            False;
-        }
-    }
-
     loop
     {
         # display help text (optional)
@@ -373,10 +353,36 @@ sub tprompt(
         # prompt for confirmation
         my Str:D $confirmation =
             prompt("Confirm «{$response.split(/\s+/).join(', ')}» [y/N]: ");
+
+        # check for affirmative confirmation
         last if is-confirmed($confirmation);
     }
 
     $response;
+}
+
+# was response affirmative?
+multi sub is-confirmed(Str:D $confirmation where /:i y[e[s]?]?/ --> Bool:D)
+{
+    my Bool:D $is-confirmed = True;
+}
+
+# was response negatory?
+multi sub is-confirmed(Str:D $confirmation where /:i n[o]?/ --> Bool:D)
+{
+    my Bool:D $is-confirmed = False;
+}
+
+# was response empty?
+multi sub is-confirmed(Str:D $confirmation where *.chars == 0 --> Bool:D)
+{
+    my Bool:D $is-confirmed = False;
+}
+
+# were unrecognized characters entered?
+multi sub is-confirmed($confirmation --> Bool:D)
+{
+    my Bool:D $is-confirmed = False;
 }
 
 sub prompt-disk-type(--> DiskType:D)
