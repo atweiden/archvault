@@ -677,14 +677,13 @@ sub prompt-timezone(--> Timezone:D)
     my Str:D @regions = @timezones».subst(/'/'\N*$/, '').unique;
 
     # prompt choose region
-    my Str $region;
+    my Str:D $region = do
     {
         my Str:D $default-item = 'America';
         my Str:D $prompt-text = 'Select region:';
         my Str:D $title = 'TIMEZONE REGION SELECTION';
         my Str:D $confirm-topic = 'timezone region selected';
-
-        $region = dprompt(
+        dprompt(
             Str,
             @regions,
             :$default-item,
@@ -699,14 +698,13 @@ sub prompt-timezone(--> Timezone:D)
         @timezones.grep(/$region/)».subst(/^$region'/'/, '').sort;
 
     # prompt choose subregion
-    my Str $subregion;
+    my Str:D $subregion = do
     {
         my Str:D $default-item = 'Los_Angeles';
         my Str:D $prompt-text = 'Select subregion:';
         my Str:D $title = 'TIMEZONE SUBREGION SELECTION';
         my Str:D $confirm-topic = 'timezone subregion selected';
-
-        $subregion = dprompt(
+        dprompt(
             Str,
             @subregions,
             :$default-item,
