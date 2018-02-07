@@ -65,10 +65,10 @@ multi sub MAIN(
 # ls
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('ls', 'keymaps') { .say for Archvault::Config.ls-keymaps }
-multi sub MAIN('ls', 'locales') { .say for Archvault::Config.ls-locales }
-multi sub MAIN('ls', 'partitions') { .say for Archvault::Config.ls-partitions }
-multi sub MAIN('ls', 'timezones') { .say for Archvault::Config.ls-timezones }
+multi sub MAIN('ls', 'keymaps')    { .say for Archvault::Config.ls-keymaps() }
+multi sub MAIN('ls', 'locales')    { .say for Archvault::Config.ls-locales() }
+multi sub MAIN('ls', 'partitions') { .say for Archvault::Config.ls-partitions() }
+multi sub MAIN('ls', 'timezones')  { .say for Archvault::Config.ls-timezones() }
 
 
 
@@ -79,7 +79,7 @@ multi sub MAIN('ls', 'timezones') { .say for Archvault::Config.ls-timezones }
 
 multi sub MAIN(Bool:D :version($)! where *.so)
 {
-    say('v' ~ $Archvault::VERSION);
+    printf("v%s\n", $Archvault::VERSION);
     exit;
 }
 
