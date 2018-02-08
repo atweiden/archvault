@@ -1,6 +1,6 @@
 use v6;
 use Archvault::Grammar;
-unit class Archvault::Types;
+unit module Archvault::Types;
 
 # -----------------------------------------------------------------------------
 # constants

@@ -177,19 +177,19 @@ multi sub mkvault-cryptsetup(
 {
     my Str:D $cryptsetup-luks-format-cmdline =
         build-cryptsetup-luks-format-cmdline($partition-vault);
-    my Str:D $crypsetup-luks-open-cmdline =
+    my Str:D $cryptsetup-luks-open-cmdline =
         build-cryptsetup-luks-open-cmdline($partition-vault, $vault-name);
 
     # create LUKS encrypted volume, prompt user for vault password
     loop-cryptsetup-cmdline-proc(
         'Creating LUKS vault...',
-        $crypsetup-luks-format-cmdline
+        $cryptsetup-luks-format-cmdline
     );
 
     # open LUKS encrypted volume, prompt user for vault password
     loop-cryptsetup-cmdline-proc(
         'Opening LUKS vault...',
-        $crypsetup-luks-open-cmdline
+        $cryptsetup-luks-open-cmdline
     );
 }
 
