@@ -416,7 +416,6 @@ sub pacstrap-base()
         net-tools
         openresolv
         openssh
-        python2
         reflector
         rsync
         sshpass
