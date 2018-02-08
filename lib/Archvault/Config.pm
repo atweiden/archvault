@@ -10,70 +10,70 @@ unit class Archvault::Config;
 # - defaults are geared towards live media installation
 
 # name for normal user (default: live)
-has UserName:D $.user-name is required =
+has UserName:D $.user-name =
     %*ENV<USER_NAME> ?? self.gen-user-name(%*ENV<USER_NAME>)
                      !! prompt-name(:user);
 
 # sha512 password digest for normal user
-has Str:D $.user-pass-digest is required =
+has Str:D $.user-pass-digest =
     %*ENV<USER_PASS> ?? self.gen-digest(%*ENV<USER_PASS>)
                      !! prompt-pass-digest();
 
 # sha512 password digest for root user
-has Str:D $.root-pass-digest is required =
+has Str:D $.root-pass-digest =
     %*ENV<ROOT_PASS> ?? self.gen-digest(%*ENV<ROOT_PASS>)
                      !! prompt-pass-digest(:root);
 
 # name for LUKS encrypted volume (default: vault)
-has VaultName:D $.vault-name is required =
+has VaultName:D $.vault-name =
     %*ENV<VAULT_NAME> ?? self.gen-vault-name(%*ENV<VAULT_NAME>)
                       !! prompt-name(:vault);
 
 # password for LUKS encrypted volume
-has VaultPass $.vault-pass =
+has VaultPass:D $.vault-pass =
     %*ENV<VAULT_PASS> ?? self.gen-vault-pass(%*ENV<VAULT_PASS>)
                       !! Nil;
 
 # name for host (default: vault)
-has HostName:D $.host-name is required =
+has HostName:D $.host-name =
     %*ENV<HOST_NAME> ?? self.gen-host-name(%*ENV<HOST_NAME>)
                      !! prompt-name(:host);
 
 # device path of target partition (default: /dev/sdb)
-has Str:D $.partition is required = %*ENV<PARTITION> || self!prompt-partition();
+has Str:D $.partition = %*ENV<PARTITION> || self!prompt-partition();
 
 # type of processor (default: other)
-has Processor:D $.processor is required =
+has Processor:D $.processor =
     %*ENV<PROCESSOR> ?? self.gen-processor(%*ENV<PROCESSOR>)
                      !! prompt-processor();
 
 # type of graphics card (default: intel)
-has Graphics:D $.graphics is required =
+has Graphics:D $.graphics =
     %*ENV<GRAPHICS> ?? self.gen-graphics(%*ENV<GRAPHICS>)
                     !! prompt-graphics();
 
 # type of hard drive (default: usb)
-has DiskType:D $.disk-type is required =
+has DiskType:D $.disk-type =
     %*ENV<DISK_TYPE> ?? self.gen-disk-type(%*ENV<DISK_TYPE>)
                      !! prompt-disk-type();
 
 # locale (default: en_US)
-has Locale:D $.locale is required =
+has Locale:D $.locale =
     %*ENV<LOCALE> ?? self.gen-locale(%*ENV<LOCALE>)
                   !! prompt-locale();
 
 # keymap (default: us)
-has Keymap:D $.keymap is required =
+has Keymap:D $.keymap =
     %*ENV<KEYMAP> ?? self.gen-keymap(%*ENV<KEYMAP>)
                   !! prompt-keymap();
 
 # timezone (default: America/Los_Angeles)
-has Timezone:D $.timezone is required =
+has Timezone:D $.timezone =
     %*ENV<TIMEZONE> ?? self.gen-timezone(%*ENV<TIMEZONE>)
                     !! prompt-timezone();
 
 # augment
-has Bool:D $.augment is required = ?%*ENV<AUGMENT>;
+has Bool:D $.augment = ?%*ENV<AUGMENT>;
 
 
 # -----------------------------------------------------------------------------
