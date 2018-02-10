@@ -518,16 +518,11 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
         # "Retype Root / User Password"
         print("Retype $subject ");
         my Str:D $pass-digest-confirm = qx{openssl passwd -1 -salt sha512}.trim;
-        if $pass-digest eqv $pass-digest-confirm
-        {
-            last;
-        }
-        else
-        {
-            # password not verified, try again
-            say('Please try again');
-            next;
-        }
+
+        last if $pass-digest eqv $pass-digest-confirm;
+
+        # password not verified, try again
+        say('Please try again');
     }
 
     $pass-digest;
@@ -642,10 +637,11 @@ method ls-timezones(--> Array[Timezone:D])
 {
     # equivalent to `timedatectl list-timezones --no-pager`
     # see: src/basic/time-util.c in systemd source code
-    my Timezone:D @timezones = qx«
-        sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
-    ».trim.split("\n").sort;
-    push(@timezones, 'UTC');
+    my Timezone:D @timezones =
+        |qx<
+            sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
+        >.trim.split("\n").sort,
+        'UTC';
 }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:
