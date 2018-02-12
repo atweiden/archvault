@@ -800,25 +800,7 @@ sub configure-hidepid()
 
 sub configure-securetty()
 {
-    my Str:D $securetty = q:to/EOF/;
-    #
-    # /etc/securetty
-    # https://wiki.archlinux.org/index.php/Security#Denying_console_login_as_root
-    #
-
-    console
-    #tty1
-    #tty2
-    #tty3
-    #tty4
-    #tty5
-    #tty6
-    #ttyS0
-    #hvc0
-
-    # End of file
-    EOF
-    spurt('/mnt/etc/securetty', $securetty);
+    copy(%?RESOURCES<etc/securetty>, '/mnt/etc/securetty');
 
     my Str:D $shell-timeout = q:to/EOF/;
     TMOUT="$(( 60*10 ))";
