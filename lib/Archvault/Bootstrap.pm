@@ -26,6 +26,7 @@ sub bootstrap() is export
     configure-hidepid();
     configure-securetty();
     configure-iptables();
+    configure-openssh();
     enable-systemd-services();
     disable-btrfs-cow();
     augment() if $Archvault::CONF.augment;
@@ -812,6 +813,20 @@ sub configure-iptables()
     shell('iptables-save > /mnt/etc/iptables/iptables.up.rules');
     shell("iptables-restore < %?RESOURCES<etc/iptables/iptables.test.rules>");
     shell('iptables-save > /mnt/etc/iptables/iptables.rules');
+}
+
+sub configure-openssh()
+{
+    my Str:D $user-name = $Archvault::CONF.user-name;
+    copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
+    copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
+    spurt('/mnt/etc/sshd_config', "AllowUsers $user-name", :append);
+
+    # restrict allowed connections to LAN
+    copy(%?RESOURCES<etc/hosts.allow>, '/mnt/etc/hosts.allow');
+
+    # filter weak ssh moduli
+    shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
 }
 
 sub enable-systemd-services()
