@@ -563,21 +563,7 @@ sub configure-tmpfiles()
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
     run(qw<arch-chroot /mnt systemctl mask tmp.mount>);
-    my Str:D $tmp-conf = q:to/EOF/;
-    # see tmpfiles.d(5)
-    # always enable /tmp folder cleaning
-    D! /tmp 1777 root root 0
-
-    # remove files in /var/tmp older than 10 days
-    D /var/tmp 1777 root root 10d
-
-    # namespace mountpoints (PrivateTmp=yes) are excluded from removal
-    x /tmp/systemd-private-*
-    x /var/tmp/systemd-private-*
-    X /tmp/systemd-private-*/tmp
-    X /var/tmp/systemd-private-*/tmp
-    EOF
-    spurt('/mnt/etc/tmpfiles.d/tmp.conf', $tmp-conf);
+    copy(%?RESOURCES<etc/tmpfiles.d/tmp.conf>, '/mnt/etc/tmpfiles.d/tmp.conf');
 }
 
 sub configure-pacman()
