@@ -509,20 +509,7 @@ sub configure-dnscrypt-proxy()
 
 sub set-nameservers()
 {
-    my Str:D $resolv-conf-head = q:to/EOF/;
-    # DNSCrypt
-    options edns0
-    nameserver 127.0.0.1
-
-    # OpenDNS nameservers
-    nameserver 208.67.222.222
-    nameserver 208.67.220.220
-
-    # Google nameservers
-    nameserver 8.8.8.8
-    nameserver 8.8.4.4
-    EOF
-    spurt('/mnt/etc/resolv.conf.head', $resolv-conf-head);
+    copy(%?RESOURCES<etc/resolv.conf.head>, '/mnt/etc/resolv.conf.head');
 }
 
 sub set-locale()
