@@ -587,16 +587,7 @@ sub configure-pacman()
 
 sub configure-system-sleep()
 {
-    my Str:D $sleep-conf = q:to/EOF/;
-    [Sleep]
-    SuspendMode=mem
-    HibernateMode=mem
-    HybridSleepMode=mem
-    SuspendState=mem
-    HibernateState=mem
-    HybridSleepState=mem
-    EOF
-    spurt('/mnt/etc/systemd/sleep.conf', $sleep-conf);
+    copy(%?RESOURCES<etc/systemd/sleep.conf>, '/mnt/etc/systemd/sleep.conf');
 }
 
 sub configure-modprobe()
