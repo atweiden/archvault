@@ -801,15 +801,10 @@ sub configure-hidepid()
 sub configure-securetty()
 {
     copy(%?RESOURCES<etc/securetty>, '/mnt/etc/securetty');
-
-    my Str:D $shell-timeout = q:to/EOF/;
-    TMOUT="$(( 60*10 ))";
-    [[ -z "$DISPLAY" ]] && export TMOUT;
-    case $( /usr/bin/tty ) in
-      /dev/tty[0-9]*) export TMOUT;;
-    esac
-    EOF
-    spurt('/mnt/etc/profile.d/shell-timeout.sh', $shell-timeout);
+    copy(
+        %?RESOURCES<etc/profile.d/shell-timeout.sh>,
+        '/mnt/etc/profile.d/shell-timeout.sh'
+    );
 }
 
 sub configure-iptables()
