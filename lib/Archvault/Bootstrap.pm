@@ -809,42 +809,8 @@ sub configure-securetty()
 
 sub configure-iptables()
 {
-    my Str:D $iptables-test-rules = q:to/EOF/;
-    *filter
-    #| Allow all loopback (lo0) traffic, and drop all traffic to 127/8 that doesn't use lo0
-    -A INPUT -i lo -j ACCEPT
-    -A INPUT ! -i lo -d 127.0.0.0/8 -j REJECT
-    #| Allow all established inbound connections
-    -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-    #| Allow all outbound traffic
-    -A OUTPUT -j ACCEPT
-    #| Allow HTTP and HTTPS connections
-    -A INPUT -p tcp --dport 80 -j ACCEPT
-    -A INPUT -p tcp --dport 443 -j ACCEPT
-    #| Allow SSH connections
-    -A INPUT -p tcp -m conntrack --ctstate NEW --dport 22 -j ACCEPT
-    #| Allow ZeroMQ connections
-    -A INPUT -p tcp -m conntrack --ctstate NEW --dport 4505 -j ACCEPT
-    -A INPUT -p tcp -m conntrack --ctstate NEW --dport 4506 -j ACCEPT
-    #| Allow NTP connections
-    -I INPUT -p udp --dport 123 -j ACCEPT
-    -I OUTPUT -p udp --sport 123 -j ACCEPT
-    #| Reject pings
-    -I INPUT -j DROP -p icmp --icmp-type echo-request
-    #| Drop ident server
-    -A INPUT -p tcp --dport ident -j DROP
-    #| Log iptables denied calls
-    -A INPUT -m limit --limit 15/minute -j LOG --log-prefix "[IPT]Dropped input: " --log-level 7
-    -A OUTPUT -m limit --limit 15/minute -j LOG --log-prefix "[IPT]Dropped output: " --log-level 7
-    #| Reject all other inbound - default deny unless explicitly allowed policy
-    -A INPUT -j REJECT
-    -A FORWARD -j REJECT
-    COMMIT
-    EOF
-    spurt('iptables.test.rules', $iptables-test-rules);
-
     shell('iptables-save > /mnt/etc/iptables/iptables.up.rules');
-    shell('iptables-restore < iptables.test.rules');
+    shell("iptables-restore < %?RESOURCES<etc/iptables/iptables.test.rules>");
     shell('iptables-save > /mnt/etc/iptables/iptables.rules');
 }
 
