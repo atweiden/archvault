@@ -334,29 +334,20 @@ sub mkbtrfs(Str:D :$vault-name = $Archvault::CONF.vault-name)
 
     # mount main btrfs filesystem on open vault
     mkdir('/mnt2');
-    run(qqw<
-        mount
-        -t btrfs
-        -o $mount-options
-        /dev/mapper/$vault-name
-        /mnt2
-    >);
+    run(qqw<mount -t btrfs -o $mount-options /dev/mapper/$vault-name /mnt2>);
+
+    # btrfs subvolumes, starting with root / ('')
+    my Str:D @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
 
     # create btrfs subvolumes
     chdir('/mnt2');
-    run(qw<btrfs subvolume create @>);
-    run(qw<btrfs subvolume create @home>);
-    run(qw<btrfs subvolume create @opt>);
-    run(qw<btrfs subvolume create @srv>);
-    run(qw<btrfs subvolume create @tmp>);
-    run(qw<btrfs subvolume create @usr>);
-    run(qw<btrfs subvolume create @var>);
+    @btrfs-dirs.map(-> $btrfs-dir {
+        run(qqw<btrfs subvolume create @$btrfs-dir>);
+    });
     chdir('/');
 
-    # mount btrfs subvolumes, starting with root / ('')
-    my Str:D @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
-    @btrfs-dirs.map(-> $btrfs-dir
-    {
+    # mount btrfs subvolumes
+    @btrfs-dirs.map(-> $btrfs-dir {
         mkdir("/mnt/$btrfs-dir");
         run(qqw<
             mount
@@ -1032,11 +1023,16 @@ sub configure-iptables()
 
 sub enable-systemd-services()
 {
-    run(qw<arch-chroot /mnt systemctl enable cronie>);
-    run(qw<arch-chroot /mnt systemctl enable dnscrypt-proxy>);
-    run(qw<arch-chroot /mnt systemctl enable haveged>);
-    run(qw<arch-chroot /mnt systemctl enable iptables>);
-    run(qw<arch-chroot /mnt systemctl enable systemd-swap>);
+    my Str:D @service = qw<
+        cronie
+        dnscrypt-proxy
+        haveged
+        iptables
+        systemd-swap
+    >;
+    @service.map(-> $service {
+        run(qqw<arch-chroot /mnt systemctl enable $service>);
+    });
 }
 
 sub disable-btrfs-cow()
