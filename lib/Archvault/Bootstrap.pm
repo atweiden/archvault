@@ -184,8 +184,8 @@ multi sub mkvault-cryptsetup(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Bool:D :interactive($) where *.so,
-    Str:D $partition-vault
+    Str:D $partition-vault,
+    Bool:D :interactive($) where *.so
     --> Str:D
 )
 {
@@ -223,9 +223,9 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Bool:D :non-interactive($) where *.so,
     Str:D $partition-vault,
-    Str:D $vault-pass
+    Str:D $vault-pass,
+    Bool:D :non-interactive($) where *.so
     --> Str:D
 )
 {
@@ -268,9 +268,9 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Bool:D :interactive($) where *.so,
     Str:D $partition-vault,
-    Str:D $vault-name
+    Str:D $vault-name,
+    Bool:D :interactive($) where *.so
     --> Str:D
 )
 {
@@ -279,10 +279,10 @@ multi sub build-cryptsetup-luks-open-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Bool:D :non-interactive($) where *.so,
     Str:D $partition-vault,
     Str:D $vault-name,
-    Str:D $vault-pass
+    Str:D $vault-pass,
+    Bool:D :non-interactive($) where *.so
     --> Str:D
 )
 {
