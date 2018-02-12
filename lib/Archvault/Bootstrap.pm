@@ -785,22 +785,16 @@ sub configure-sysctl()
 
 sub configure-hidepid()
 {
-    my Str:D $hidepid-conf = q:to/EOF/;
-    [Service]
-    SupplementaryGroups=proc
-    EOF
+    mkdir('/mnt/etc/systemd/system/systemd-logind.service.d');
+    copy(
+        %?RESOURCES</etc/systemd/system/systemd-logind.service.d/hidepid.conf>,
+        '/mnt/etc/systemd/system/systemd-logind.service.d/hidepid.conf'
+    );
 
     my Str:D $fstab-hidepid = q:to/EOF/;
     # /proc with hidepid (https://wiki.archlinux.org/index.php/Security#hidepid)
     proc                                      /proc       procfs      hidepid=2,gid=proc                                              0 0
     EOF
-
-    mkdir('/mnt/etc/systemd/system/systemd-logind.service.d');
-    spurt(
-        '/mnt/etc/systemd/system/systemd-logind.service.d/hidepid.conf',
-        $hidepid-conf
-    );
-
     spurt('/mnt/etc/fstab', $fstab-hidepid, :append);
 }
 
