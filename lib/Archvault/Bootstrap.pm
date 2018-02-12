@@ -592,19 +592,10 @@ sub configure-system-sleep()
 
 sub configure-modprobe()
 {
-    my Str:D $modprobe-conf = q:to/EOF/;
-    alias floppy off
-    blacklist fd0
-    blacklist floppy
-    blacklist bcma
-    blacklist snd_pcsp
-    blacklist pcspkr
-    blacklist firewire-core
-    blacklist thunderbolt
-    blacklist mei
-    blacklist mei-me
-    EOF
-    spurt('/mnt/etc/modprobe.d/modprobe.conf', $modprobe-conf);
+    copy(
+        %?RESOURCES<etc/modprobe.d/modprobe.conf>,
+        '/mnt/etc/modprobe.d/modprobe.conf'
+    );
 }
 
 sub generate-initramfs()
