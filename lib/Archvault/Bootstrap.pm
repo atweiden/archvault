@@ -666,14 +666,11 @@ sub generate-initramfs()
 
 sub configure-io-schedulers()
 {
-    my Str:D $io-schedulers = q:to/EOF/;
-    # set scheduler for non-rotating disks
-    ACTION=="add|change", KERNEL=="sd[a-z]|mmcblk[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
-    # set scheduler for rotating disks
-    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
-    EOF
     mkdir('/mnt/etc/udev/rules.d');
-    spurt('/mnt/etc/udev/rules.d/60-io-schedulers.rules', $io-schedulers);
+    copy(
+        %?RESOURCES<etc/udev/rules.d/60-io-schedulers.rules>,
+        '/mnt/etc/udev/rules.d/60-io-schedulers.rules'
+    );
 }
 
 sub install-bootloader()
