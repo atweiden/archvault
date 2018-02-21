@@ -61,6 +61,7 @@ sub setup(--> Nil)
     run(qw<setfont Lat2-Terminus16>);
 
     # rank mirrors
+    say('Running reflector to optimize pacman mirrors');
     rename('/etc/pacman.d/mirrorlist', '/etc/pacman.d/mirrorlist.bak');
     run(qw<
         reflector
