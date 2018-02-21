@@ -23,6 +23,7 @@ sub bootstrap() is export
     configure-io-schedulers();
     install-bootloader();
     configure-sysctl();
+    configure-systemd();
     configure-hidepid();
     configure-securetty();
     configure-iptables();
@@ -782,6 +783,15 @@ sub configure-sysctl()
     }
 
     run(qw<arch-chroot /mnt sysctl -p>);
+}
+
+sub configure-systemd()
+{
+    mkdir('/mnt/etc/systemd/system.conf.d');
+    copy(
+        %?RESOURCES</etc/systemd/system.conf.d/limits.conf>,
+        '/mnt/etc/systemd/system.conf.d/limits.conf'
+    );
 }
 
 sub configure-hidepid()

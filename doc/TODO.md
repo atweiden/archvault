@@ -1,13 +1,12 @@
 - idea: add tests
 - idea: check for active internet connection
 - idea: exception handling
-- idea: exceptions dump config to TOML file for easier recovery of bootstrap
+- idea: write progress to TOML file for easier recovery of bootstrap
+  - handle being killed by OS because out of memory
 - idea: exit success/failure messages
 - idea: make users double-check config settings in `dialog` menu before
   proceeding with installation
 - idea: copytoram
-- idea: configure `/etc/systemd/system.conf.d/limits.conf`
-  - https://github.com/oconnor663/arch/blob/master/limits.sh
 - idea: use ntp
   - `timedatectl set-ntp true`
 - idea: grubshift
