@@ -9,6 +9,7 @@ sub bootstrap(--> Nil) is export
     configure-users();
     genfstab();
     set-hostname();
+    configure-dhcpcd();
     configure-dnscrypt-proxy();
     set-nameservers();
     set-locale();
@@ -474,6 +475,15 @@ sub genfstab(--> Nil)
 sub set-hostname(--> Nil)
 {
     spurt('/mnt/etc/hostname', $Archvault::CONF.host-name);
+}
+
+sub configure-dhcpcd(--> Nil)
+{
+    my Str:D $dhcpcd = q:to/EOF/;
+    # Set vendor-class-id to empty string
+    vendorclassid
+    EOF
+    spurt('/mnt/etc/dhcpcd.conf', $dhcpcd, :append);
 }
 
 sub configure-dnscrypt-proxy(--> Nil)
