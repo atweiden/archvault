@@ -4,8 +4,8 @@ Archvault
 Bootstrap Arch with FDE
 
 
-Usage
------
+Synopsis
+--------
 
 ```bash
 archvault --username="live"                     \
@@ -24,6 +24,12 @@ archvault --username="live"                     \
           --augment                             \
           install
 ```
+
+
+Installation
+------------
+
+See [INSTALL.md](doc/INSTALL.md).
 
 
 Dependencies
