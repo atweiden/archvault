@@ -28,6 +28,7 @@ sub bootstrap(--> Nil) is export
     configure-securetty();
     configure-iptables();
     configure-openssh();
+    configure-x11();
     enable-systemd-services();
     disable-btrfs-cow();
     augment() if $Archvault::CONF.augment;
@@ -844,6 +845,19 @@ sub configure-openssh(--> Nil)
 
     # filter weak ssh moduli
     shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
+}
+
+sub configure-x11(--> Nil)
+{
+    mkdir('/mnt/etc/X11/xorg.conf.d');
+    copy(
+        %?RESOURCES<etc/X11/xorg.conf.d/20-natural-scrolling.conf>,
+        '/mnt/etc/X11/xorg.conf.d/20-natural-scrolling.conf'
+    );
+    copy(
+        %?RESOURCES<etc/X11/xorg.conf.d/99-security.conf>,
+        '/mnt/etc/X11/xorg.conf.d/99-security.conf'
+    );
 }
 
 sub enable-systemd-services(--> Nil)
