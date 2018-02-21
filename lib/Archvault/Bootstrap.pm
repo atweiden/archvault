@@ -65,10 +65,10 @@ sub setup(--> Nil)
     rename('/etc/pacman.d/mirrorlist', '/etc/pacman.d/mirrorlist.bak');
     run(qw<
         reflector
-        --threads 3
+        --threads 5
         --protocol https
-        --fastest 8
-        --number 8
+        --fastest 7
+        --number 7
         --save /etc/pacman.d/mirrorlist
     >);
 }
