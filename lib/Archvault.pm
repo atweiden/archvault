@@ -22,6 +22,7 @@ sub mkconf(
     Str :$userpass,
     Str :$vaultname,
     Str :$vaultpass
+    --> Nil
 )
 {
     my %cfg;
@@ -97,6 +98,7 @@ method install(
         Str :vaultname($),
         Str :vaultpass($)
     )
+    --> Nil
 )
 {
     # verify root permissions

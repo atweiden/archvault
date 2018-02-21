@@ -1,7 +1,7 @@
 use v6;
 unit module Archvault::Bootstrap;
 
-sub bootstrap() is export
+sub bootstrap(--> Nil) is export
 {
     setup();
     mkdisk();
@@ -34,7 +34,7 @@ sub bootstrap() is export
     unmount();
 }
 
-sub setup()
+sub setup(--> Nil)
 {
     # initialize pacman-keys
     run(qw<haveged -w 1024>);
@@ -71,7 +71,7 @@ sub setup()
 }
 
 # secure disk configuration
-sub mkdisk()
+sub mkdisk(--> Nil)
 {
     # partition disk
     sgdisk();
@@ -87,7 +87,7 @@ sub mkdisk()
 }
 
 # partition disk with gdisk
-sub sgdisk(Str:D :$partition = $Archvault::CONF.partition)
+sub sgdisk(Str:D :$partition = $Archvault::CONF.partition --> Nil)
 {
     # erase existing partition table
     # create 2MB EF02 BIOS boot sector
@@ -112,6 +112,7 @@ sub mkvault(
     Str:D :$partition = $Archvault::CONF.partition,
     Str:D :$vault-name = $Archvault::CONF.vault-name,
     Str :$vault-pass = $Archvault::CONF.vault-pass
+    --> Nil
 )
 {
     # target partition for vault
@@ -128,6 +129,7 @@ multi sub mkvault-cryptsetup(
     Str:D :$partition-vault where *.so,
     Str:D :$vault-name where *.so,
     Str:D :$vault-pass where *.so
+    --> Nil
 )
 {
     my Str:D $cryptsetup-luks-format-cmdline =
@@ -157,6 +159,7 @@ multi sub mkvault-cryptsetup(
     Str:D :$partition-vault where *.so,
     Str:D :$vault-name where *.so,
     Str :vault-pass($)
+    --> Nil
 )
 {
     my Str:D $cryptsetup-luks-format-cmdline =
@@ -309,7 +312,11 @@ multi sub build-cryptsetup-luks-open-cmdline(
         EOF
 }
 
-sub loop-cryptsetup-cmdline-proc(Str:D $message, Str:D $cryptsetup-cmdline)
+sub loop-cryptsetup-cmdline-proc(
+    Str:D $message,
+    Str:D $cryptsetup-cmdline
+    --> Nil
+)
 {
     loop
     {
@@ -325,7 +332,7 @@ sub loop-cryptsetup-cmdline-proc(Str:D $message, Str:D $cryptsetup-cmdline)
 }
 
 # create and mount btrfs volumes on open vault
-sub mkbtrfs(Str:D :$vault-name = $Archvault::CONF.vault-name)
+sub mkbtrfs(Str:D :$vault-name = $Archvault::CONF.vault-name --> Nil)
 {
     # create btrfs filesystem on opened vault
     run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
@@ -366,7 +373,7 @@ sub mkbtrfs(Str:D :$vault-name = $Archvault::CONF.vault-name)
 }
 
 # create and mount boot partition
-sub mkbootpart(Str:D :$partition = $Archvault::CONF.partition)
+sub mkbootpart(Str:D :$partition = $Archvault::CONF.partition --> Nil)
 {
     # target partition for boot
     my Str:D $partition-boot = $partition ~ '2';
@@ -380,7 +387,7 @@ sub mkbootpart(Str:D :$partition = $Archvault::CONF.partition)
 }
 
 # bootstrap initial chroot with pacstrap
-sub pacstrap-base()
+sub pacstrap-base(--> Nil)
 {
     # base packages
     my Str:D @packages-base = qw<
@@ -431,7 +438,7 @@ sub pacstrap-base()
 }
 
 # secure user configuration
-sub configure-users()
+sub configure-users(--> Nil)
 {
     # updating root password...
     my Str:D $root-pass-digest = $Archvault::CONF.root-pass-digest;
@@ -458,17 +465,17 @@ sub configure-users()
     spurt('/mnt/etc/sudoers', $sudoers, :append);
 }
 
-sub genfstab()
+sub genfstab(--> Nil)
 {
     shell('genfstab -U -p /mnt >> /mnt/etc/fstab');
 }
 
-sub set-hostname()
+sub set-hostname(--> Nil)
 {
     spurt('/mnt/etc/hostname', $Archvault::CONF.host-name);
 }
 
-sub configure-dnscrypt-proxy()
+sub configure-dnscrypt-proxy(--> Nil)
 {
     # create user _dnscrypt
     run(qqw<
@@ -509,12 +516,12 @@ sub configure-dnscrypt-proxy()
     # end EphemeralKeys }}}
 }
 
-sub set-nameservers()
+sub set-nameservers(--> Nil)
 {
     copy(%?RESOURCES<etc/resolv.conf.head>, '/mnt/etc/resolv.conf.head');
 }
 
-sub set-locale()
+sub set-locale(--> Nil)
 {
     my Str:D $locale = $Archvault::CONF.locale;
 
@@ -534,7 +541,7 @@ sub set-locale()
     spurt('/mnt/etc/locale.conf', $locale-conf);
 }
 
-sub set-keymap()
+sub set-keymap(--> Nil)
 {
     my Str:D $keymap = $Archvault::CONF.keymap;
     my Str:D $vconsole = qq:to/EOF/;
@@ -545,7 +552,7 @@ sub set-keymap()
     spurt('/mnt/etc/vconsole.conf', $vconsole);
 }
 
-sub set-timezone()
+sub set-timezone(--> Nil)
 {
     run(qqw<
         arch-chroot
@@ -556,19 +563,19 @@ sub set-timezone()
     >);
 }
 
-sub set-hwclock()
+sub set-hwclock(--> Nil)
 {
     run(qw<arch-chroot /mnt hwclock --systohc --utc>);
 }
 
-sub configure-tmpfiles()
+sub configure-tmpfiles(--> Nil)
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
     run(qw<arch-chroot /mnt systemctl mask tmp.mount>);
     copy(%?RESOURCES<etc/tmpfiles.d/tmp.conf>, '/mnt/etc/tmpfiles.d/tmp.conf');
 }
 
-sub configure-pacman()
+sub configure-pacman(--> Nil)
 {
     my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
     shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
@@ -587,12 +594,12 @@ sub configure-pacman()
     }
 }
 
-sub configure-system-sleep()
+sub configure-system-sleep(--> Nil)
 {
     copy(%?RESOURCES<etc/systemd/sleep.conf>, '/mnt/etc/systemd/sleep.conf');
 }
 
-sub configure-modprobe()
+sub configure-modprobe(--> Nil)
 {
     copy(
         %?RESOURCES<etc/modprobe.d/modprobe.conf>,
@@ -600,7 +607,7 @@ sub configure-modprobe()
     );
 }
 
-sub generate-initramfs()
+sub generate-initramfs(--> Nil)
 {
     # MODULES {{{
 
@@ -666,7 +673,7 @@ sub generate-initramfs()
     run(qw<arch-chroot /mnt mkinitcpio -p linux>);
 }
 
-sub configure-io-schedulers()
+sub configure-io-schedulers(--> Nil)
 {
     mkdir('/mnt/etc/udev/rules.d');
     copy(
@@ -675,7 +682,7 @@ sub configure-io-schedulers()
     );
 }
 
-sub install-bootloader()
+sub install-bootloader(--> Nil)
 {
     # GRUB_CMDLINE_LINUX {{{
 
@@ -756,7 +763,7 @@ sub install-bootloader()
     >);
 }
 
-sub configure-sysctl()
+sub configure-sysctl(--> Nil)
 {
     copy(%?RESOURCES<etc/sysctl.conf>, '/mnt/etc/sysctl.conf');
 
@@ -785,7 +792,7 @@ sub configure-sysctl()
     run(qw<arch-chroot /mnt sysctl -p>);
 }
 
-sub configure-systemd()
+sub configure-systemd(--> Nil)
 {
     mkdir('/mnt/etc/systemd/system.conf.d');
     copy(
@@ -794,7 +801,7 @@ sub configure-systemd()
     );
 }
 
-sub configure-hidepid()
+sub configure-hidepid(--> Nil)
 {
     mkdir('/mnt/etc/systemd/system/systemd-logind.service.d');
     copy(
@@ -809,7 +816,7 @@ sub configure-hidepid()
     spurt('/mnt/etc/fstab', $fstab-hidepid, :append);
 }
 
-sub configure-securetty()
+sub configure-securetty(--> Nil)
 {
     copy(%?RESOURCES<etc/securetty>, '/mnt/etc/securetty');
     copy(
@@ -818,14 +825,14 @@ sub configure-securetty()
     );
 }
 
-sub configure-iptables()
+sub configure-iptables(--> Nil)
 {
     shell('iptables-save > /mnt/etc/iptables/iptables.up.rules');
     shell("iptables-restore < %?RESOURCES<etc/iptables/iptables.test.rules>");
     shell('iptables-save > /mnt/etc/iptables/iptables.rules');
 }
 
-sub configure-openssh()
+sub configure-openssh(--> Nil)
 {
     my Str:D $user-name = $Archvault::CONF.user-name;
     copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
@@ -839,7 +846,7 @@ sub configure-openssh()
     shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
 }
 
-sub enable-systemd-services()
+sub enable-systemd-services(--> Nil)
 {
     my Str:D @service = qw<
         cronie
@@ -853,7 +860,7 @@ sub enable-systemd-services()
     });
 }
 
-sub disable-btrfs-cow()
+sub disable-btrfs-cow(--> Nil)
 {
     chattrify('/mnt/var/log', 0o755, 'root', 'root');
 }
@@ -864,6 +871,7 @@ sub chattrify(
     UInt:D $permissions,
     Str:D $user where *.so,
     Str:D $group where *.so
+    --> Nil
 )
 {
     my Str:D $orig-dir = ~$directory.IO.resolve;
@@ -884,13 +892,13 @@ sub chattrify(
 }
 
 # interactive console
-sub augment()
+sub augment(--> Nil)
 {
     # launch fully interactive Bash console, type 'exit' to exit
     shell('expect -c "spawn /bin/bash; interact"');
 }
 
-sub unmount()
+sub unmount(--> Nil)
 {
     shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
     my Str:D $vault-name = $Archvault::CONF.vault-name;

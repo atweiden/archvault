@@ -13,17 +13,17 @@ use Archvault;
 # help
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('help', 'install')
+multi sub MAIN('help', 'install' --> Nil)
 {
     USAGE('install');
 }
 
-multi sub MAIN('help', 'ls')
+multi sub MAIN('help', 'ls' --> Nil)
 {
     USAGE('ls');
 }
 
-multi sub MAIN('help', $?)
+multi sub MAIN('help', $? --> Nil)
 {
     USAGE();
 }
@@ -53,6 +53,7 @@ multi sub MAIN(
         Str :vaultname($),
         Str :vaultpass($)
     )
+    --> Nil
 )
 {
     Archvault.install(|%opts);
@@ -65,10 +66,25 @@ multi sub MAIN(
 # ls
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('ls', 'keymaps')    { .say for Archvault::Config.ls-keymaps() }
-multi sub MAIN('ls', 'locales')    { .say for Archvault::Config.ls-locales() }
-multi sub MAIN('ls', 'partitions') { .say for Archvault::Config.ls-partitions() }
-multi sub MAIN('ls', 'timezones')  { .say for Archvault::Config.ls-timezones() }
+multi sub MAIN('ls', 'keymaps' --> Nil)
+{
+    .say for Archvault::Config.ls-keymaps();
+}
+
+multi sub MAIN('ls', 'locales' --> Nil)
+{
+    .say for Archvault::Config.ls-locales();
+}
+
+multi sub MAIN('ls', 'partitions' --> Nil)
+{
+    .say for Archvault::Config.ls-partitions();
+}
+
+multi sub MAIN('ls', 'timezones' --> Nil)
+{
+    .say for Archvault::Config.ls-timezones();
+}
 
 
 
@@ -77,7 +93,7 @@ multi sub MAIN('ls', 'timezones')  { .say for Archvault::Config.ls-timezones() }
 # version
 # -----------------------------------------------------------------------------
 
-multi sub MAIN(Bool:D :version($)! where *.so)
+multi sub MAIN(Bool:D :version($)! where *.so --> Nil)
 {
     printf("v%s\n", $Archvault::VERSION);
     exit;
@@ -90,7 +106,7 @@ multi sub MAIN(Bool:D :version($)! where *.so)
 # usage
 # -----------------------------------------------------------------------------
 
-multi sub USAGE()
+multi sub USAGE(--> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
@@ -109,7 +125,7 @@ multi sub USAGE()
     say($HELP);
 }
 
-multi sub USAGE('install')
+multi sub USAGE('install' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
@@ -148,7 +164,7 @@ multi sub USAGE('install')
     say($HELP);
 }
 
-multi sub USAGE('ls')
+multi sub USAGE('ls' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
