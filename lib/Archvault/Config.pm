@@ -30,7 +30,7 @@ has VaultName:D $.vault-name =
                       !! prompt-name(:vault);
 
 # password for LUKS encrypted volume
-has VaultPass:D $.vault-pass =
+has VaultPass $.vault-pass =
     %*ENV<VAULT_PASS> ?? self.gen-vault-pass(%*ENV<VAULT_PASS>)
                       !! Nil;
 
