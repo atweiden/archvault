@@ -21,7 +21,8 @@ After logging in to the Arch Linux installation CD as root:
 # customize
 vim /etc/pacman.d/mirrorlist
 
-echo <<'EOF' >> /etc/pacman.conf
+# add private repo until official rakudo package in community
+cat <<'EOF' >> /etc/pacman.conf
 [rakudo]
 SigLevel = Optional
 Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
