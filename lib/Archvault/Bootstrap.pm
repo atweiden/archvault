@@ -1,42 +1,48 @@
 use v6;
-unit module Archvault::Bootstrap;
+use Archvault::Config;
+use Archvault::Types;
+unit class Archvault::Bootstrap;
 
-sub bootstrap(--> Nil) is export
+has Archvault::Config:D $.config is required;
+
+method bootstrap(::?CLASS:D: --> Nil)
 {
-    setup();
-    mkdisk();
-    pacstrap-base();
-    configure-users();
-    genfstab();
-    set-hostname();
-    configure-dhcpcd();
-    configure-dnscrypt-proxy();
-    set-nameservers();
-    set-locale();
-    set-keymap();
-    set-timezone();
-    set-hwclock();
-    configure-tmpfiles();
-    configure-pacman();
-    configure-system-sleep();
-    configure-modprobe();
-    generate-initramfs();
-    configure-io-schedulers();
-    install-bootloader();
-    configure-sysctl();
-    configure-systemd();
-    configure-hidepid();
-    configure-securetty();
-    configure-iptables();
-    configure-openssh();
-    configure-x11();
-    enable-systemd-services();
-    disable-btrfs-cow();
-    augment() if $Archvault::CONF.augment;
-    unmount();
+    # verify root permissions
+    $*USER == 0 or die 'root privileges required';
+    self!setup();
+    self!mkdisk();
+    self!pacstrap-base();
+    self!configure-users();
+    self!genfstab();
+    self!set-hostname();
+    self!configure-dhcpcd();
+    self!configure-dnscrypt-proxy();
+    self!set-nameservers();
+    self!set-locale();
+    self!set-keymap();
+    self!set-timezone();
+    self!set-hwclock();
+    self!configure-tmpfiles();
+    self!configure-pacman();
+    self!configure-system-sleep();
+    self!configure-modprobe();
+    self!generate-initramfs();
+    self!configure-io-schedulers();
+    self!install-bootloader();
+    self!configure-sysctl();
+    self!configure-systemd();
+    self!configure-hidepid();
+    self!configure-securetty();
+    self!configure-iptables();
+    self!configure-openssh();
+    self!configure-x11();
+    self!enable-systemd-services();
+    self!disable-btrfs-cow();
+    self!augment() if $.config.augment;
+    self!unmount();
 }
 
-sub setup(--> Nil)
+method !setup(--> Nil)
 {
     # initialize pacman-keys
     run(qw<haveged -w 1024>);
@@ -74,24 +80,26 @@ sub setup(--> Nil)
 }
 
 # secure disk configuration
-sub mkdisk(--> Nil)
+method !mkdisk(--> Nil)
 {
     # partition disk
-    sgdisk();
+    self!sgdisk();
 
     # create vault
-    mkvault();
+    self!mkvault();
 
     # create and mount btrfs volumes
-    mkbtrfs();
+    self!mkbtrfs();
 
     # create boot partition
-    mkbootpart();
+    self!mkbootpart();
 }
 
 # partition disk with gdisk
-sub sgdisk(Str:D :$partition = $Archvault::CONF.partition --> Nil)
+method !sgdisk(--> Nil)
 {
+    my Str:D $partition = $.config.partition;
+
     # erase existing partition table
     # create 2MB EF02 BIOS boot sector
     # create 128MB sized partition for /boot
@@ -111,15 +119,12 @@ sub sgdisk(Str:D :$partition = $Archvault::CONF.partition --> Nil)
 }
 
 # create vault with cryptsetup
-sub mkvault(
-    Str:D :$partition = $Archvault::CONF.partition,
-    Str:D :$vault-name = $Archvault::CONF.vault-name,
-    Str :$vault-pass = $Archvault::CONF.vault-pass
-    --> Nil
-)
+method !mkvault(--> Nil)
 {
     # target partition for vault
-    my Str:D $partition-vault = $partition ~ '3';
+    my Str:D $partition-vault = $.config.partition ~ '3';
+    my Str:D $vault-name = $.config.vault-name;
+    my Str $vault-pass = $.config.vault-pass;
 
     # load kernel modules for cryptsetup
     run(qw<modprobe dm_mod dm-crypt>);
@@ -192,7 +197,7 @@ multi sub mkvault-cryptsetup(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Str:D $partition-vault,
+    Str:D $partition-vault where *.so,
     Bool:D :interactive($) where *.so
     --> Str:D
 )
@@ -231,8 +236,8 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Str:D $partition-vault,
-    Str:D $vault-pass,
+    Str:D $partition-vault where *.so,
+    Str:D $vault-pass where *.so,
     Bool:D :non-interactive($) where *.so
     --> Str:D
 )
@@ -276,8 +281,8 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Str:D $partition-vault,
-    Str:D $vault-name,
+    Str:D $partition-vault where *.so,
+    Str:D $vault-name where *.so,
     Bool:D :interactive($) where *.so
     --> Str:D
 )
@@ -287,9 +292,9 @@ multi sub build-cryptsetup-luks-open-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Str:D $partition-vault,
-    Str:D $vault-name,
-    Str:D $vault-pass,
+    Str:D $partition-vault where *.so,
+    Str:D $vault-name where *.so,
+    Str:D $vault-pass where *.so,
     Bool:D :non-interactive($) where *.so
     --> Str:D
 )
@@ -316,8 +321,8 @@ multi sub build-cryptsetup-luks-open-cmdline(
 }
 
 sub loop-cryptsetup-cmdline-proc(
-    Str:D $message,
-    Str:D $cryptsetup-cmdline
+    Str:D $message where *.so,
+    Str:D $cryptsetup-cmdline where *.so
     --> Nil
 )
 {
@@ -335,14 +340,17 @@ sub loop-cryptsetup-cmdline-proc(
 }
 
 # create and mount btrfs volumes on open vault
-sub mkbtrfs(Str:D :$vault-name = $Archvault::CONF.vault-name --> Nil)
+method !mkbtrfs(--> Nil)
 {
+    my Str:D $disk-type = $.config.disk-type;
+    my Str:D $vault-name = $.config.vault-name;
+
     # create btrfs filesystem on opened vault
     run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
 
     # set mount options
     my Str:D $mount-options = 'rw,lazytime,compress=zstd,space_cache';
-    $mount-options ~= ',ssd' if $Archvault::CONF.disk-type eq 'SSD';
+    $mount-options ~= ',ssd' if $disk-type eq 'SSD';
 
     # mount main btrfs filesystem on open vault
     mkdir('/mnt2');
@@ -376,10 +384,10 @@ sub mkbtrfs(Str:D :$vault-name = $Archvault::CONF.vault-name --> Nil)
 }
 
 # create and mount boot partition
-sub mkbootpart(Str:D :$partition = $Archvault::CONF.partition --> Nil)
+method !mkbootpart(--> Nil)
 {
     # target partition for boot
-    my Str:D $partition-boot = $partition ~ '2';
+    my Str:D $partition-boot = $.config.partition ~ '2';
 
     # create ext2 boot partition
     run(qqw<mkfs.ext2 $partition-boot>);
@@ -390,8 +398,10 @@ sub mkbootpart(Str:D :$partition = $Archvault::CONF.partition --> Nil)
 }
 
 # bootstrap initial chroot with pacstrap
-sub pacstrap-base(--> Nil)
+method !pacstrap-base(--> Nil)
 {
+    my Str:D $processor = $.config.processor;
+
     # base packages
     my Str:D @packages-base = qw<
         arch-install-scripts
@@ -434,22 +444,22 @@ sub pacstrap-base(--> Nil)
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
-    push(@packages-base, 'intel-ucode') if $Archvault::CONF.processor eq 'intel';
+    push(@packages-base, 'intel-ucode') if $processor eq 'intel';
 
     # download and install packages with pacman in chroot
     run(qw<pacstrap /mnt>, @packages-base);
 }
 
 # secure user configuration
-sub configure-users(--> Nil)
+method !configure-users(--> Nil)
 {
     # updating root password...
-    my Str:D $root-pass-digest = $Archvault::CONF.root-pass-digest;
+    my Str:D $root-pass-digest = $.config.root-pass-digest;
     run(qqw<arch-chroot /mnt usermod -p $root-pass-digest root>);
 
     # creating new user with password from secure password digest...
-    my Str:D $user-name = $Archvault::CONF.user-name;
-    my Str:D $user-pass-digest = $Archvault::CONF.user-pass-digest;
+    my Str:D $user-name = $.config.user-name;
+    my Str:D $user-pass-digest = $.config.user-pass-digest;
     run(qqw<
         arch-chroot
         /mnt
@@ -468,17 +478,18 @@ sub configure-users(--> Nil)
     spurt('/mnt/etc/sudoers', $sudoers, :append);
 }
 
-sub genfstab(--> Nil)
+method !genfstab(--> Nil)
 {
     shell('genfstab -U -p /mnt >> /mnt/etc/fstab');
 }
 
-sub set-hostname(--> Nil)
+method !set-hostname(--> Nil)
 {
-    spurt('/mnt/etc/hostname', $Archvault::CONF.host-name);
+    my Str:D $host-name = $.config.host-name;
+    spurt('/mnt/etc/hostname', $host-name);
 }
 
-sub configure-dhcpcd(--> Nil)
+method !configure-dhcpcd(--> Nil)
 {
     my Str:D $dhcpcd = q:to/EOF/;
     # Set vendor-class-id to empty string
@@ -487,7 +498,7 @@ sub configure-dhcpcd(--> Nil)
     spurt('/mnt/etc/dhcpcd.conf', $dhcpcd, :append);
 }
 
-sub configure-dnscrypt-proxy(--> Nil)
+method !configure-dnscrypt-proxy(--> Nil)
 {
     # create user _dnscrypt
     run(qqw<
@@ -528,14 +539,14 @@ sub configure-dnscrypt-proxy(--> Nil)
     # end EphemeralKeys }}}
 }
 
-sub set-nameservers(--> Nil)
+method !set-nameservers(--> Nil)
 {
     copy(%?RESOURCES<etc/resolv.conf.head>, '/mnt/etc/resolv.conf.head');
 }
 
-sub set-locale(--> Nil)
+method !set-locale(--> Nil)
 {
-    my Str:D $locale = $Archvault::CONF.locale;
+    my Str:D $locale = $.config.locale;
 
     my Str:D $sed-cmd =
           q{s,}
@@ -553,9 +564,9 @@ sub set-locale(--> Nil)
     spurt('/mnt/etc/locale.conf', $locale-conf);
 }
 
-sub set-keymap(--> Nil)
+method !set-keymap(--> Nil)
 {
-    my Str:D $keymap = $Archvault::CONF.keymap;
+    my Str:D $keymap = $.config.keymap;
     my Str:D $vconsole = qq:to/EOF/;
     KEYMAP=$keymap
     FONT=Lat2-Terminus16
@@ -564,30 +575,31 @@ sub set-keymap(--> Nil)
     spurt('/mnt/etc/vconsole.conf', $vconsole);
 }
 
-sub set-timezone(--> Nil)
+method !set-timezone(--> Nil)
 {
+    my Str:D $timezone = $.config.timezone;
     run(qqw<
         arch-chroot
         /mnt
         ln
-        -s /usr/share/zoneinfo/{$Archvault::CONF.timezone}
+        -s /usr/share/zoneinfo/$timezone
         /etc/localtime
     >);
 }
 
-sub set-hwclock(--> Nil)
+method !set-hwclock(--> Nil)
 {
     run(qw<arch-chroot /mnt hwclock --systohc --utc>);
 }
 
-sub configure-tmpfiles(--> Nil)
+method !configure-tmpfiles(--> Nil)
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
     run(qw<arch-chroot /mnt systemctl mask tmp.mount>);
     copy(%?RESOURCES<etc/tmpfiles.d/tmp.conf>, '/mnt/etc/tmpfiles.d/tmp.conf');
 }
 
-sub configure-pacman(--> Nil)
+method !configure-pacman(--> Nil)
 {
     my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
     shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
@@ -606,12 +618,12 @@ sub configure-pacman(--> Nil)
     }
 }
 
-sub configure-system-sleep(--> Nil)
+method !configure-system-sleep(--> Nil)
 {
     copy(%?RESOURCES<etc/systemd/sleep.conf>, '/mnt/etc/systemd/sleep.conf');
 }
 
-sub configure-modprobe(--> Nil)
+method !configure-modprobe(--> Nil)
 {
     copy(
         %?RESOURCES<etc/modprobe.d/modprobe.conf>,
@@ -619,18 +631,19 @@ sub configure-modprobe(--> Nil)
     );
 }
 
-sub generate-initramfs(--> Nil)
+method !generate-initramfs(--> Nil)
 {
+    my Str:D $disk-type = $.config.disk-type;
+    my Str:D $graphics = $.config.graphics;
+    my Str:D $processor = $.config.processor;
+
     # MODULES {{{
 
     my Str:D @modules;
-    push(
-        @modules,
-        $Archvault::CONF.processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c'
-    );
-    push(@modules, 'i915') if $Archvault::CONF.graphics eq 'INTEL';
-    push(@modules, 'nouveau') if $Archvault::CONF.graphics eq 'NVIDIA';
-    push(@modules, 'radeon') if $Archvault::CONF.graphics eq 'RADEON';
+    push(@modules, $processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c');
+    push(@modules, 'i915') if $graphics eq 'INTEL';
+    push(@modules, 'nouveau') if $graphics eq 'NVIDIA';
+    push(@modules, 'radeon') if $graphics eq 'RADEON';
     # for systemd-swap lz4
     push(@modules, |qw<lz4 lz4_compress>);
     my Str:D $sed-cmd =
@@ -660,7 +673,7 @@ sub generate-initramfs(--> Nil)
         shutdown
         usr
     >;
-    $Archvault::CONF.disk-type eq 'USB'
+    $disk-type eq 'USB'
         ?? @hooks.splice(2, 0, 'block')
         !! @hooks.splice(4, 0, 'block');
     $sed-cmd =
@@ -685,7 +698,7 @@ sub generate-initramfs(--> Nil)
     run(qw<arch-chroot /mnt mkinitcpio -p linux>);
 }
 
-sub configure-io-schedulers(--> Nil)
+method !configure-io-schedulers(--> Nil)
 {
     mkdir('/mnt/etc/udev/rules.d');
     copy(
@@ -694,20 +707,19 @@ sub configure-io-schedulers(--> Nil)
     );
 }
 
-sub install-bootloader(--> Nil)
+method !install-bootloader(--> Nil)
 {
     # GRUB_CMDLINE_LINUX {{{
 
-    my Str:D $vault-name = $Archvault::CONF.vault-name;
-    my Str:D $vault-uuid = qqx<
-        blkid -s UUID -o value {$Archvault::CONF.partition}3
-    >.trim;
+    my Str:D $partition = $.config.partition;
+    my Str:D $partition-vault = $partition ~ '3';
+    my Str:D $vault-name = $.config.vault-name;
+    my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
 
     my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
             ~ ' rootflags=subvol=@';
-    $grub-cmdline-linux ~= ' radeon.dpm=1'
-        if $Archvault::CONF.graphics eq 'RADEON';
+    $grub-cmdline-linux ~= ' radeon.dpm=1' if $.config.graphics eq 'RADEON';
 
     my Str:D $sed-cmd =
           q{s,}
@@ -759,7 +771,7 @@ sub install-bootloader(--> Nil)
         grub-install
         --target=i386-pc
         --recheck
-    >, $Archvault::CONF.partition);
+    >, $partition);
     run(qw<
         arch-chroot
         /mnt
@@ -775,12 +787,13 @@ sub install-bootloader(--> Nil)
     >);
 }
 
-sub configure-sysctl(--> Nil)
+method !configure-sysctl(--> Nil)
 {
+    my Str:D $disk-type = $.config.disk-type;
+
     copy(%?RESOURCES<etc/sysctl.conf>, '/mnt/etc/sysctl.conf');
 
-    if $Archvault::CONF.disk-type eq 'SSD'
-        || $Archvault::CONF.disk-type eq 'USB'
+    if $disk-type eq 'SSD' || $disk-type eq 'USB'
     {
         my Str:D $sed-cmd =
               q{s,}
@@ -804,7 +817,7 @@ sub configure-sysctl(--> Nil)
     run(qw<arch-chroot /mnt sysctl -p>);
 }
 
-sub configure-systemd(--> Nil)
+method !configure-systemd(--> Nil)
 {
     mkdir('/mnt/etc/systemd/system.conf.d');
     copy(
@@ -813,7 +826,7 @@ sub configure-systemd(--> Nil)
     );
 }
 
-sub configure-hidepid(--> Nil)
+method !configure-hidepid(--> Nil)
 {
     mkdir('/mnt/etc/systemd/system/systemd-logind.service.d');
     copy(
@@ -828,7 +841,7 @@ sub configure-hidepid(--> Nil)
     spurt('/mnt/etc/fstab', $fstab-hidepid, :append);
 }
 
-sub configure-securetty(--> Nil)
+method !configure-securetty(--> Nil)
 {
     copy(%?RESOURCES<etc/securetty>, '/mnt/etc/securetty');
     copy(
@@ -837,16 +850,16 @@ sub configure-securetty(--> Nil)
     );
 }
 
-sub configure-iptables(--> Nil)
+method !configure-iptables(--> Nil)
 {
     shell('iptables-save > /mnt/etc/iptables/iptables.up.rules');
     shell("iptables-restore < %?RESOURCES<etc/iptables/iptables.test.rules>");
     shell('iptables-save > /mnt/etc/iptables/iptables.rules');
 }
 
-sub configure-openssh(--> Nil)
+method !configure-openssh(--> Nil)
 {
-    my Str:D $user-name = $Archvault::CONF.user-name;
+    my Str:D $user-name = $.config.user-name;
     copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
     copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
     spurt('/mnt/etc/sshd_config', "AllowUsers $user-name", :append);
@@ -858,7 +871,7 @@ sub configure-openssh(--> Nil)
     shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
 }
 
-sub configure-x11(--> Nil)
+method !configure-x11(--> Nil)
 {
     mkdir('/mnt/etc/X11/xorg.conf.d');
     copy(
@@ -871,7 +884,7 @@ sub configure-x11(--> Nil)
     );
 }
 
-sub enable-systemd-services(--> Nil)
+method !enable-systemd-services(--> Nil)
 {
     my Str:D @service = qw<
         cronie
@@ -885,7 +898,7 @@ sub enable-systemd-services(--> Nil)
     });
 }
 
-sub disable-btrfs-cow(--> Nil)
+method !disable-btrfs-cow(--> Nil)
 {
     chattrify('/mnt/var/log', 0o755, 'root', 'root');
 }
@@ -917,16 +930,16 @@ sub chattrify(
 }
 
 # interactive console
-sub augment(--> Nil)
+method !augment(--> Nil)
 {
     # launch fully interactive Bash console, type 'exit' to exit
     shell('expect -c "spawn /bin/bash; interact"');
 }
 
-sub unmount(--> Nil)
+method !unmount(--> Nil)
 {
     shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
-    my Str:D $vault-name = $Archvault::CONF.vault-name;
+    my Str:D $vault-name = $.config.vault-name;
     run(qqw<cryptsetup luksClose $vault-name>);
 }
 

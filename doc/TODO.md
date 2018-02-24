@@ -1,3 +1,7 @@
+- idea: `archvault new [profile]`
+  - `archvault new amnesia`
+  - `archvault new default`
+  - use class name variable interpolation (`Class::{$profile}.new`)
 - idea: add tests
 - idea: check for active internet connection
 - idea: exception handling

@@ -77,6 +77,95 @@ has Bool:D $.augment = ?%*ENV<AUGMENT>;
 
 
 # -----------------------------------------------------------------------------
+# class instantation
+# -----------------------------------------------------------------------------
+
+submethod BUILD(
+    Bool :$augment,
+    Str :$disktype,
+    Str :$graphics,
+    Str :$hostname,
+    Str :$keymap,
+    Str :$locale,
+    Str :$partition,
+    Str :$processor,
+    Str :$rootpass,
+    Str :$timezone,
+    Str :$username,
+    Str :$userpass,
+    Str :$vaultname,
+    Str :$vaultpass
+    --> Nil
+)
+{
+    # if --augment, initialize $.augment to True
+    $!augment = $augment if $augment;
+
+    # if --disktype, initialize $.disk-type to DiskType
+    $!disk-type = self.gen-disk-type($disktype) if $disktype;
+
+    # if --graphics, initialize $.graphics to Graphics
+    $!graphics = self.gen-graphics($graphics) if $graphics;
+
+    # if --hostname, initialize $.hostname to HostName
+    $!host-name = self.gen-host-name($hostname) if $hostname;
+
+    # if --keymap, initialize $.keymap to Keymap
+    $!keymap = self.gen-keymap($keymap) if $keymap;
+
+    # if --locale, initialize $.locale to Locale
+    $!locale = self.gen-locale($locale) if $locale;
+
+    # if --vaultname, initialize $.vault-name to VaultName
+    $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
+
+    # if --vaultpass, initialize $.vault-pass to VaultPass
+    $!vault-pass = self.gen-vault-pass($vaultpass) if $vaultpass;
+
+    # if --partition, initialize $.partition to Partition
+    $!partition = $partition if $partition;
+
+    # if --processor, initialize $.processor to Processor
+    $!processor = self.gen-processor($processor) if $processor;
+
+    # if --rootpass, initialize $.root-pass-digest to sha512 digest
+    $!root-pass-digest = self.gen-digest($rootpass) if $rootpass;
+
+    # if --timezone, initialize $.timezone to Timezone
+    $!timezone = self.gen-timezone($timezone) if $timezone;
+
+    # if --username, initialize $.user-name to UserName
+    $!user-name = self.gen-user-name($username) if $username;
+
+    # if --userpass, initialize $.user-pass-digest to sha512 digest
+    $!user-pass-digest = self.gen-digest($userpass) if $userpass;
+}
+
+method new(
+    *%opts (
+        Bool :augment($),
+        Str :disktype($),
+        Str :graphics($),
+        Str :hostname($),
+        Str :keymap($),
+        Str :locale($),
+        Str :partition($),
+        Str :processor($),
+        Str :rootpass($),
+        Str :timezone($),
+        Str :username($),
+        Str :userpass($),
+        Str :vaultname($),
+        Str :vaultpass($)
+    )
+    --> Archvault::Config:D
+)
+{
+    self.bless(|%opts);
+}
+
+
+# -----------------------------------------------------------------------------
 # string formatting, resolution and validation
 # -----------------------------------------------------------------------------
 

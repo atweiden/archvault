@@ -13,14 +13,14 @@ use Archvault;
 # help
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('help', 'install' --> Nil)
-{
-    USAGE('install');
-}
-
 multi sub MAIN('help', 'ls' --> Nil)
 {
     USAGE('ls');
+}
+
+multi sub MAIN('help', 'new' --> Nil)
+{
+    USAGE('new');
 }
 
 multi sub MAIN('help', $? --> Nil)
@@ -32,11 +32,11 @@ multi sub MAIN('help', $? --> Nil)
 
 
 # -----------------------------------------------------------------------------
-# install
+# new
 # -----------------------------------------------------------------------------
 
 multi sub MAIN(
-    'install',
+    'new',
     *%opts (
         Bool :augment($),
         Str :disktype($),
@@ -56,7 +56,7 @@ multi sub MAIN(
     --> Nil
 )
 {
-    Archvault.install(|%opts);
+    Archvault.new(|%opts);
 }
 
 
@@ -110,22 +110,22 @@ multi sub USAGE(--> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
-      archvault [-h] install
+      archvault new
+      archvault ls <keymaps|locales|partitions|timezones>
 
     Commands:
       help                        Show help for subcommands
-      install                     Bootstrap Arch system with FDE
-      ls                          List discovered keymaps, locales, partitions,
-                                  timezones
+      ls                          List keymaps, locales, partitions, timezones
+      new                         Bootstrap Arch system with FDE
 
     Options:
-      -h, --help                  print this help message
-      --version                   print version and exit
+      -h, --help                  Print this help message
+      --version                   Print version and exit
     EOF
     say($HELP);
 }
 
-multi sub USAGE('install' --> Nil)
+multi sub USAGE('new' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
@@ -143,7 +143,7 @@ multi sub USAGE('install' --> Nil)
                 --keymap="us"                         \
                 --timezone="America/Los_Angeles"      \
                 --augment                             \
-                install
+                new
 
     Options:
       --augment                    drop to Bash console mid-execution
