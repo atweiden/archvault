@@ -123,8 +123,8 @@ method !mkvault(--> Nil)
 {
     # target partition for vault
     my Str:D $partition-vault = $.config.partition ~ '3';
-    my Str:D $vault-name = $.config.vault-name;
-    my Str $vault-pass = $.config.vault-pass;
+    my VaultName:D $vault-name = $.config.vault-name;
+    my VaultPass:D $vault-pass = $.config.vault-pass;
 
     # load kernel modules for cryptsetup
     run(qw<modprobe dm_mod dm-crypt>);
@@ -135,8 +135,8 @@ method !mkvault(--> Nil)
 # LUKS encrypted volume password was given
 multi sub mkvault-cryptsetup(
     Str:D :$partition-vault where *.so,
-    Str:D :$vault-name where *.so,
-    Str:D :$vault-pass where *.so
+    VaultName:D :$vault-name where *.so,
+    VaultPass:D :$vault-pass where *.so
     --> Nil
 )
 {
@@ -165,8 +165,8 @@ multi sub mkvault-cryptsetup(
 # LUKS encrypted volume password not given
 multi sub mkvault-cryptsetup(
     Str:D :$partition-vault where *.so,
-    Str:D :$vault-name where *.so,
-    Str :vault-pass($)
+    VaultName:D :$vault-name where *.so,
+    VaultPass :vault-pass($)
     --> Nil
 )
 {
@@ -237,7 +237,7 @@ multi sub build-cryptsetup-luks-format-cmdline(
 
 multi sub build-cryptsetup-luks-format-cmdline(
     Str:D $partition-vault where *.so,
-    Str:D $vault-pass where *.so,
+    VaultPass:D $vault-pass where *.so,
     Bool:D :non-interactive($) where *.so
     --> Str:D
 )
@@ -282,7 +282,7 @@ multi sub build-cryptsetup-luks-format-cmdline(
 
 multi sub build-cryptsetup-luks-open-cmdline(
     Str:D $partition-vault where *.so,
-    Str:D $vault-name where *.so,
+    VaultName:D $vault-name where *.so,
     Bool:D :interactive($) where *.so
     --> Str:D
 )
@@ -293,8 +293,8 @@ multi sub build-cryptsetup-luks-open-cmdline(
 
 multi sub build-cryptsetup-luks-open-cmdline(
     Str:D $partition-vault where *.so,
-    Str:D $vault-name where *.so,
-    Str:D $vault-pass where *.so,
+    VaultName:D $vault-name where *.so,
+    VaultPass:D $vault-pass where *.so,
     Bool:D :non-interactive($) where *.so
     --> Str:D
 )
@@ -342,8 +342,8 @@ sub loop-cryptsetup-cmdline-proc(
 # create and mount btrfs volumes on open vault
 method !mkbtrfs(--> Nil)
 {
-    my Str:D $disk-type = $.config.disk-type;
-    my Str:D $vault-name = $.config.vault-name;
+    my DiskType:D $disk-type = $.config.disk-type;
+    my VaultName:D $vault-name = $.config.vault-name;
 
     # create btrfs filesystem on opened vault
     run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
@@ -400,7 +400,7 @@ method !mkbootpart(--> Nil)
 # bootstrap initial chroot with pacstrap
 method !pacstrap-base(--> Nil)
 {
-    my Str:D $processor = $.config.processor;
+    my Processor:D $processor = $.config.processor;
 
     # base packages
     my Str:D @packages-base = qw<
@@ -458,7 +458,7 @@ method !configure-users(--> Nil)
     run(qqw<arch-chroot /mnt usermod -p $root-pass-digest root>);
 
     # creating new user with password from secure password digest...
-    my Str:D $user-name = $.config.user-name;
+    my UserName:D $user-name = $.config.user-name;
     my Str:D $user-pass-digest = $.config.user-pass-digest;
     run(qqw<
         arch-chroot
@@ -485,7 +485,7 @@ method !genfstab(--> Nil)
 
 method !set-hostname(--> Nil)
 {
-    my Str:D $host-name = $.config.host-name;
+    my HostName:D $host-name = $.config.host-name;
     spurt('/mnt/etc/hostname', $host-name);
 }
 
@@ -546,7 +546,7 @@ method !set-nameservers(--> Nil)
 
 method !set-locale(--> Nil)
 {
-    my Str:D $locale = $.config.locale;
+    my Locale:D $locale = $.config.locale;
 
     my Str:D $sed-cmd =
           q{s,}
@@ -566,7 +566,7 @@ method !set-locale(--> Nil)
 
 method !set-keymap(--> Nil)
 {
-    my Str:D $keymap = $.config.keymap;
+    my Keymap:D $keymap = $.config.keymap;
     my Str:D $vconsole = qq:to/EOF/;
     KEYMAP=$keymap
     FONT=Lat2-Terminus16
@@ -577,7 +577,7 @@ method !set-keymap(--> Nil)
 
 method !set-timezone(--> Nil)
 {
-    my Str:D $timezone = $.config.timezone;
+    my Timezone:D $timezone = $.config.timezone;
     run(qqw<
         arch-chroot
         /mnt
@@ -633,9 +633,9 @@ method !configure-modprobe(--> Nil)
 
 method !generate-initramfs(--> Nil)
 {
-    my Str:D $disk-type = $.config.disk-type;
-    my Str:D $graphics = $.config.graphics;
-    my Str:D $processor = $.config.processor;
+    my DiskType:D $disk-type = $.config.disk-type;
+    my Graphics:D $graphics = $.config.graphics;
+    my Processor:D $processor = $.config.processor;
 
     # MODULES {{{
 
@@ -713,7 +713,7 @@ method !install-bootloader(--> Nil)
 
     my Str:D $partition = $.config.partition;
     my Str:D $partition-vault = $partition ~ '3';
-    my Str:D $vault-name = $.config.vault-name;
+    my VaultName:D $vault-name = $.config.vault-name;
     my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
 
     my Str:D $grub-cmdline-linux =
@@ -789,7 +789,7 @@ method !install-bootloader(--> Nil)
 
 method !configure-sysctl(--> Nil)
 {
-    my Str:D $disk-type = $.config.disk-type;
+    my DiskType:D $disk-type = $.config.disk-type;
 
     copy(%?RESOURCES<etc/sysctl.conf>, '/mnt/etc/sysctl.conf');
 
@@ -859,7 +859,7 @@ method !configure-iptables(--> Nil)
 
 method !configure-openssh(--> Nil)
 {
-    my Str:D $user-name = $.config.user-name;
+    my UserName:D $user-name = $.config.user-name;
     copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
     copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
     spurt('/mnt/etc/sshd_config', "AllowUsers $user-name", :append);
@@ -939,7 +939,7 @@ method !augment(--> Nil)
 method !unmount(--> Nil)
 {
     shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
-    my Str:D $vault-name = $.config.vault-name;
+    my VaultName:D $vault-name = $.config.vault-name;
     run(qqw<cryptsetup luksClose $vault-name>);
 }
 
