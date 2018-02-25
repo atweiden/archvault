@@ -475,7 +475,7 @@ method !configure-users(--> Nil)
     my Str:D $sudoers = qq:to/EOF/;
     $user-name ALL=(ALL) ALL
     EOF
-    spurt('/mnt/etc/sudoers', $sudoers, :append);
+    spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
 }
 
 method !genfstab(--> Nil)
@@ -486,7 +486,7 @@ method !genfstab(--> Nil)
 method !set-hostname(--> Nil)
 {
     my HostName:D $host-name = $.config.host-name;
-    spurt('/mnt/etc/hostname', $host-name);
+    spurt('/mnt/etc/hostname', $host-name ~ "\n");
 }
 
 method !configure-dhcpcd(--> Nil)
@@ -495,7 +495,7 @@ method !configure-dhcpcd(--> Nil)
     # Set vendor-class-id to empty string
     vendorclassid
     EOF
-    spurt('/mnt/etc/dhcpcd.conf', $dhcpcd, :append);
+    spurt('/mnt/etc/dhcpcd.conf', "\n" ~ $dhcpcd, :append);
 }
 
 method !configure-dnscrypt-proxy(--> Nil)
@@ -761,7 +761,10 @@ method !install-bootloader(--> Nil)
 
     # GRUB_DISABLE_SUBMENU {{{
 
-    spurt('/mnt/etc/default/grub', 'GRUB_DISABLE_SUBMENU=y', :append);
+    my Str:D $grub-disable-submenu = q:to/EOF/;
+    GRUB_DISABLE_SUBMENU=y
+    EOF
+    spurt('/mnt/etc/default/grub', "\n" ~ $grub-disable-submenu, :append);
 
     # end GRUB_DISABLE_SUBMENU }}}
 
@@ -838,7 +841,7 @@ method !configure-hidepid(--> Nil)
     # /proc with hidepid (https://wiki.archlinux.org/index.php/Security#hidepid)
     proc                                      /proc       procfs      hidepid=2,gid=proc                                              0 0
     EOF
-    spurt('/mnt/etc/fstab', $fstab-hidepid, :append);
+    spurt('/mnt/etc/fstab', "\n" ~ $fstab-hidepid, :append);
 }
 
 method !configure-securetty(--> Nil)
@@ -860,9 +863,14 @@ method !configure-iptables(--> Nil)
 method !configure-openssh(--> Nil)
 {
     my UserName:D $user-name = $.config.user-name;
+
     copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
     copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
-    spurt('/mnt/etc/sshd_config', "AllowUsers $user-name", :append);
+
+    my Str:D $allow-users = qq:to/EOF/;
+    AllowUsers $user-name
+    EOF
+    spurt('/mnt/etc/sshd_config', "\n" ~ $allow-users, :append);
 
     # restrict allowed connections to LAN
     copy(%?RESOURCES<etc/hosts.allow>, '/mnt/etc/hosts.allow');
