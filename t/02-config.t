@@ -6,8 +6,8 @@ plan 1;
 # ensure sha512 digest of empty password is correct
 subtest
 {
-    my Str $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
-    my Str $pass-digest = qx{openssl passwd -1 -salt sha512 ''}.trim;
+    my Str:D $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
+    my Str:D $pass-digest = qx<openssl passwd -1 -salt sha512 ''>.trim;
     is(
         $pass-digest,
         $blank-pass-digest,

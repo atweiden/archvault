@@ -172,7 +172,7 @@ method new(
 # return sha512 salt of password for linux user
 method gen-digest(Str:D $password --> Str:D)
 {
-    my Str:D $digest = qqx{openssl passwd -1 -salt sha512 $password}.trim;
+    my Str:D $digest = qqx<openssl passwd -1 -salt sha512 $password>.trim;
 }
 
 # confirm disk type $d is valid DiskType and return DiskType
@@ -267,7 +267,7 @@ multi sub dprompt(
     loop
     {
         # prompt for selection
-        $response = qqx!
+        $response = qqx<
             dialog \\
                 --stdout \\
                 --no-items \\
@@ -276,7 +276,7 @@ multi sub dprompt(
                 --default-item $default-item \\
                 --title '$title' \\
                 --menu '$prompt-text' $height $width $menu-height @menu[]
-        !;
+        >;
 
         # confirm selection
         my Bool:D $confirmed = shell("
@@ -318,7 +318,7 @@ multi sub dprompt(
     loop
     {
         # prompt for selection
-        $response = qqx!
+        $response = qqx<
             dialog \\
                 --stdout \\
                 --scrollbar \\
@@ -326,7 +326,7 @@ multi sub dprompt(
                 --default-item $default-item \\
                 --title '$title' \\
                 --menu '$prompt-text' $height $width $menu-height {%menu.sort}
-        !;
+        >;
 
         # confirm selection
         my Bool:D $confirmed = shell("
@@ -593,7 +593,7 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
         # reading secure password digest into memory...
         # "Enter Root / User Password"
         print("Enter $subject ");
-        $pass-digest = qx{openssl passwd -1 -salt sha512}.trim;
+        $pass-digest = qx<openssl passwd -1 -salt sha512>.trim;
 
         # verifying secure password digest is not empty...
         if $pass-digest eqv $blank-pass-digest
@@ -606,7 +606,7 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
         # verifying secure password digest...
         # "Retype Root / User Password"
         print("Retype $subject ");
-        my Str:D $pass-digest-confirm = qx{openssl passwd -1 -salt sha512}.trim;
+        my Str:D $pass-digest-confirm = qx<openssl passwd -1 -salt sha512>.trim;
 
         last if $pass-digest eqv $pass-digest-confirm;
 
@@ -693,7 +693,7 @@ method ls-keymaps(--> Array[Keymap:D])
 {
     # equivalent to `localectl list-keymaps --no-pager`
     # see: src/basic/def.h in systemd source code
-    my Keymap:D @keymaps = qx{
+    my Keymap:D @keymaps = qx<
         find /usr/share/kbd/keymaps -type f \
                \( ! -name "*compose*" \)    \
             -a \( ! -name "*.doc*"    \)    \
@@ -702,23 +702,23 @@ method ls-keymaps(--> Array[Keymap:D])
             -a \( ! -name "*.latin1*" \)    \
             -a \( ! -name "*.m4*"     \)    \
             -printf '%f\n'
-    }.trim.split("\n")».subst(/'.map.gz'$/, '').sort;
+    >.trim.split("\n")».subst(/'.map.gz'$/, '').sort;
 }
 
 # list locales
 method ls-locales(--> Array[Locale:D])
 {
-    my Locale:D @locales = qx{
+    my Locale:D @locales = qx<
         find /usr/share/i18n/locales -type f -printf '%f\n'
-    }.trim.split("\n").sort;
+    >.trim.split("\n").sort;
 }
 
 # list block devices (partitions)
 method ls-partitions(--> Array[Str:D])
 {
-    my Str:D @partitions = qx{
+    my Str:D @partitions = qx<
         lsblk --output NAME --nodeps --noheadings --raw
-    }.trim.split("\n").sort;
+    >.trim.split("\n").sort;
 }
 
 # list timezones
