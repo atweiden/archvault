@@ -22,7 +22,7 @@ archvault --username="live"                     \
           --keymap="us"                         \
           --timezone="America/Los_Angeles"      \
           --augment                             \
-          install
+          new
 ```
 
 
