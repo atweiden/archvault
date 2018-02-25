@@ -404,6 +404,7 @@ method !pacstrap-base(--> Nil)
 
     # base packages
     my Str:D @packages-base = qw<
+        acpi
         arch-install-scripts
         asp
         base
