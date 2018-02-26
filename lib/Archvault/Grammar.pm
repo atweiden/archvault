@@ -38,15 +38,6 @@ regex host-name
     $
 }
 
-# archlinux pkgname validation
-token pkg-name
-{
-    # see pacman source: scripts/libmakepkg/lint_pkgbuild/pkgname.sh.in
-    # pkgnames are not allowed to start with a period or hyphen
-    <+alnum +[+] +[@]>
-    <+alnum +[+] +[@] +[.] +[-]>*
-}
-
 # linux username validation
 regex user-name
 {
