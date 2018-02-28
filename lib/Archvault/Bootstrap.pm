@@ -549,6 +549,7 @@ method !set-nameservers(--> Nil)
 method !set-locale(--> Nil)
 {
     my Locale:D $locale = $.config.locale;
+    my Str:D $locale-fallback = $locale.substr(0, 2);
 
     my Str:D $sed-cmd =
           q{s,}
@@ -561,6 +562,7 @@ method !set-locale(--> Nil)
 
     my Str:D $locale-conf = qq:to/EOF/;
     LANG=$locale.UTF-8
+    LANGUAGE=$locale:$locale-fallback
     LC_TIME=$locale.UTF-8
     EOF
     spurt('/mnt/etc/locale.conf', $locale-conf);
