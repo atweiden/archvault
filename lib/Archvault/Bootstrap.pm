@@ -124,7 +124,7 @@ method !mkvault(--> Nil)
     # target partition for vault
     my Str:D $partition-vault = $.config.partition ~ '3';
     my VaultName:D $vault-name = $.config.vault-name;
-    my VaultPass:D $vault-pass = $.config.vault-pass;
+    my VaultPass $vault-pass = $.config.vault-pass;
 
     # load kernel modules for cryptsetup
     run(qw<modprobe dm_mod dm-crypt>);
