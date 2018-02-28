@@ -821,7 +821,7 @@ method !configure-sysctl(--> Nil)
         shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
     }
 
-    run(qw<arch-chroot /mnt sysctl -p>);
+    run(qw<arch-chroot /mnt sysctl --system>);
 }
 
 method !configure-systemd(--> Nil)
