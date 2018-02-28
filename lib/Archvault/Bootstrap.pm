@@ -582,7 +582,13 @@ method !set-keymap(--> Nil)
 method !set-timezone(--> Nil)
 {
     my Timezone:D $timezone = $.config.timezone;
-    run(qqw<arch-chroot /mnt timedatectl set-timezone $timezone>);
+    run(qqw<
+        arch-chroot
+        /mnt
+        ln
+        -sf /usr/share/zoneinfo/$timezone
+        /etc/localtime
+    >);
 }
 
 method !set-hwclock(--> Nil)
