@@ -501,7 +501,8 @@ method !configure-dhcpcd(--> Nil)
 
 method !configure-dnscrypt-proxy(--> Nil)
 {
-    # create user _dnscrypt
+    # create dnscrypt user/group
+    run(qw<arch-chroot /mnt groupadd dnscrypt>);
     run(qqw<
         arch-chroot
         /mnt
@@ -510,7 +511,7 @@ method !configure-dnscrypt-proxy(--> Nil)
         -d /usr/share/dnscrypt-proxy
         -g dnscrypt
         -s /bin/nologin
-        _dnscrypt
+        dnscrypt
     >);
 
     # User {{{
@@ -519,7 +520,7 @@ method !configure-dnscrypt-proxy(--> Nil)
           q{s,}
         ~ q{^# User.*}
         ~ q{,}
-        ~ q{User _dnscrypt}
+        ~ q{User dnscrypt}
         ~ q{,};
     shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
 
