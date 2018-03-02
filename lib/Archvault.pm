@@ -15,6 +15,7 @@ method new(
         Str :locale($),
         Str :partition($),
         Str :processor($),
+        Bool :reflector($),
         Str :rootpass($),
         Str :timezone($),
         Str :username($),

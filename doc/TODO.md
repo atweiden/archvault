@@ -1,5 +1,4 @@
 - idea: replace iptables with nftables
-- idea: toggle reflector mirror ranking
 - idea: `archvault new [profile]`
   - `archvault new amnesia`
   - `archvault new default`

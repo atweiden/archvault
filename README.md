@@ -51,7 +51,6 @@ kmod                 | `modprobe`                                      | Y
 openssl              | user password salts                             | Y
 pacman               | `makepkg`, `pacman`                             | Y
 rakudo               | `archvault` Perl6 runtime                       | N
-reflector            | https-only mirrors                              | N
 sed                  | `sed`                                           | Y
 tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab` | Y
 util-linux           | `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`   | Y
@@ -62,14 +61,20 @@ util-linux           | `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`   | Y
 Optional Dependencies
 ---------------------
 
-Name   | Provides                | Included in Arch ISO?
----    | ---                     | ---
-dialog | ncurses user input menu | Y
+Name      | Provides                | Included in Arch ISO?
+---       | ---                     | ---
+dialog    | ncurses user input menu | Y
+reflector | optimize pacman mirrors | N
 
-Dialog is needed if you do not provide by cmdline flag or environment
-variable values for all configuration options aside from hostname,
-username, userpass, rootpass, and vaultname. For user input of all other
-options, the `dialog` program is used.
+`dialog` is needed if you do not provide by cmdline flag or environment
+variable values for all configuration options aside from `--hostname`,
+`--username`, `--userpass`, `--rootpass`, and `--vaultname`. For user
+input of all other options, the `dialog` program is used.
+
+`reflector` is needed if you pass the `--reflector` cmdline flag to
+Archvault. You are recommended to edit `/etc/pacman.d/mirrorlist`
+instead to save several minutes of time. The reflector option is not
+enabled by default.
 
 
 Licensing

@@ -59,12 +59,19 @@ method !setup(--> Nil)
         gptfdisk
         iptables
         kbd
-        reflector
     >;
     run(qw<pacman -Sy --needed --noconfirm>, @deps);
 
     # use readable font
     run(qw<setfont Lat2-Terminus16>);
+
+    # optionally run reflector
+    reflector() if $.config.reflector;
+}
+
+sub reflector(--> Nil)
+{
+    run(qw<pacman -Sy --needed --noconfirm reflector>);
 
     # rank mirrors
     say('Running reflector to optimize pacman mirrors');

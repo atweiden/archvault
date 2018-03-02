@@ -75,6 +75,9 @@ has Timezone:D $.timezone =
 # augment
 has Bool:D $.augment = ?%*ENV<AUGMENT>;
 
+# reflector
+has Bool:D $.reflector = ?%*ENV<REFLECTOR>;
+
 
 # -----------------------------------------------------------------------------
 # class instantation
@@ -89,6 +92,7 @@ submethod BUILD(
     Str :$locale,
     Str :$partition,
     Str :$processor,
+    Bool :$reflector,
     Str :$rootpass,
     Str :$timezone,
     Str :$username,
@@ -128,6 +132,9 @@ submethod BUILD(
     # if --processor, initialize $.processor to Processor
     $!processor = self.gen-processor($processor) if $processor;
 
+    # if --reflector, initialize $.reflector to True
+    $!reflector = $reflector if $reflector;
+
     # if --rootpass, initialize $.root-pass-digest to sha512 digest
     $!root-pass-digest = self.gen-digest($rootpass) if $rootpass;
 
@@ -151,6 +158,7 @@ method new(
         Str :locale($),
         Str :partition($),
         Str :processor($),
+        Bool :reflector($),
         Str :rootpass($),
         Str :timezone($),
         Str :username($),

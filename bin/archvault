@@ -46,6 +46,7 @@ multi sub MAIN(
         Str :locale($),
         Str :partition($),
         Str :processor($),
+        Bool :reflector($),
         Str :rootpass($),
         Str :timezone($),
         Str :username($),
@@ -154,6 +155,7 @@ multi sub USAGE('new' --> Nil)
       --locale=<locale>            locale
       --partition=<device-path>    partition target for install
       --processor=<processor>      processor type
+      --reflector                  optimize pacman mirrors
       --rootpass=<password>        root password
       --timezone=<timezone>        timezone
       --username=<username>        user name
