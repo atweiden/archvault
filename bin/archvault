@@ -69,22 +69,22 @@ multi sub MAIN(
 
 multi sub MAIN('ls', 'keymaps' --> Nil)
 {
-    .say() for Archvault::Config.ls-keymaps();
+    Archvault::Config.ls-keymaps().map({ .say() });
 }
 
 multi sub MAIN('ls', 'locales' --> Nil)
 {
-    .say() for Archvault::Config.ls-locales();
+    Archvault::Config.ls-locales().map({ .say() });
 }
 
 multi sub MAIN('ls', 'partitions' --> Nil)
 {
-    .say() for Archvault::Config.ls-partitions();
+    Archvault::Config.ls-partitions().map({ .say() });
 }
 
 multi sub MAIN('ls', 'timezones' --> Nil)
 {
-    .say() for Archvault::Config.ls-timezones();
+    Archvault::Config.ls-timezones().map({ .say() });
 }
 
 
