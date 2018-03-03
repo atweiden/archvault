@@ -180,69 +180,69 @@ method new(
 # return sha512 salt of password for linux user
 method gen-digest(Str:D $password --> Str:D)
 {
-    my Str:D $digest = qqx<openssl passwd -1 -salt sha512 $password>.trim;
+    my Str:D $digest = qqx<openssl passwd -1 -salt sha512 $password>.trim();
 }
 
 # confirm disk type $d is valid DiskType and return DiskType
 method gen-disk-type(Str:D $d --> DiskType:D)
 {
-    my DiskType:D $disk-type = $d or die 'Sorry, invalid disk type';
+    my DiskType:D $disk-type = $d or die('Sorry, invalid disk type');
 }
 
 # confirm graphics card type $g is valid Graphics and return Graphics
 method gen-graphics(Str:D $g --> Graphics:D)
 {
-    my Graphics:D $graphics = $g or die 'Sorry, invalid graphics card type';
+    my Graphics:D $graphics = $g or die('Sorry, invalid graphics card type');
 }
 
 # confirm hostname $h is valid HostName and return HostName
 method gen-host-name(Str:D $h --> HostName:D)
 {
-    my HostName:D $host-name = $h or die "Sorry, invalid hostname 「$h」";
+    my HostName:D $host-name = $h or die("Sorry, invalid hostname 「$h」");
 }
 
 # confirm keymap $k is valid Keymap and return Keymap
 method gen-keymap(Str:D $k --> Keymap:D)
 {
-    my Keymap:D $keymap = $k or die "Sorry, invalid keymap 「$k」";
+    my Keymap:D $keymap = $k or die("Sorry, invalid keymap 「$k」");
 }
 
 # confirm locale $l is valid Locale and return Locale
 method gen-locale(Str:D $l --> Locale:D)
 {
-    my Locale:D $locale = $l or die "Sorry, invalid locale 「$l」";
+    my Locale:D $locale = $l or die("Sorry, invalid locale 「$l」");
 }
 
 # confirm processor $p is valid Processor and return Processor
 method gen-processor(Str:D $p --> Processor:D)
 {
-    my Processor:D $processor = $p or die "Sorry, invalid processor 「$p」";
+    my Processor:D $processor = $p or die("Sorry, invalid processor 「$p」");
 }
 
 # confirm timezone $t is valid Timezone and return Timezone
 method gen-timezone(Str:D $t --> Timezone:D)
 {
-    my Timezone:D $timezone = $t or die "Sorry, invalid timezone 「$t」";
+    my Timezone:D $timezone = $t or die("Sorry, invalid timezone 「$t」");
 }
 
 # confirm user name $u is valid UserName and return UserName
 method gen-user-name(Str:D $u --> UserName:D)
 {
-    my UserName:D $user-name = $u or die "Sorry, invalid username 「$u」";
+    my UserName:D $user-name = $u or die("Sorry, invalid username 「$u」");
 }
 
 # confirm vault name $v is valid VaultName and return VaultName
 method gen-vault-name(Str:D $v --> VaultName:D)
 {
-    my VaultName:D $vault-name = $v or die "Sorry, invalid vault name 「$v」";
+    my VaultName:D $vault-name = $v or die("Sorry, invalid vault name 「$v」");
 }
 
 # confirm vault pass $v is valid VaultPass and return VaultPass
 method gen-vault-pass(Str:D $v --> VaultPass:D)
 {
     my VaultPass:D $vault-pass = $v
-        or die 'Sorry, invalid vault pass. Length needed: 1-512. '
-             ~ 'Length given: ' ~ $v.chars;
+        or die('Sorry, invalid vault pass. Length needed: 1-512. '
+                ~ 'Length given: ' ~ $v.chars());
 }
 
 
@@ -257,7 +257,7 @@ multi sub dprompt(
     # menu (T $tag)
     @menu,
     # default response
-    T :$default-item! where *.defined,
+    T :$default-item! where *.defined(),
     # menu title
     Str:D :$title!,
     # question posed to user
@@ -293,7 +293,7 @@ multi sub dprompt(
                 --defaultno \\
                 --title 'ARE YOU SURE?' \\
                 --yesno 'Use $confirm-topic «$response»?' 8 35
-        ").exitcode == 0;
+        ").exitcode() == 0;
 
         last if $confirmed;
     }
@@ -308,7 +308,7 @@ multi sub dprompt(
     # menu (T $tag => Str $item)
     %menu,
     # default response
-    T :$default-item! where *.defined,
+    T :$default-item! where *.defined(),
     # menu title
     Str:D :$title!,
     # question posed to user
@@ -333,7 +333,7 @@ multi sub dprompt(
                 --no-cancel \\
                 --default-item $default-item \\
                 --title '$title' \\
-                --menu '$prompt-text' $height $width $menu-height {%menu.sort}
+                --menu '$prompt-text' $height $width $menu-height {%menu.sort()}
         >;
 
         # confirm selection
@@ -343,7 +343,7 @@ multi sub dprompt(
                 --defaultno \\
                 --title 'ARE YOU SURE?' \\
                 --yesno 'Use $confirm-topic «$response»?' 8 35
-        ").exitcode == 0;
+        ").exitcode() == 0;
 
         last if $confirmed;
     }
@@ -356,7 +356,7 @@ sub tprompt(
     # type of response expected
     ::T,
     # default response
-    T $response-default where *.defined,
+    T $response-default where *.defined(),
     # question posed to user
     Str:D :$prompt-text!,
     # optional help text to display before prompt
@@ -411,7 +411,7 @@ multi sub is-confirmed(Str:D $confirmation where /:i n[o]?/ --> Bool:D)
 }
 
 # was response empty?
-multi sub is-confirmed(Str:D $confirmation where *.chars == 0 --> Bool:D)
+multi sub is-confirmed(Str:D $confirmation where *.chars() == 0 --> Bool:D)
 {
     my Bool:D $is-confirmed = False;
 }
@@ -490,7 +490,7 @@ sub prompt-locale(--> Locale:D)
     );
 }
 
-multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
+multi sub prompt-name(Bool:D :$host! where *.so() --> HostName:D)
 {
     # default response
     my HostName:D $response-default = 'vault';
@@ -499,7 +499,7 @@ multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
     my Str:D $prompt-text = 'Enter hostname [vault]: ';
 
     # help text
-    my Str:D $help-text = q:to/EOF/.trim;
+    my Str:D $help-text = q:to/EOF/.trim();
     Determining hostname...
 
     Leave blank if you don't know what this is
@@ -514,7 +514,7 @@ multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
     );
 }
 
-multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
+multi sub prompt-name(Bool:D :$user! where *.so() --> UserName:D)
 {
     # default response
     my UserName:D $response-default = 'live';
@@ -523,7 +523,7 @@ multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
     my Str:D $prompt-text = 'Enter username [live]: ';
 
     # help text
-    my Str:D $help-text = q:to/EOF/.trim;
+    my Str:D $help-text = q:to/EOF/.trim();
     Determining username...
 
     Leave blank if you don't know what this is
@@ -538,7 +538,7 @@ multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
     );
 }
 
-multi sub prompt-name(Bool:D :$vault! where *.so --> VaultName:D)
+multi sub prompt-name(Bool:D :$vault! where *.so() --> VaultName:D)
 {
     # default response
     my VaultName:D $response-default = 'vault';
@@ -547,7 +547,7 @@ multi sub prompt-name(Bool:D :$vault! where *.so --> VaultName:D)
     my Str:D $prompt-text = 'Enter vault name [vault]: ';
 
     # help text
-    my Str:D $help-text = q:to/EOF/.trim;
+    my Str:D $help-text = q:to/EOF/.trim();
     Determining name of LUKS encrypted volume...
 
     Leave blank if you don't know what this is
@@ -566,7 +566,7 @@ method !prompt-partition(--> Str:D)
 {
     # get list of partitions
     my Str:D @partitions =
-        self.ls-partitions()».subst(/(.*)/, -> $/ { "/dev/$0" });
+        self.ls-partitions().hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) });
 
     my Str:D $default-item = '/dev/sdb';
     my Str:D $prompt-text = 'Select partition for installing Arch:';
@@ -601,7 +601,7 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
         # reading secure password digest into memory...
         # "Enter Root / User Password"
         print("Enter $subject ");
-        $pass-digest = qx<openssl passwd -1 -salt sha512>.trim;
+        $pass-digest = qx<openssl passwd -1 -salt sha512>.trim();
 
         # verifying secure password digest is not empty...
         if $pass-digest eqv $blank-pass-digest
@@ -614,7 +614,8 @@ sub prompt-pass-digest(Bool :$root --> Str:D)
         # verifying secure password digest...
         # "Retype Root / User Password"
         print("Retype $subject ");
-        my Str:D $pass-digest-confirm = qx<openssl passwd -1 -salt sha512>.trim;
+        my Str:D $pass-digest-confirm =
+            qx<openssl passwd -1 -salt sha512>.trim();
 
         last if $pass-digest eqv $pass-digest-confirm;
 
@@ -648,7 +649,8 @@ sub prompt-timezone(--> Timezone:D)
     my Timezone:D @timezones = @Archvault::Types::timezones;
 
     # get list of timezone regions
-    my Str:D @regions = @timezones».subst(/'/'\N*$/, '').unique;
+    my Str:D @regions =
+        @timezones.hyper.map({ .subst(/'/'\N*$/, '') }).unique();
 
     # prompt choose region
     my Str:D $region = do
@@ -669,7 +671,11 @@ sub prompt-timezone(--> Timezone:D)
 
     # get list of timezone region subregions
     my Str:D @subregions =
-        @timezones.grep(/$region/)».subst(/^$region'/'/, '').sort;
+        @timezones
+        .grep(/$region/)
+        .hyper()
+        .map({ .subst(/^$region'/'/, '') })
+        .sort();
 
     # prompt choose subregion
     my Str:D $subregion = do
@@ -710,7 +716,7 @@ method ls-keymaps(--> Array[Keymap:D])
             -a \( ! -name "*.latin1*" \)    \
             -a \( ! -name "*.m4*"     \)    \
             -printf '%f\n'
-    >.trim.split("\n")».subst(/'.map.gz'$/, '').sort;
+    >.trim().split("\n").hyper().map({ .subst(/'.map.gz'$/, '') }).sort();
 }
 
 # list locales
@@ -718,7 +724,7 @@ method ls-locales(--> Array[Locale:D])
 {
     my Locale:D @locales = qx<
         find /usr/share/i18n/locales -type f -printf '%f\n'
-    >.trim.split("\n").sort;
+    >.trim().split("\n").sort();
 }
 
 # list block devices (partitions)
@@ -726,7 +732,7 @@ method ls-partitions(--> Array[Str:D])
 {
     my Str:D @partitions = qx<
         lsblk --output NAME --nodeps --noheadings --raw
-    >.trim.split("\n").sort;
+    >.trim().split("\n").sort();
 }
 
 # list timezones
@@ -737,7 +743,7 @@ method ls-timezones(--> Array[Timezone:D])
     my Timezone:D @timezones =
         |qx<
             sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
-        >.trim.split("\n").sort,
+        >.trim().split("\n").sort(),
         'UTC';
 }
 

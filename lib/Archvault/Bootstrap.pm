@@ -8,7 +8,7 @@ has Archvault::Config:D $.config is required;
 method bootstrap(::?CLASS:D: --> Nil)
 {
     # verify root permissions
-    $*USER == 0 or die 'root privileges required';
+    $*USER == 0 or die('root privileges required');
     self!setup();
     self!mkdisk();
     self!pacstrap-base();
@@ -141,9 +141,9 @@ method !mkvault(--> Nil)
 
 # LUKS encrypted volume password was given
 multi sub mkvault-cryptsetup(
-    Str:D :$partition-vault where *.so,
-    VaultName:D :$vault-name where *.so,
-    VaultPass:D :$vault-pass where *.so
+    Str:D :$partition-vault where *.so(),
+    VaultName:D :$vault-name where *.so(),
+    VaultPass:D :$vault-pass where *.so()
     --> Nil
 )
 {
@@ -171,8 +171,8 @@ multi sub mkvault-cryptsetup(
 
 # LUKS encrypted volume password not given
 multi sub mkvault-cryptsetup(
-    Str:D :$partition-vault where *.so,
-    VaultName:D :$vault-name where *.so,
+    Str:D :$partition-vault where *.so(),
+    VaultName:D :$vault-name where *.so(),
     VaultPass :vault-pass($)
     --> Nil
 )
@@ -204,8 +204,8 @@ multi sub mkvault-cryptsetup(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Str:D $partition-vault where *.so,
-    Bool:D :interactive($) where *.so
+    Str:D $partition-vault where *.so(),
+    Bool:D :interactive($) where *.so()
     --> Str:D
 )
 {
@@ -233,7 +233,7 @@ multi sub build-cryptsetup-luks-format-cmdline(
         $exit-lindex-result;
 
     my Str:D $cryptsetup-luks-format-cmdline =
-        sprintf(q:to/EOF/.trim, |@cryptsetup-luks-format-cmdline);
+        sprintf(q:to/EOF/.trim(), |@cryptsetup-luks-format-cmdline);
         expect -c '%s;
                    %s;
                    %s;
@@ -243,9 +243,9 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Str:D $partition-vault where *.so,
-    VaultPass:D $vault-pass where *.so,
-    Bool:D :non-interactive($) where *.so
+    Str:D $partition-vault where *.so(),
+    VaultPass:D $vault-pass where *.so(),
+    Bool:D :non-interactive($) where *.so()
     --> Str:D
 )
 {
@@ -276,7 +276,7 @@ multi sub build-cryptsetup-luks-format-cmdline(
         $expect-eof;
 
     my Str:D $cryptsetup-luks-format-cmdline =
-        sprintf(q:to/EOF/.trim, |@cryptsetup-luks-format-cmdline);
+        sprintf(q:to/EOF/.trim(), |@cryptsetup-luks-format-cmdline);
         expect <<'EOS'
           %s
           %s
@@ -288,9 +288,9 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Str:D $partition-vault where *.so,
-    VaultName:D $vault-name where *.so,
-    Bool:D :interactive($) where *.so
+    Str:D $partition-vault where *.so(),
+    VaultName:D $vault-name where *.so(),
+    Bool:D :interactive($) where *.so()
     --> Str:D
 )
 {
@@ -299,10 +299,10 @@ multi sub build-cryptsetup-luks-open-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Str:D $partition-vault where *.so,
-    VaultName:D $vault-name where *.so,
-    VaultPass:D $vault-pass where *.so,
-    Bool:D :non-interactive($) where *.so
+    Str:D $partition-vault where *.so(),
+    VaultName:D $vault-name where *.so(),
+    VaultPass:D $vault-pass where *.so(),
+    Bool:D :non-interactive($) where *.so()
     --> Str:D
 )
 {
@@ -318,7 +318,7 @@ multi sub build-cryptsetup-luks-open-cmdline(
         $expect-eof;
 
     my Str:D $cryptsetup-luks-open-cmdline =
-        sprintf(q:to/EOF/.trim, |@cryptsetup-luks-open-cmdline);
+        sprintf(q:to/EOF/.trim(), |@cryptsetup-luks-open-cmdline);
         expect <<'EOS'
           %s
           %s
@@ -328,8 +328,8 @@ multi sub build-cryptsetup-luks-open-cmdline(
 }
 
 sub loop-cryptsetup-cmdline-proc(
-    Str:D $message where *.so,
-    Str:D $cryptsetup-cmdline where *.so
+    Str:D $message where *.so(),
+    Str:D $cryptsetup-cmdline where *.so()
     --> Nil
 )
 {
@@ -342,7 +342,7 @@ sub loop-cryptsetup-cmdline-proc(
         # - returns exit code 0 if success
         # - returns exit code 1 if SIGINT
         # - returns exit code 2 if wrong password
-        last if $cryptsetup.exitcode == 0;
+        last if $cryptsetup.exitcode() == 0;
     }
 }
 
@@ -622,7 +622,7 @@ method !configure-pacman(--> Nil)
 
     $sed-cmd = '';
 
-    if $*KERNEL.bits == 64
+    if $*KERNEL.bits() == 64
     {
         $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
         shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
@@ -725,7 +725,7 @@ method !install-bootloader(--> Nil)
     my Str:D $partition = $.config.partition;
     my Str:D $partition-vault = $partition ~ '3';
     my VaultName:D $vault-name = $.config.vault-name;
-    my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
+    my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim();
 
     my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
@@ -923,16 +923,16 @@ method !disable-btrfs-cow(--> Nil)
 }
 
 sub chattrify(
-    Str:D $directory where *.so,
+    Str:D $directory where *.so(),
     # permissions should be octal: https://doc.perl6.org/routine/chmod
     UInt:D $permissions,
-    Str:D $user where *.so,
-    Str:D $group where *.so
+    Str:D $user where *.so(),
+    Str:D $group where *.so()
     --> Nil
 )
 {
     my Str:D $orig-dir = ~$directory.IO.resolve;
-    die 'directory failed exists readable directory test'
+    die('directory failed exists readable directory test')
         unless $orig-dir.IO.e && $orig-dir.IO.r && $orig-dir.IO.d;
 
     my Str:D $backup-dir = $orig-dir ~ '-old';
