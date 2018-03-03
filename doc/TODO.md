@@ -1,4 +1,3 @@
-- idea: replace iptables with nftables
 - idea: `archvault new [profile]`
   - `archvault new amnesia`
   - `archvault new default`

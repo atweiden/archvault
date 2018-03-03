@@ -33,7 +33,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-systemd();
     self!configure-hidepid();
     self!configure-securetty();
-    self!configure-iptables();
+    self!configure-nftables();
     self!configure-openssh();
     self!configure-x11();
     self!enable-systemd-services();
@@ -57,8 +57,8 @@ method !setup(--> Nil)
         btrfs-progs
         expect
         gptfdisk
-        iptables
         kbd
+        nftables
     >;
     run(qw<pacman -Sy --needed --noconfirm>, @deps);
 
@@ -430,11 +430,11 @@ method !pacstrap-base(--> Nil)
         grub-bios
         haveged
         iproute2
-        iptables
         iw
         kbd
         kexec-tools
         net-tools
+        nftables
         openresolv
         openssh
         reflector
@@ -864,11 +864,10 @@ method !configure-securetty(--> Nil)
     );
 }
 
-method !configure-iptables(--> Nil)
+method !configure-nftables(--> Nil)
 {
-    shell('iptables-save > /mnt/etc/iptables/iptables.up.rules');
-    shell("iptables-restore < %?RESOURCES<etc/iptables/iptables.test.rules>");
-    shell('iptables-save > /mnt/etc/iptables/iptables.rules');
+    # XXX: customize nftables
+    Nil;
 }
 
 method !configure-openssh(--> Nil)
@@ -909,7 +908,7 @@ method !enable-systemd-services(--> Nil)
         cronie
         dnscrypt-proxy
         haveged
-        iptables
+        nftables
         systemd-swap
     >;
     @service.map(-> $service {
