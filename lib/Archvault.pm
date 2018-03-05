@@ -30,7 +30,7 @@ method new(
     my Archvault::Config $config .= new(|%opts);
 
     # bootstrap archvault
-    Archvault::Bootstrap.new(:$config).bootstrap();
+    Archvault::Bootstrap.new(:$config).bootstrap;
 }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:
