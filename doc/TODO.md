@@ -1,5 +1,6 @@
 - idea: `archvault new [profile]`
   - `archvault new amnesia`
+    - https://tails.boum.org/contribute/design/memory_erasure/
   - `archvault new default`
   - `archvault new iso`
   - `archvault new secureboot`
