@@ -14,21 +14,11 @@ has UserName:D $.user-name =
     %*ENV<USER_NAME> ?? self.gen-user-name(%*ENV<USER_NAME>)
                      !! prompt-name(:user);
 
-# sha512 password digest for privileged user
-has Str:D $.user-pass-digest =
-    %*ENV<USER_PASS> ?? self.gen-digest(%*ENV<USER_PASS>)
-                     !! prompt-pass-digest();
-
-# sha512 password digest for root user
-has Str:D $.root-pass-digest =
-    %*ENV<ROOT_PASS> ?? self.gen-digest(%*ENV<ROOT_PASS>)
-                     !! prompt-pass-digest(:root);
-
 # add unprivileged users
 has Bool:D $.add-users = ?%*ENV<ADD_USERS>;
 
-# name/digest for unprivileged users
-has Str:D %.user{UserName:D} = $!add-users && prompt-add-users();
+# names of additional unprivileged users
+has UserName:D @.user = $!add-users && prompt-add-users();
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -145,17 +135,11 @@ submethod BUILD(
     # if --reflector, initialize $.reflector to True
     $!reflector = $reflector if $reflector;
 
-    # if --rootpass, initialize $.root-pass-digest to sha512 digest
-    $!root-pass-digest = self.gen-digest($rootpass) if $rootpass;
-
     # if --timezone, initialize $.timezone to Timezone
     $!timezone = self.gen-timezone($timezone) if $timezone;
 
     # if --username, initialize $.user-name to UserName
     $!user-name = self.gen-user-name($username) if $username;
-
-    # if --userpass, initialize $.user-pass-digest to sha512 digest
-    $!user-pass-digest = self.gen-digest($userpass) if $userpass;
 }
 
 method new(
@@ -187,12 +171,6 @@ method new(
 # -----------------------------------------------------------------------------
 # string formatting, resolution and validation
 # -----------------------------------------------------------------------------
-
-# return sha512 salt of password for linux user
-method gen-digest(Str:D $password --> Str:D)
-{
-    my Str:D $digest = qqx<openssl passwd -1 -salt sha512 $password>.trim;
-}
 
 # confirm disk type $d is valid DiskType and return DiskType
 method gen-disk-type(Str:D $d --> DiskType:D)
@@ -573,7 +551,7 @@ multi sub prompt-name(Bool:D :vault($)! where *.so --> VaultName:D)
     );
 }
 
-sub prompt-add-users(--> Hash[Str:D,UserName:D])
+sub prompt-add-users(--> Array[UserName:D])
 {
     my UInt:D $additional-users-requested = do {
         my UInt:D $response-default = 1;
@@ -582,12 +560,10 @@ sub prompt-add-users(--> Hash[Str:D,UserName:D])
         tprompt(UInt:D, $response-default, :$prompt-text);
     }
 
-    say('Enter name and password for each unprivileged user to add.');
-    my Str:D %user{UserName:D} =
+    say('Enter name for each unprivileged user to add.');
+    my UserName:D @user =
         (0..^$additional-users-requested).map({
             my UserName:D $user-name = prompt-name(:user);
-            my Str:D $user-pass-digest = prompt-pass-digest();
-            $user-name => $user-pass-digest;
         });
 }
 
@@ -610,48 +586,6 @@ method !prompt-partition(--> Str:D)
         :$title,
         :$confirm-topic
     );
-}
-
-# generate sha512 password digest from user input
-sub prompt-pass-digest(Bool :$root --> Str:D)
-{
-    # sha512 digest of empty password, for verifying passwords aren't blank
-    my Str:D $blank-pass-digest = '$1$sha512$LGta5G7pRej6dUrilUI3O.';
-
-    # for 'Enter Root / User Password' input prompts
-    my Str:D $subject = $root ?? 'Root' !! 'User';
-
-    # store sha512 digest of password
-    my Str $pass-digest;
-
-    # loop until a non-blank password is entered twice in a row
-    loop
-    {
-        # reading secure password digest into memory...
-        # "Enter Root / User Password"
-        print("Enter $subject ");
-        $pass-digest = qx<openssl passwd -1 -salt sha512>.trim;
-
-        # verifying secure password digest is not empty...
-        if $pass-digest eqv $blank-pass-digest
-        {
-            # password is empty, try again
-            say("$subject password cannot be blank. Please try again");
-            next;
-        }
-
-        # verifying secure password digest...
-        # "Retype Root / User Password"
-        print("Retype $subject ");
-        my Str:D $pass-digest-confirm = qx<openssl passwd -1 -salt sha512>.trim;
-
-        last if $pass-digest eqv $pass-digest-confirm;
-
-        # password not verified, try again
-        say('Please try again');
-    }
-
-    $pass-digest;
 }
 
 sub prompt-processor(--> Processor:D)

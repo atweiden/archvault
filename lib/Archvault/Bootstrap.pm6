@@ -467,25 +467,26 @@ method !configure-users(--> Nil)
 
 method !configure-users-privileged(--> Nil)
 {
-    # updating root password...
-    my Str:D $root-pass-digest = $.config.root-pass-digest;
-    run(qqw<arch-chroot /mnt usermod -p $root-pass-digest root>);
+    say('Setting root password...');
+    loop-mkpasswd('root');
 
-    # creating new user with password from secure password digest...
     my UserName:D $user-name = $.config.user-name;
-    my Str:D $user-pass-digest = $.config.user-pass-digest;
+    say("Creating new privileged user named $user-name...");
     run(qqw<
         arch-chroot
         /mnt
         useradd
         -m
-        -p $user-pass-digest
         -s /bin/bash
         -g users
         -G audio,games,log,lp,network,optical,power,scanner,storage,video,wheel
         $user-name
     >);
 
+    say("Setting password for the privileged user named $user-name...");
+    loop-mkpasswd($user-name);
+
+    say("Giving sudo privileges to the user named $user-name...");
     my Str:D $sudoers = qq:to/EOF/;
     $user-name ALL=(ALL) ALL
     $user-name ALL=(ALL) NOPASSWD: /usr/bin/reboot
@@ -497,20 +498,31 @@ method !configure-users-privileged(--> Nil)
 method !configure-users-unprivileged(--> Nil)
 {
     # NOTE: does not handle duplicate usernames
-    $.config.user.sort.map(-> %user {
-        my UserName:D $user-name = %user.keys.first;
-        my Str:D $user-pass-digest = %user.values.first;
+    $.config.user.sort.map(-> $user-name {
+        say("Creating new unprivileged user named $user-name...");
         run(qqw<
             arch-chroot
             /mnt
             useradd
             -m
-            -p $user-pass-digest
             -s /bin/bash
             -g users
             $user-name
         >);
+
+        say("Setting password for the user named $user-name...");
+        loop-mkpasswd($user-name);
     });
+}
+
+# modify user password on disk
+sub loop-mkpasswd(Str:D $user-name --> Nil)
+{
+    loop
+    {
+        my Proc:D $passwd = shell("arch-chroot /mnt passwd $user-name");
+        last if $passwd.exitcode == 0;
+    }
 }
 
 method !genfstab(--> Nil)

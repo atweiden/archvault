@@ -49,10 +49,10 @@ glibc                | locale data in `/usr/share/i18n/locales`        | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`             | Y
 kbd                  | keymap data in `/usr/share/kbd/keymaps`         | Y
 kmod                 | `modprobe`                                      | Y
-openssl              | user password salts                             | Y
 pacman               | `makepkg`, `pacman`                             | Y
 rakudo               | `archvault` Perl6 runtime                       | N
 sed                  | `sed`                                           | Y
+shadow               | `passwd`                                        | Y
 tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab` | Y
 util-linux           | `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`   | Y
 
