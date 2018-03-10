@@ -9,12 +9,12 @@ unit class Archvault::Config;
 # - attributes appear in specific order for prompting user
 # - defaults are geared towards live media installation
 
-# name for normal user (default: live)
+# name for privileged user (default: live)
 has UserName:D $.user-name =
     %*ENV<USER_NAME> ?? self.gen-user-name(%*ENV<USER_NAME>)
                      !! prompt-name(:user);
 
-# sha512 password digest for normal user
+# sha512 password digest for privileged user
 has Str:D $.user-pass-digest =
     %*ENV<USER_PASS> ?? self.gen-digest(%*ENV<USER_PASS>)
                      !! prompt-pass-digest();
@@ -23,6 +23,12 @@ has Str:D $.user-pass-digest =
 has Str:D $.root-pass-digest =
     %*ENV<ROOT_PASS> ?? self.gen-digest(%*ENV<ROOT_PASS>)
                      !! prompt-pass-digest(:root);
+
+# add unprivileged users
+has Bool:D $.add-users = ?%*ENV<ADD_USERS>;
+
+# name/digest for unprivileged users
+has Str:D %.user{UserName:D} = $!add-users && prompt-add-users();
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -84,6 +90,7 @@ has Bool:D $.reflector = ?%*ENV<REFLECTOR>;
 # -----------------------------------------------------------------------------
 
 submethod BUILD(
+    Bool :$addusers,
     Bool :$augment,
     Str :$disktype,
     Str :$graphics,
@@ -102,6 +109,9 @@ submethod BUILD(
     --> Nil
 )
 {
+    # if --addusers, initialize $.add-users to True
+    $!add-users = $addusers if $addusers;
+
     # if --augment, initialize $.augment to True
     $!augment = $augment if $augment;
 
@@ -150,6 +160,7 @@ submethod BUILD(
 
 method new(
     *%opts (
+        Bool :addusers($),
         Bool :augment($),
         Str :disktype($),
         Str :graphics($),
@@ -490,7 +501,7 @@ sub prompt-locale(--> Locale:D)
     );
 }
 
-multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
+multi sub prompt-name(Bool:D :host($)! where *.so --> HostName:D)
 {
     # default response
     my HostName:D $response-default = 'vault';
@@ -514,7 +525,7 @@ multi sub prompt-name(Bool:D :$host! where *.so --> HostName:D)
     );
 }
 
-multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
+multi sub prompt-name(Bool:D :user($)! where *.so --> UserName:D)
 {
     # default response
     my UserName:D $response-default = 'live';
@@ -538,7 +549,7 @@ multi sub prompt-name(Bool:D :$user! where *.so --> UserName:D)
     );
 }
 
-multi sub prompt-name(Bool:D :$vault! where *.so --> VaultName:D)
+multi sub prompt-name(Bool:D :vault($)! where *.so --> VaultName:D)
 {
     # default response
     my VaultName:D $response-default = 'vault';
@@ -560,6 +571,24 @@ multi sub prompt-name(Bool:D :$vault! where *.so --> VaultName:D)
         :$prompt-text,
         :$help-text
     );
+}
+
+sub prompt-add-users(--> Hash[Str:D,UserName:D])
+{
+    my UInt:D $additional-users-requested = do {
+        my UInt:D $response-default = 1;
+        my Str:D $prompt-text =
+            'Enter number of unprivileged users to add [1]: ';
+        tprompt(UInt:D, $response-default, :$prompt-text);
+    }
+
+    say('Enter name and password for each unprivileged user to add.');
+    my Str:D %user{UserName:D} =
+        (0..^$additional-users-requested).map({
+            my UserName:D $user-name = prompt-name(:user);
+            my Str:D $user-pass-digest = prompt-pass-digest();
+            $user-name => $user-pass-digest;
+        });
 }
 
 method !prompt-partition(--> Str:D)

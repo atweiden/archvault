@@ -38,6 +38,7 @@ multi sub MAIN('help', $? --> Nil)
 multi sub MAIN(
     'new',
     *%opts (
+        Bool :addusers($),
         Bool :augment($),
         Str :disktype($),
         Str :graphics($),
@@ -143,10 +144,12 @@ multi sub USAGE('new' --> Nil)
                 --locale="en_US"                      \
                 --keymap="us"                         \
                 --timezone="America/Los_Angeles"      \
+                --addusers                            \
                 --augment                             \
                 new
 
     Options:
+      --addusers                   add unprivileged user accounts
       --augment                    drop to Bash console mid-execution
       --disktype=<disktype>        hard drive type
       --graphics=<graphics>        graphics card type

@@ -461,6 +461,12 @@ method !pacstrap-base(--> Nil)
 # secure user configuration
 method !configure-users(--> Nil)
 {
+    self!configure-users-privileged;
+    self!configure-users-unprivileged if $.config.add-users;
+}
+
+method !configure-users-privileged(--> Nil)
+{
     # updating root password...
     my Str:D $root-pass-digest = $.config.root-pass-digest;
     run(qqw<arch-chroot /mnt usermod -p $root-pass-digest root>);
@@ -486,6 +492,25 @@ method !configure-users(--> Nil)
     $user-name ALL=(ALL) NOPASSWD: /usr/bin/shutdown
     EOF
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
+}
+
+method !configure-users-unprivileged(--> Nil)
+{
+    # NOTE: does not handle duplicate usernames
+    $.config.user.sort.map(-> %user {
+        my UserName:D $user-name = %user.keys.first;
+        my Str:D $user-pass-digest = %user.values.first;
+        run(qqw<
+            arch-chroot
+            /mnt
+            useradd
+            -m
+            -p $user-pass-digest
+            -s /bin/bash
+            -g users
+            $user-name
+        >);
+    });
 }
 
 method !genfstab(--> Nil)

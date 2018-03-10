@@ -21,6 +21,7 @@ archvault --username="live"                     \
           --locale="en_US"                      \
           --keymap="us"                         \
           --timezone="America/Los_Angeles"      \
+          --addusers                            \
           --augment                             \
           new
 ```
@@ -70,6 +71,8 @@ reflector | optimize pacman mirrors | N
 variable values for all configuration options aside from `--hostname`,
 `--username`, `--userpass`, `--rootpass`, and `--vaultname`. For user
 input of all other options, the `dialog` program is used.
+
+`dialog` is needed if you enable the `--addusers` option.
 
 `reflector` is needed if you pass the `--reflector` cmdline flag to
 Archvault. You are recommended to edit `/etc/pacman.d/mirrorlist`
