@@ -880,7 +880,7 @@ method !configure-openssh(--> Nil)
     my Str:D $allow-users = qq:to/EOF/;
     AllowUsers $user-name
     EOF
-    spurt('/mnt/etc/sshd_config', "\n" ~ $allow-users, :append);
+    spurt('/mnt/etc/ssh/sshd_config', "\n" ~ $allow-users, :append);
 
     # restrict allowed connections to LAN
     copy(%?RESOURCES<etc/hosts.allow>, '/mnt/etc/hosts.allow');
