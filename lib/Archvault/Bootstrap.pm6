@@ -482,6 +482,8 @@ method !configure-users(--> Nil)
 
     my Str:D $sudoers = qq:to/EOF/;
     $user-name ALL=(ALL) ALL
+    $user-name ALL=(ALL) NOPASSWD: /usr/bin/reboot
+    $user-name ALL=(ALL) NOPASSWD: /usr/bin/shutdown
     EOF
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
 }
