@@ -554,9 +554,12 @@ method !configure-dnscrypt-proxy(--> Nil)
         -s /bin/nologin
         dnscrypt
     >);
+    configure-dnscrypt-proxy('User');
+    configure-dnscrypt-proxy('EphemeralKeys');
+}
 
-    # User {{{
-
+multi sub configure-dnscrypt-proxy('User' --> Nil)
+{
     my Str:D $sed-cmd =
           q{s,}
         ~ q{^# User.*}
@@ -564,22 +567,17 @@ method !configure-dnscrypt-proxy(--> Nil)
         ~ q{User dnscrypt}
         ~ q{,};
     shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
+}
 
-    # end User }}}
-
-    $sed-cmd = '';
-
-    # EphemeralKeys {{{
-
-    $sed-cmd =
+multi sub configure-dnscrypt-proxy('EphemeralKeys' --> Nil)
+{
+    my Str:D $sed-cmd =
           q{s,}
         ~ q{EphemeralKeys off}
         ~ q{,}
         ~ q{EphemeralKeys on}
         ~ q{,};
     shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
-
-    # end EphemeralKeys }}}
 }
 
 method !set-nameservers(--> Nil)
@@ -646,21 +644,27 @@ method !configure-tmpfiles(--> Nil)
 
 method !configure-pacman(--> Nil)
 {
+    configure-pacman('CheckSpace');
+    configure-pacman('ILoveCandy');
+    configure-pacman('multilib') if $*KERNEL.bits == 64;
+}
+
+multi sub configure-pacman('CheckSpace' --> Nil)
+{
     my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
     shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
+}
 
-    $sed-cmd = '';
-
-    $sed-cmd = '/^CheckSpace.*/a ILoveCandy';
+multi sub configure-pacman('ILoveCandy' --> Nil)
+{
+    my Str:D $sed-cmd = '/^CheckSpace.*/a ILoveCandy';
     shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
+}
 
-    $sed-cmd = '';
-
-    if $*KERNEL.bits == 64
-    {
-        $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
-        shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
-    }
+multi sub configure-pacman('multilib' --> Nil)
+{
+    my Str:D $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
+    shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
 }
 
 method !configure-system-sleep(--> Nil)
@@ -681,9 +685,19 @@ method !generate-initramfs(--> Nil)
     my DiskType:D $disk-type = $.config.disk-type;
     my Graphics:D $graphics = $.config.graphics;
     my Processor:D $processor = $.config.processor;
+    configure-initramfs('MODULES', $graphics, $processor);
+    configure-initramfs('HOOKS', $disk-type);
+    configure-initramfs('FILES');
+    run(qw<arch-chroot /mnt mkinitcpio -p linux>);
+}
 
-    # MODULES {{{
-
+multi sub configure-initramfs(
+    'MODULES',
+    Graphics:D $graphics,
+    Processor:D $processor
+    --> Nil
+)
+{
     my Str:D @modules;
     push(@modules, $processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c');
     push(@modules, 'i915') if $graphics eq 'INTEL';
@@ -698,13 +712,10 @@ method !generate-initramfs(--> Nil)
         ~ q{MODULES=(} ~ @modules.join(' ') ~ q{)}
         ~ q{,};
     shell("sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf");
+}
 
-    # end MODULES }}}
-
-    $sed-cmd = '';
-
-    # HOOKS {{{
-
+multi sub configure-initramfs('HOOKS', DiskType:D $disk-type --> Nil)
+{
     my Str:D @hooks = qw<
         base
         udev
@@ -721,26 +732,19 @@ method !generate-initramfs(--> Nil)
     $disk-type eq 'USB'
         ?? @hooks.splice(2, 0, 'block')
         !! @hooks.splice(4, 0, 'block');
-    $sed-cmd =
+    my Str:D $sed-cmd =
           q{s,}
         ~ q{^HOOKS.*}
         ~ q{,}
         ~ q{HOOKS=(} ~ @hooks.join(' ') ~ q{)}
         ~ q{,};
     shell("sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf");
+}
 
-    # end HOOKS }}}
-
-    $sed-cmd = '';
-
-    # FILES {{{
-
-    $sed-cmd = 's,^FILES.*,FILES=(/etc/modprobe.d/modprobe.conf),';
+multi sub configure-initramfs('FILES' --> Nil)
+{
+    my Str:D $sed-cmd = 's,^FILES.*,FILES=(/etc/modprobe.d/modprobe.conf),';
     run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
-
-    # end FILES }}}
-
-    run(qw<arch-chroot /mnt mkinitcpio -p linux>);
 }
 
 method !configure-io-schedulers(--> Nil)
@@ -754,65 +758,18 @@ method !configure-io-schedulers(--> Nil)
 
 method !install-bootloader(--> Nil)
 {
-    # GRUB_CMDLINE_LINUX {{{
-
     my Str:D $partition = $.config.partition;
-    my Str:D $partition-vault = $partition ~ '3';
     my VaultName:D $vault-name = $.config.vault-name;
-    my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
-
-    my Str:D $grub-cmdline-linux =
-        "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
-            ~ ' rootflags=subvol=@';
-    $grub-cmdline-linux ~= ' radeon.dpm=1' if $.config.graphics eq 'RADEON';
-
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^\(GRUB_CMDLINE_LINUX\)=.*}
-        ~ q{,}
-        ~ q{\1=\"} ~ $grub-cmdline-linux ~ q{\"}
-        ~ q{,};
-
-    shell("sed -i '$sed-cmd' /mnt/etc/default/grub");
-
-    # end GRUB_CMDLINE_LINUX }}}
-
-    $sed-cmd = '';
-
-    # GRUB_DEFAULT {{{
-
-    $sed-cmd = 's,^\(GRUB_DEFAULT\)=.*,\1=saved,';
-    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
-
-    # end GRUB_DEFAULT }}}
-
-    $sed-cmd = '';
-
-    # GRUB_SAVEDEFAULT {{{
-
-    $sed-cmd = 's,^#\(GRUB_SAVEDEFAULT\),\1,';
-    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
-
-    # end GRUB_SAVEDEFAULT }}}
-
-    $sed-cmd = '';
-
-    # GRUB_ENABLE_CRYPTODISK {{{
-
-    $sed-cmd = 's,^#\(GRUB_ENABLE_CRYPTODISK\),\1,';
-    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
-
-    # end GRUB_ENABLE_CRYPTODISK }}}
-
-    # GRUB_DISABLE_SUBMENU {{{
-
-    my Str:D $grub-disable-submenu = q:to/EOF/;
-    GRUB_DISABLE_SUBMENU=y
-    EOF
-    spurt('/mnt/etc/default/grub', "\n" ~ $grub-disable-submenu, :append);
-
-    # end GRUB_DISABLE_SUBMENU }}}
-
+    configure-bootloader(
+        'GRUB_CMDLINE_LINUX',
+        $partition,
+        $vault-name,
+        $graphics
+    );
+    configure-bootloader('GRUB_DEFAULT');
+    configure-bootloader('GRUB_SAVEDEFAULT');
+    configure-bootloader('GRUB_ENABLE_CRYPTODISK');
+    configure-bootloader('GRUB_DISABLE_SUBMENU');
     run(qw<
         arch-chroot
         /mnt
@@ -835,34 +792,90 @@ method !install-bootloader(--> Nil)
     >);
 }
 
+multi sub configure-bootloader(
+    'GRUB_CMDLINE_LINUX',
+    Str:D $partition,
+    VaultName:D $vault-name,
+    Graphics:D $graphics
+    --> Nil
+)
+{
+    my Str:D $partition-vault = $partition ~ '3';
+    my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
+
+    my Str:D $grub-cmdline-linux =
+        "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
+            ~ ' rootflags=subvol=@';
+    $grub-cmdline-linux ~= ' radeon.dpm=1' if $.config.graphics eq 'RADEON';
+
+    my Str:D $sed-cmd =
+          q{s,}
+        ~ q{^\(GRUB_CMDLINE_LINUX\)=.*}
+        ~ q{,}
+        ~ q{\1=\"} ~ $grub-cmdline-linux ~ q{\"}
+        ~ q{,};
+
+    shell("sed -i '$sed-cmd' /mnt/etc/default/grub");
+}
+
+multi sub configure-bootloader('GRUB_DEFAULT' --> Nil)
+{
+    my Str:D $sed-cmd = 's,^\(GRUB_DEFAULT\)=.*,\1=saved,';
+    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
+}
+
+multi sub configure-bootloader('GRUB_SAVEDEFAULT' --> Nil)
+{
+    my Str:D $sed-cmd = 's,^#\(GRUB_SAVEDEFAULT\),\1,';
+    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
+}
+
+multi sub configure-bootloader('GRUB_ENABLE_CRYPTODISK' --> Nil)
+{
+    my Str:D $sed-cmd = 's,^#\(GRUB_ENABLE_CRYPTODISK\),\1,';
+    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
+}
+
+multi sub configure-bootloader('GRUB_DISABLE_SUBMENU' --> Nil)
+{
+    my Str:D $grub-disable-submenu = q:to/EOF/;
+    GRUB_DISABLE_SUBMENU=y
+    EOF
+    spurt('/mnt/etc/default/grub', "\n" ~ $grub-disable-submenu, :append);
+}
+
 method !configure-sysctl(--> Nil)
 {
     my DiskType:D $disk-type = $.config.disk-type;
-
     copy(%?RESOURCES<etc/sysctl.conf>, '/mnt/etc/sysctl.conf');
-
     if $disk-type eq 'SSD' || $disk-type eq 'USB'
     {
-        my Str:D $sed-cmd =
-              q{s,}
-            ~ q{^#\(vm.vfs_cache_pressure\).*}
-            ~ q{,}
-            ~ q{\1 = 50}
-            ~ q{,};
-        shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
-
-        $sed-cmd = '';
-
-        $sed-cmd =
-              q{s,}
-            ~ q{^#\(vm.swappiness\).*}
-            ~ q{,}
-            ~ q{\1 = 1}
-            ~ q{,};
-        shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
+        configure-sysctl('vm.vfs_cache_pressure');
+        configure-sysctl('vm.swappiness');
     }
-
     run(qw<arch-chroot /mnt sysctl --system>);
+}
+
+multi sub configure-sysctl('vm.vfs_cache_pressure' --> Nil)
+{
+    my Str:D $sed-cmd =
+          q{s,}
+        ~ q{^#\(vm.vfs_cache_pressure\).*}
+        ~ q{,}
+        ~ q{\1 = 50}
+        ~ q{,};
+    shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
+}
+
+multi sub configure-sysctl('vm.swappiness' --> Nil)
+{
+    my Str:D $sed-cmd =
+          q{s,}
+        ~ q{^#\(vm.swappiness\).*}
+        ~ q{,}
+        ~ q{\1 = 1}
+        ~ q{,};
+    shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
 }
 
 method !configure-systemd(--> Nil)
