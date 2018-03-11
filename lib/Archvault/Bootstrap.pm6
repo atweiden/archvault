@@ -939,7 +939,6 @@ method !configure-x11(--> Nil)
 method !enable-systemd-services(--> Nil)
 {
     my Str:D @service = qw<
-        cronie
         dnscrypt-proxy
         haveged
         nftables
