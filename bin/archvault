@@ -129,19 +129,21 @@ multi sub USAGE('new' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
-      archvault --username="live"                     \
-                --sshusername="variable"              \
-                --vaultname="luckbox"                 \
-                --vaultpass="your vault password"     \
-                --hostname="luckbox"                  \
-                --partition="/dev/sdb"                \
-                --processor="other"                   \
-                --graphics="intel"                    \
-                --disktype="usb"                      \
-                --locale="en_US"                      \
-                --keymap="us"                         \
-                --timezone="America/Los_Angeles"      \
-                --augment                             \
+      archvault --username="live"                                   \
+                --userpass="your trusted admin user's password"     \
+                --sshusername="variable"                            \
+                --sshuserpass="your untrusted ssh user's password"  \
+                --vaultname="vault"                                 \
+                --vaultpass="your LUKS encrypted volume's password" \
+                --hostname="vault"                                  \
+                --partition="/dev/sdb"                              \
+                --processor="other"                                 \
+                --graphics="intel"                                  \
+                --disktype="usb"                                    \
+                --locale="en_US"                                    \
+                --keymap="us"                                       \
+                --timezone="America/Los_Angeles"                    \
+                --augment                                           \
                 new
 
     Options:
@@ -155,10 +157,12 @@ multi sub USAGE('new' --> Nil)
       --processor=<processor>      processor type
       --reflector                  optimize pacman mirrors
       --sshusername=<username>     user name for untrusted ssh account
+      --sshuserpass=<password>     password for untrusted ssh account
       --timezone=<timezone>        timezone
       --username=<username>        user name for trusted admin account
-      --vaultname=<vault-name>     vault name
-      --vaultpass=<password>       vault password
+      --userpass=<username>        password for trusted admin account
+      --vaultname=<vault-name>     name for LUKS encrypted volume
+      --vaultpass=<password>       password for LUKS encrypted volume
     EOF
     say($HELP);
 }

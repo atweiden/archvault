@@ -5,7 +5,7 @@ If you intend to run Archvault in a LiveCD environment, *you must increase
 the size of the root partition* to avoid running out of [disk space][disk]
 on the LiveCD. Using the official Arch Linux ISO, when you see the boot
 loader screen, press <kbd>Tab</kbd> and [append the following][gist] to
-the kernel line: `copytoram=y copytoram_size=10G cow_spacesize=10G`. Then,
+the kernel line: `copytoram=y copytoram_size=7G cow_spacesize=7G`. Then,
 press <kbd>Enter</kbd>.
 
 In order to use Archvault, install [Rakudo Perl 6][rakudo]. Archvault

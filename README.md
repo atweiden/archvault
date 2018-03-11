@@ -8,19 +8,21 @@ Synopsis
 --------
 
 ```bash
-archvault --username="live"                     \
-          --sshusername="variable"              \
-          --vaultname="luckbox"                 \
-          --vaultpass="your vault password"     \
-          --hostname="luckbox"                  \
-          --partition="/dev/sdb"                \
-          --processor="other"                   \
-          --graphics="intel"                    \
-          --disktype="usb"                      \
-          --locale="en_US"                      \
-          --keymap="us"                         \
-          --timezone="America/Los_Angeles"      \
-          --augment                             \
+archvault --username="live"                                   \
+          --userpass="your trusted admin user's password"     \
+          --sshusername="variable"                            \
+          --sshuserpass="your untrusted ssh user's password"  \
+          --vaultname="vault"                                 \
+          --vaultpass="your LUKS encrypted volume's password" \
+          --hostname="vault"                                  \
+          --partition="/dev/sdb"                              \
+          --processor="other"                                 \
+          --graphics="intel"                                  \
+          --disktype="usb"                                    \
+          --locale="en_US"                                    \
+          --keymap="us"                                       \
+          --timezone="America/Los_Angeles"                    \
+          --augment                                           \
           new
 ```
 
@@ -40,7 +42,6 @@ arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`           | Y
 base-devel           | building AUR packages                           | N
 btrfs-progs          | Btrfs setup                                     | Y
 cryptsetup           | FDE with LUKS                                   | Y
-dialog               | ncurses user input menu                         | Y
 expect               | interactive command prompt automation           | N
 findutils            | `find`                                          | Y
 gawk                 | `awk`                                           | Y
@@ -63,12 +64,24 @@ Optional Dependencies
 
 Name      | Provides                | Included in Arch ISO?
 ---       | ---                     | ---
+dialog    | ncurses user input menu | Y
 reflector | optimize pacman mirrors | N
 
-`reflector` is needed if you pass the `--reflector` cmdline flag to
-Archvault. You are recommended to edit `/etc/pacman.d/mirrorlist`
-instead to save several minutes of time. The reflector option is not
-enabled by default.
+`dialog` is needed if you do not provide by cmdline flag or environment
+variable values for all configuration options aside from `--hostname`,
+`--username`, `--userpass`, `--sshusername`, `--sshuserpass`,
+`--rootpass`, `--vaultname`, `--vaultpass`, `--augment` and
+`--reflector`. For these options, console input is read with either the
+built-in Perl6 subroutine `prompt()`, or a shell program like `passwd`
+or `cryptsetup`. In the case of `--augment` and `--reflector`, no console
+input is read. For user input of all other options, the `dialog` program
+is used.
+
+`reflector` is needed if you provide by cmdline flag or environment
+variable a value for the `--reflector` configuration option. The
+reflector option is not enabled by default. You are recommended to edit
+`/etc/pacman.d/mirrorlist` by hand instead to save several minutes
+of time.
 
 
 Licensing
