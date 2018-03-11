@@ -463,7 +463,7 @@ method !configure-users(--> Nil)
 method !configure-users-privileged(--> Nil)
 {
     say('Setting root password...');
-    loop-mkpasswd('root');
+    loop-passwd-cmdline-proc('root');
 
     my UserName:D $user-name = $.config.user-name;
     say("Creating new privileged user named $user-name...");
@@ -479,7 +479,7 @@ method !configure-users-privileged(--> Nil)
     >);
 
     say("Setting password for the privileged user named $user-name...");
-    loop-mkpasswd($user-name);
+    loop-passwd-cmdline-proc($user-name);
 
     say("Giving sudo privileges to the user named $user-name...");
     my Str:D $sudoers = qq:to/EOF/;
@@ -506,12 +506,12 @@ method !configure-users-unprivileged(--> Nil)
         >);
 
         say("Setting password for the user named $user-name...");
-        loop-mkpasswd($user-name);
+        loop-passwd-cmdline-proc($user-name);
     });
 }
 
 # modify user password on disk
-sub loop-mkpasswd(Str:D $user-name --> Nil)
+sub loop-passwd-cmdline-proc(Str:D $user-name --> Nil)
 {
     loop
     {
