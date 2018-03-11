@@ -19,6 +19,8 @@
   - handle being killed by OS because out of memory
     - start section
     - end section
+- idea: `archvault open <vaultname> <device>`
+  - `archvault open vault /dev/sdb`
 - idea: `archvault close <vaultname>`
   - for when the bootstrap fails
     - `umount /mnt/{boot,home,opt,srv,tmp,usr,var,}`;
