@@ -758,6 +758,7 @@ method !configure-io-schedulers(--> Nil)
 
 method !install-bootloader(--> Nil)
 {
+    my Graphics:D $graphics = $.config.graphics;
     my Str:D $partition = $.config.partition;
     my VaultName:D $vault-name = $.config.vault-name;
     configure-bootloader(
@@ -806,7 +807,7 @@ multi sub configure-bootloader(
     my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
             ~ ' rootflags=subvol=@';
-    $grub-cmdline-linux ~= ' radeon.dpm=1' if $.config.graphics eq 'RADEON';
+    $grub-cmdline-linux ~= ' radeon.dpm=1' if $graphics eq 'RADEON';
 
     my Str:D $sed-cmd =
           q{s,}
