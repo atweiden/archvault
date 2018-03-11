@@ -445,6 +445,8 @@ method !pacstrap-base(--> Nil)
         vim
         wget
         wireless_tools
+        wpa_actiond
+        wpa_supplicant
         zip
     >;
 
