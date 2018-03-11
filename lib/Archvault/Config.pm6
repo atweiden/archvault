@@ -36,7 +36,8 @@ has HostName:D $.host-name =
                      !! prompt-name(:host);
 
 # device path of target partition (default: /dev/sdb)
-has Str:D $.partition = %*ENV<PARTITION> || self!prompt-partition;
+has Str:D $.partition =
+    %*ENV<PARTITION> || prompt-partition(self.ls-partitions);
 
 # type of processor (default: other)
 has Processor:D $.processor =
@@ -413,142 +414,148 @@ multi sub is-confirmed($confirmation --> Bool:D)
 
 sub prompt-disk-type(--> DiskType:D)
 {
-    my DiskType:D $default-item = 'USB';
-    my Str:D $prompt-text = 'Select disk type:';
-    my Str:D $title = 'DISK TYPE SELECTION';
-    my Str:D $confirm-topic = 'disk type selected';
-
-    my DiskType:D $disk-type = dprompt(
-        DiskType,
-        %Archvault::Types::disktypes,
-        :$default-item,
-        :$prompt-text,
-        :$title,
-        :$confirm-topic
-    );
+    my DiskType:D $disk-type = do {
+        my DiskType:D $default-item = 'USB';
+        my Str:D $prompt-text = 'Select disk type:';
+        my Str:D $title = 'DISK TYPE SELECTION';
+        my Str:D $confirm-topic = 'disk type selected';
+        dprompt(
+            DiskType,
+            %Archvault::Types::disktypes,
+            :$default-item,
+            :$prompt-text,
+            :$title,
+            :$confirm-topic
+        );
+    }
 }
 
 sub prompt-graphics(--> Graphics:D)
 {
-    my Graphics:D $default-item = 'INTEL';
-    my Str:D $prompt-text = 'Select graphics card type:';
-    my Str:D $title = 'GRAPHICS CARD TYPE SELECTION';
-    my Str:D $confirm-topic = 'graphics card type selected';
-
-    my Graphics:D $graphics = dprompt(
-        Graphics,
-        %Archvault::Types::graphics,
-        :$default-item,
-        :$prompt-text,
-        :$title,
-        :$confirm-topic
-    );
+    my Graphics:D $graphics = do {
+        my Graphics:D $default-item = 'INTEL';
+        my Str:D $prompt-text = 'Select graphics card type:';
+        my Str:D $title = 'GRAPHICS CARD TYPE SELECTION';
+        my Str:D $confirm-topic = 'graphics card type selected';
+        dprompt(
+            Graphics,
+            %Archvault::Types::graphics,
+            :$default-item,
+            :$prompt-text,
+            :$title,
+            :$confirm-topic
+        );
+    }
 }
 
 sub prompt-keymap(--> Keymap:D)
 {
-    my Keymap:D $default-item = 'us';
-    my Str:D $prompt-text = 'Select keymap:';
-    my Str:D $title = 'KEYMAP SELECTION';
-    my Str:D $confirm-topic = 'keymap selected';
-
-    my Keymap:D $keymap = dprompt(
-        Keymap,
-        %Archvault::Types::keymaps,
-        :$default-item,
-        :$prompt-text,
-        :$title,
-        :$confirm-topic
-    );
+    my Keymap:D $keymap = do {
+        my Keymap:D $default-item = 'us';
+        my Str:D $prompt-text = 'Select keymap:';
+        my Str:D $title = 'KEYMAP SELECTION';
+        my Str:D $confirm-topic = 'keymap selected';
+        dprompt(
+            Keymap,
+            %Archvault::Types::keymaps,
+            :$default-item,
+            :$prompt-text,
+            :$title,
+            :$confirm-topic
+        );
+    }
 }
 
 sub prompt-locale(--> Locale:D)
 {
-    my Locale:D $default-item = 'en_US';
-    my Str:D $prompt-text = 'Select locale:';
-    my Str:D $title = 'LOCALE SELECTION';
-    my Str:D $confirm-topic = 'locale selected';
-
-    my Locale:D $locale = dprompt(
-        Locale,
-        %Archvault::Types::locales,
-        :$default-item,
-        :$prompt-text,
-        :$title,
-        :$confirm-topic
-    );
+    my Locale:D $locale = do {
+        my Locale:D $default-item = 'en_US';
+        my Str:D $prompt-text = 'Select locale:';
+        my Str:D $title = 'LOCALE SELECTION';
+        my Str:D $confirm-topic = 'locale selected';
+        dprompt(
+            Locale,
+            %Archvault::Types::locales,
+            :$default-item,
+            :$prompt-text,
+            :$title,
+            :$confirm-topic
+        );
+    }
 }
 
 multi sub prompt-name(Bool:D :host($)! where *.so --> HostName:D)
 {
-    # default response
-    my HostName:D $response-default = 'vault';
+    my HostName:D $host-name = do {
+        my HostName:D $response-default = 'vault';
+        my Str:D $prompt-text = 'Enter hostname [vault]: ';
+        my Str:D $help-text = q:to/EOF/.trim;
+        Determining hostname...
 
-    # prompt text
-    my Str:D $prompt-text = 'Enter hostname [vault]: ';
+        Leave blank if you don't know what this is
+        EOF
+        tprompt(
+            HostName,
+            $response-default,
+            :$prompt-text,
+            :$help-text
+        );
+    }
+}
 
-    # help text
-    my Str:D $help-text = q:to/EOF/.trim;
-    Determining hostname...
-
-    Leave blank if you don't know what this is
-    EOF
-
-    # prompt user
-    my HostName:D $host-name = tprompt(
-        HostName,
-        $response-default,
-        :$prompt-text,
-        :$help-text
-    );
+multi sub prompt-name(
+    Bool:D :user($)! where *.so,
+    Bool:D :add($)! where *.so
+    --> UserName:D
+)
+{
+    my UserName:D $user-name = do {
+        my UserName:D $response-default = 'variable';
+        my Str:D $prompt-text = 'Enter username [variable]: ';
+        tprompt(
+            UserName,
+            $response-default,
+            :$prompt-text
+        );
+    }
 }
 
 multi sub prompt-name(Bool:D :user($)! where *.so --> UserName:D)
 {
-    # default response
-    my UserName:D $response-default = 'live';
+    my UserName:D $user-name = do {
+        my UserName:D $response-default = 'live';
+        my Str:D $prompt-text = 'Enter username [live]: ';
+        my Str:D $help-text = q:to/EOF/.trim;
+        Determining username...
 
-    # prompt text
-    my Str:D $prompt-text = 'Enter username [live]: ';
-
-    # help text
-    my Str:D $help-text = q:to/EOF/.trim;
-    Determining username...
-
-    Leave blank if you don't know what this is
-    EOF
-
-    # prompt user
-    my UserName:D $user-name = tprompt(
-        UserName,
-        $response-default,
-        :$prompt-text,
-        :$help-text
-    );
+        Leave blank if you don't know what this is
+        EOF
+        tprompt(
+            UserName,
+            $response-default,
+            :$prompt-text,
+            :$help-text
+        );
+    }
 }
 
 multi sub prompt-name(Bool:D :vault($)! where *.so --> VaultName:D)
 {
-    # default response
-    my VaultName:D $response-default = 'vault';
+    my VaultName:D $vault-name = do {
+        my VaultName:D $response-default = 'vault';
+        my Str:D $prompt-text = 'Enter vault name [vault]: ';
+        my Str:D $help-text = q:to/EOF/.trim;
+        Determining name of LUKS encrypted volume...
 
-    # prompt text
-    my Str:D $prompt-text = 'Enter vault name [vault]: ';
-
-    # help text
-    my Str:D $help-text = q:to/EOF/.trim;
-    Determining name of LUKS encrypted volume...
-
-    Leave blank if you don't know what this is
-    EOF
-
-    # prompt user
-    my VaultName:D $vault-name = tprompt(
-        VaultName,
-        $response-default,
-        :$prompt-text,
-        :$help-text
-    );
+        Leave blank if you don't know what this is
+        EOF
+        tprompt(
+            VaultName,
+            $response-default,
+            :$prompt-text,
+            :$help-text
+        );
+    }
 }
 
 sub prompt-add-users(--> Array[UserName:D])
@@ -563,46 +570,46 @@ sub prompt-add-users(--> Array[UserName:D])
     say('Enter name for each unprivileged user to add.');
     my UserName:D @user =
         (0..^$additional-users-requested).map({
-            my UserName:D $user-name = prompt-name(:user);
+            my UserName:D $user-name = prompt-name(:user, :add);
         });
 }
 
-method !prompt-partition(--> Str:D)
+sub prompt-partition(Str:D @ls-partitions --> Str:D)
 {
-    # get list of partitions
-    my Str:D @partitions =
-        self.ls-partitions.hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) });
-
-    my Str:D $default-item = '/dev/sdb';
-    my Str:D $prompt-text = 'Select partition for installing Arch:';
-    my Str:D $title = 'PARTITION SELECTION';
-    my Str:D $confirm-topic = 'partition selected';
-
-    my Str:D $partition = dprompt(
-        Str,
-        @partitions,
-        :$default-item,
-        :$prompt-text,
-        :$title,
-        :$confirm-topic
-    );
+    my Str:D $partition = do {
+        my Str:D @partitions =
+            @ls-partitions.hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) });
+        my Str:D $default-item = '/dev/sdb';
+        my Str:D $prompt-text = 'Select partition for installing Arch:';
+        my Str:D $title = 'PARTITION SELECTION';
+        my Str:D $confirm-topic = 'partition selected';
+        dprompt(
+            Str,
+            @partitions,
+            :$default-item,
+            :$prompt-text,
+            :$title,
+            :$confirm-topic
+        );
+    }
 }
 
 sub prompt-processor(--> Processor:D)
 {
-    my Processor:D $default-item = 'OTHER';
-    my Str:D $prompt-text = 'Select processor:';
-    my Str:D $title = 'PROCESSOR SELECTION';
-    my Str:D $confirm-topic = 'processor selected';
-
-    my Processor:D $processor = dprompt(
-        Processor,
-        %Archvault::Types::processors,
-        :$default-item,
-        :$prompt-text,
-        :$title,
-        :$confirm-topic
-    );
+    my Processor:D $processor = do {
+        my Processor:D $default-item = 'OTHER';
+        my Str:D $prompt-text = 'Select processor:';
+        my Str:D $title = 'PROCESSOR SELECTION';
+        my Str:D $confirm-topic = 'processor selected';
+        dprompt(
+            Processor,
+            %Archvault::Types::processors,
+            :$default-item,
+            :$prompt-text,
+            :$title,
+            :$confirm-topic
+        );
+    }
 }
 
 sub prompt-timezone(--> Timezone:D)
@@ -610,13 +617,11 @@ sub prompt-timezone(--> Timezone:D)
     # get list of timezones
     my Timezone:D @timezones = @Archvault::Types::timezones;
 
-    # get list of timezone regions
-    my Str:D @regions =
-        @timezones.hyper.map({ .subst(/'/'\N*$/, '') }).unique;
-
     # prompt choose region
-    my Str:D $region = do
-    {
+    my Str:D $region = do {
+        # get list of timezone regions
+        my Str:D @regions =
+            @timezones.hyper.map({ .subst(/'/'\N*$/, '') }).unique;
         my Str:D $default-item = 'America';
         my Str:D $prompt-text = 'Select region:';
         my Str:D $title = 'TIMEZONE REGION SELECTION';
@@ -631,17 +636,15 @@ sub prompt-timezone(--> Timezone:D)
         );
     }
 
-    # get list of timezone region subregions
-    my Str:D @subregions =
-        @timezones
-        .grep(/$region/)
-        .hyper
-        .map({ .subst(/^$region'/'/, '') })
-        .sort;
-
     # prompt choose subregion
-    my Str:D $subregion = do
-    {
+    my Str:D $subregion = do {
+        # get list of timezone region subregions
+        my Str:D @subregions =
+            @timezones
+            .grep(/$region/)
+            .hyper
+            .map({ .subst(/^$region'/'/, '') })
+            .sort;
         my Str:D $default-item = 'Los_Angeles';
         my Str:D $prompt-text = 'Select subregion:';
         my Str:D $title = 'TIMEZONE SUBREGION SELECTION';
@@ -656,7 +659,7 @@ sub prompt-timezone(--> Timezone:D)
         );
     }
 
-    my Timezone:D $timezone = @timezones.grep("$region/$subregion")[0];
+    my Timezone:D $timezone = @timezones.grep("$region/$subregion").first;
 }
 
 

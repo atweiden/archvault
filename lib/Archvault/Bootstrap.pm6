@@ -89,24 +89,27 @@ sub reflector(--> Nil)
 # secure disk configuration
 method !mkdisk(--> Nil)
 {
+    my DiskType:D $disk-type = $.config.disk-type;
+    my Str:D $partition = $.config.partition;
+    my VaultName:D $vault-name = $.config.vault-name;
+    my VaultPass $vault-pass = $.config.vault-pass;
+
     # partition disk
-    self!sgdisk;
+    sgdisk($partition);
 
     # create vault
-    self!mkvault;
+    mkvault($partition, $vault-name, :$vault-pass);
 
     # create and mount btrfs volumes
-    self!mkbtrfs;
+    mkbtrfs($disk-type, $vault-name);
 
     # create boot partition
-    self!mkbootpart;
+    mkbootpart($partition);
 }
 
 # partition disk with gdisk
-method !sgdisk(--> Nil)
+sub sgdisk(Str:D $partition --> Nil)
 {
-    my Str:D $partition = $.config.partition;
-
     # erase existing partition table
     # create 2MB EF02 BIOS boot sector
     # create 128MB sized partition for /boot
@@ -126,12 +129,15 @@ method !sgdisk(--> Nil)
 }
 
 # create vault with cryptsetup
-method !mkvault(--> Nil)
+sub mkvault(
+    Str:D $partition,
+    VaultName:D $vault-name,
+    VaultPass :$vault-pass
+    --> Nil
+)
 {
     # target partition for vault
-    my Str:D $partition-vault = $.config.partition ~ '3';
-    my VaultName:D $vault-name = $.config.vault-name;
-    my VaultPass $vault-pass = $.config.vault-pass;
+    my Str:D $partition-vault = $partition ~ '3';
 
     # load kernel modules for cryptsetup
     run(qw<modprobe dm_mod dm-crypt>);
@@ -347,11 +353,8 @@ sub loop-cryptsetup-cmdline-proc(
 }
 
 # create and mount btrfs volumes on open vault
-method !mkbtrfs(--> Nil)
+sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
 {
-    my DiskType:D $disk-type = $.config.disk-type;
-    my VaultName:D $vault-name = $.config.vault-name;
-
     # create btrfs filesystem on opened vault
     run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
 
@@ -391,10 +394,10 @@ method !mkbtrfs(--> Nil)
 }
 
 # create and mount boot partition
-method !mkbootpart(--> Nil)
+sub mkbootpart(Str:D $partition --> Nil)
 {
     # target partition for boot
-    my Str:D $partition-boot = $.config.partition ~ '2';
+    my Str:D $partition-boot = $partition ~ '2';
 
     # create ext2 boot partition
     run(qqw<mkfs.ext2 $partition-boot>);
@@ -456,16 +459,17 @@ method !pacstrap-base(--> Nil)
 # secure user configuration
 method !configure-users(--> Nil)
 {
-    self!configure-users-privileged;
-    self!configure-users-unprivileged if $.config.add-users;
+    my UserName:D $user-name = $.config.user-name;
+    configure-users-privileged($user-name);
+    my UserName:D @user = $.config.user if $.config.add-users;
+    configure-users-unprivileged(@user) if $.config.add-users;
 }
 
-method !configure-users-privileged(--> Nil)
+sub configure-users-privileged(UserName:D $user-name --> Nil)
 {
     say('Setting root password...');
     loop-passwd-cmdline-proc('root');
 
-    my UserName:D $user-name = $.config.user-name;
     say("Creating new privileged user named $user-name...");
     run(qqw<
         arch-chroot
@@ -490,10 +494,10 @@ method !configure-users-privileged(--> Nil)
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
 }
 
-method !configure-users-unprivileged(--> Nil)
+sub configure-users-unprivileged(@user --> Nil)
 {
-    # NOTE: does not handle duplicate usernames
-    $.config.user.sort.map(-> $user-name {
+    # NOTE: does not handle duplicate of C<$.config.user-name>
+    @user.unique.sort.map(-> $user-name {
         say("Creating new unprivileged user named $user-name...");
         run(qqw<
             arch-chroot
