@@ -201,13 +201,13 @@ method new(
 # confirm disk type $d is valid DiskType and return DiskType
 method gen-disk-type(Str:D $d --> DiskType:D)
 {
-    my DiskType:D $disk-type = $d or die('Sorry, invalid disk type');
+    my DiskType:D $disk-type = $d.uc or die('Sorry, invalid disk type');
 }
 
 # confirm graphics card type $g is valid Graphics and return Graphics
 method gen-graphics(Str:D $g --> Graphics:D)
 {
-    my Graphics:D $graphics = $g or die('Sorry, invalid graphics card type');
+    my Graphics:D $graphics = $g.uc or die('Sorry, invalid graphics card type');
 }
 
 # confirm hostname $h is valid HostName and return HostName
@@ -231,7 +231,7 @@ method gen-locale(Str:D $l --> Locale:D)
 # confirm processor $p is valid Processor and return Processor
 method gen-processor(Str:D $p --> Processor:D)
 {
-    my Processor:D $processor = $p or die("Sorry, invalid processor 「$p」");
+    my Processor:D $processor = $p.uc or die("Sorry, invalid processor 「$p」");
 }
 
 # confirm timezone $t is valid Timezone and return Timezone
