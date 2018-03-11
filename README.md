@@ -12,6 +12,7 @@ archvault --username="live"                                   \
           --userpass="your trusted admin user's password"     \
           --sshusername="variable"                            \
           --sshuserpass="your untrusted ssh user's password"  \
+          --rootpass="your root password"                     \
           --vaultname="vault"                                 \
           --vaultpass="your LUKS encrypted volume's password" \
           --hostname="vault"                                  \

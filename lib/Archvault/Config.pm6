@@ -14,10 +14,25 @@ has UserName:D $.user-name =
     %*ENV<USER_NAME> ?? self.gen-user-name(%*ENV<USER_NAME>)
                      !! prompt-name(:user, :trusted);
 
+# password for trusted admin user
+has Str $.user-pass =
+    %*ENV<USER_PASS> ?? %*ENV<USER_PASS>
+                     !! Nil;
+
 # name for untrusted ssh user (default: variable)
 has UserName:D $.ssh-user-name =
     %*ENV<SSH_USER_NAME> ?? self.gen-user-name(%*ENV<SSH_USER_NAME>)
                          !! prompt-name(:user, :untrusted);
+
+# password for untrusted ssh user
+has Str $.ssh-user-pass =
+    %*ENV<SSH_USER_PASS> ?? %*ENV<SSH_USER_PASS>
+                         !! Nil;
+
+# password for root
+has Str $.root-pass =
+    %*ENV<ROOT_PASS> ?? %*ENV<ROOT_PASS>
+                     !! Nil;
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -89,9 +104,12 @@ submethod BUILD(
     Str :$partition,
     Str :$processor,
     Bool :$reflector,
+    Str :$rootpass,
     Str :$sshusername,
+    Str :$sshuserpass,
     Str :$timezone,
     Str :$username,
+    Str :$userpass,
     Str :$vaultname,
     Str :$vaultpass
     --> Nil
@@ -124,14 +142,23 @@ submethod BUILD(
     # if --reflector, initialize $.reflector to True
     $!reflector = $reflector if $reflector;
 
+    # if --rootpass, initialize $.root-pass to Str
+    $!root-pass = $rootpass if $rootpass;
+
     # if --sshusername, initialize $.user-name to UserName
     $!ssh-user-name = self.gen-user-name($sshusername) if $sshusername;
+
+    # if --sshuserpass, initialize $.ssh-user-pass to Str
+    $!ssh-user-pass = $sshuserpass if $sshuserpass;
 
     # if --timezone, initialize $.timezone to Timezone
     $!timezone = self.gen-timezone($timezone) if $timezone;
 
     # if --username, initialize $.user-name to UserName
     $!user-name = self.gen-user-name($username) if $username;
+
+    # if --userpass, initialize $.user-pass to Str
+    $!user-pass = $userpass if $userpass;
 
     # if --vaultname, initialize $.vault-name to VaultName
     $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
@@ -151,9 +178,12 @@ method new(
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
+        Str :rootpass($),
         Str :sshusername($),
+        Str :sshuserpass($),
         Str :timezone($),
         Str :username($),
+        Str :userpass($),
         Str :vaultname($),
         Str :vaultpass($)
     )

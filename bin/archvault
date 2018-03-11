@@ -47,9 +47,12 @@ multi sub MAIN(
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
+        Str :rootpass($),
         Str :sshusername($),
+        Str :sshuserpass($),
         Str :timezone($),
         Str :username($),
+        Str :userpass($),
         Str :vaultname($),
         Str :vaultpass($)
     )
@@ -133,6 +136,7 @@ multi sub USAGE('new' --> Nil)
                 --userpass="your trusted admin user's password"     \
                 --sshusername="variable"                            \
                 --sshuserpass="your untrusted ssh user's password"  \
+                --rootpass="your root password"                     \
                 --vaultname="vault"                                 \
                 --vaultpass="your LUKS encrypted volume's password" \
                 --hostname="vault"                                  \
@@ -156,6 +160,7 @@ multi sub USAGE('new' --> Nil)
       --partition=<device-path>    partition target for install
       --processor=<processor>      processor type
       --reflector                  optimize pacman mirrors
+      --rootpass=<password>        password for root account
       --sshusername=<username>     user name for untrusted ssh account
       --sshuserpass=<password>     password for untrusted ssh account
       --timezone=<timezone>        timezone

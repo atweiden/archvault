@@ -16,9 +16,12 @@ method new(
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
+        Str :rootpass($),
         Str :sshusername($),
+        Str :sshuserpass($),
         Str :timezone($),
         Str :username($),
+        Str :userpass($),
         Str :vaultname($),
         Str :vaultpass($)
     )

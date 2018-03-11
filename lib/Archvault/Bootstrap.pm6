@@ -197,13 +197,13 @@ multi sub mkvault-cryptsetup(
         );
 
     # create LUKS encrypted volume, prompt user for vault password
-    loop-cryptsetup-cmdline-proc(
+    loop-cmdline-proc(
         'Creating LUKS vault...',
         $cryptsetup-luks-format-cmdline
     );
 
     # open LUKS encrypted volume, prompt user for vault password
-    loop-cryptsetup-cmdline-proc(
+    loop-cmdline-proc(
         'Opening LUKS vault...',
         $cryptsetup-luks-open-cmdline
     );
@@ -333,25 +333,6 @@ multi sub build-cryptsetup-luks-open-cmdline(
         EOF
 }
 
-sub loop-cryptsetup-cmdline-proc(
-    Str:D $message where *.so,
-    Str:D $cryptsetup-cmdline where *.so
-    --> Nil
-)
-{
-    loop
-    {
-        say($message);
-        my Proc:D $cryptsetup = shell($cryptsetup-cmdline);
-
-        # loop until passphrases match
-        # - returns exit code 0 if success
-        # - returns exit code 1 if SIGINT
-        # - returns exit code 2 if wrong password
-        last if $cryptsetup.exitcode == 0;
-    }
-}
-
 # create and mount btrfs volumes on open vault
 sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
 {
@@ -463,15 +444,62 @@ method !configure-users(--> Nil)
 {
     my UserName:D $user-name = $.config.user-name;
     my UserName:D $ssh-user-name = $.config.ssh-user-name;
-    configure-users('trusted', $user-name);
-    configure-users('untrusted', $ssh-user-name);
+    my Str $root-pass = $.config.root-pass;
+    my Str $user-pass = $.config.user-pass;
+    my Str $ssh-user-pass = $.config.ssh-user-pass;
+    configure-users('root', :$root-pass);
+    configure-users('trusted', $user-name, :$user-pass);
+    configure-users('untrusted', $ssh-user-name, :$ssh-user-pass);
 }
 
-multi sub configure-users('trusted', UserName:D $user-name --> Nil)
+multi sub configure-users(
+    'root',
+    Str :root-pass($user-pass)
+    --> Nil
+)
 {
-    say('Setting root password...');
-    loop-passwd-cmdline-proc('root');
+    mkpasswd('root', :$user-pass);
+}
 
+multi sub configure-users(
+    'trusted',
+    UserName:D $user-name,
+    Str :$user-pass
+    --> Nil
+)
+{
+    useradd('trusted', $user-name);
+    mkpasswd($user-name, :$user-pass);
+    configure-sudoers($user-name);
+}
+
+multi sub configure-users(
+    'untrusted',
+    UserName:D $ssh-user-name,
+    Str :ssh-user-pass($user-pass)
+    --> Nil
+)
+{
+    useradd('untrusted', $ssh-user-name);
+    mkpasswd($ssh-user-name, :$user-pass);
+}
+
+multi sub mkpasswd(Str:D $user-name, Str:D :$user-pass where *.so --> Nil)
+{
+    my Str:D $passwd-cmdline =
+        build-passwd-cmdline(:non-interactive, $user-name, $user-pass);
+    say("Setting password for $user-name...");
+    shell($passwd-cmdline);
+}
+
+multi sub mkpasswd(Str:D $user-name, Str :user-pass($) --> Nil)
+{
+    my Str:D $passwd-cmdline = build-passwd-cmdline(:interactive, $user-name);
+    loop-cmdline-proc("Setting password for $user-name...", $passwd-cmdline);
+}
+
+multi sub useradd('trusted', UserName:D $user-name --> Nil)
+{
     say("Creating new trusted admin user named $user-name...");
     run(qqw<
         arch-chroot
@@ -483,10 +511,23 @@ multi sub configure-users('trusted', UserName:D $user-name --> Nil)
         -G audio,games,log,lp,network,optical,power,scanner,storage,video,wheel
         $user-name
     >);
+}
 
-    say("Setting password for the trusted admin user named $user-name...");
-    loop-passwd-cmdline-proc($user-name);
+multi sub useradd('untrusted', UserName:D $user-name --> Nil)
+{
+    say("Creating new untrusted SSH user named $user-name...");
+    run(qqw<
+        arch-chroot
+        /mnt
+        useradd
+        -m
+        -s /bin/false
+        $user-name
+    >);
+}
 
+sub configure-sudoers(UserName:D $user-name --> Nil)
+{
     say("Giving sudo privileges to the user named $user-name...");
     my Str:D $sudoers = qq:to/EOF/;
     $user-name ALL=(ALL) ALL
@@ -496,34 +537,51 @@ multi sub configure-users('trusted', UserName:D $user-name --> Nil)
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
 }
 
-multi sub configure-users('untrusted', UserName:D $ssh-user-name --> Nil)
+multi sub build-passwd-cmdline(
+    Str:D $user-name,
+    Bool:D :interactive($)! where *.so
+    --> Str:D
+)
 {
-    say("Creating new untrusted SSH user named $ssh-user-name...");
-    run(qqw<
-        arch-chroot
-        /mnt
-        useradd
-        -m
-        -s /bin/false
-        -g users
-        $ssh-user-name
-    >);
-
-    say(
-        "Setting password for the untrusted SSH user named ",
-        " $ssh-user-name..."
-    );
-    loop-passwd-cmdline-proc($ssh-user-name);
+    my Str:D $passwd-cmdline = "arch-chroot /mnt passwd $user-name";
 }
 
-# modify user password on disk
-sub loop-passwd-cmdline-proc(Str:D $user-name --> Nil)
+multi sub build-passwd-cmdline(
+    Str:D $user-name,
+    Str:D $user-pass,
+    Bool:D :non-interactive($)! where *.so
+    --> Str:D
+)
 {
-    loop
-    {
-        my Proc:D $passwd = shell("arch-chroot /mnt passwd $user-name");
-        last if $passwd.exitcode == 0;
-    }
+    my Str:D $spawn-passwd = "spawn passwd $user-name";
+    my Str:D $expect-enter = 'expect "Enter*" {';
+    my Str:D $send-user-pass = qq{  send "$user-pass\r"};
+    my Str:D $closing-bracket = '}';
+    my Str:D $expect-retype = 'expect "Retype*" {';
+    my Str:D $expect-eof = 'expect eof';
+    my Str:D @passwd-cmdline =
+        $spawn-passwd,
+        $expect-enter,
+        $send-user-pass,
+        $closing-bracket,
+        $expect-retype,
+        $send-user-pass,
+        $closing-bracket,
+        $expect-eof;
+
+    my Str:D $passwd-cmdline =
+        sprintf(q:to/EOF/.trim, |@passwd-cmdline);
+        arch-chroot /mnt expect <<EOS
+          %s
+          %s
+          %s
+          %s
+          %s
+          %s
+          %s
+          %s
+        EOS
+        EOF
 }
 
 method !genfstab(--> Nil)
@@ -1013,5 +1071,23 @@ method !unmount(--> Nil)
     my VaultName:D $vault-name = $.config.vault-name;
     run(qqw<cryptsetup luksClose $vault-name>);
 }
+
+# helper functions {{{
+
+sub loop-cmdline-proc(
+    Str:D $message where *.so,
+    Str:D $cmdline where *.so
+    --> Nil
+)
+{
+    loop
+    {
+        say($message);
+        my Proc:D $proc = shell($cmdline);
+        last if $proc.exitcode == 0;
+    }
+}
+
+# end helper functions }}}
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0 nowrap:
