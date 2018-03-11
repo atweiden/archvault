@@ -554,12 +554,13 @@ multi sub build-passwd-cmdline(
 )
 {
     my Str:D $spawn-passwd =
-                "spawn passwd $user-name";
+        sprintf('spawn passwd %s', $user-name);
     my Str:D $expect-enter-send-user-pass =
         sprintf('expect "New*" { send "%s\r" }', $user-pass);
     my Str:D $expect-retype-send-user-pass =
         sprintf('expect "Retype*" { send "%s\r" }', $user-pass);
-    my Str:D $expect-eof = 'expect eof';
+    my Str:D $expect-eof =
+                'expect eof';
     my Str:D @passwd-cmdline =
         $spawn-passwd,
         $expect-enter-send-user-pass,
