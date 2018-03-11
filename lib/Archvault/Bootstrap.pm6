@@ -283,13 +283,13 @@ multi sub build-cryptsetup-luks-format-cmdline(
 
     my Str:D $cryptsetup-luks-format-cmdline =
         sprintf(q:to/EOF/.trim, |@cryptsetup-luks-format-cmdline);
-        expect <<'EOS'
+        expect <<EOS
           %s
           %s
           %s
           %s
           %s
-        EOS);
+        EOS
         EOF
 }
 
@@ -325,7 +325,7 @@ multi sub build-cryptsetup-luks-open-cmdline(
 
     my Str:D $cryptsetup-luks-open-cmdline =
         sprintf(q:to/EOF/.trim, |@cryptsetup-luks-open-cmdline);
-        expect <<'EOS'
+        expect <<EOS
           %s
           %s
           %s
@@ -553,29 +553,22 @@ multi sub build-passwd-cmdline(
     --> Str:D
 )
 {
-    my Str:D $spawn-passwd = "spawn passwd $user-name";
-    my Str:D $expect-enter = 'expect "Enter*" {';
-    my Str:D $send-user-pass = qq{  send "$user-pass\r"};
-    my Str:D $closing-bracket = '}';
-    my Str:D $expect-retype = 'expect "Retype*" {';
+    my Str:D $spawn-passwd =
+                "spawn passwd $user-name";
+    my Str:D $expect-enter-send-user-pass =
+        sprintf('expect "New*" { send "%s\r" }', $user-pass);
+    my Str:D $expect-retype-send-user-pass =
+        sprintf('expect "Retype*" { send "%s\r" }', $user-pass);
     my Str:D $expect-eof = 'expect eof';
     my Str:D @passwd-cmdline =
         $spawn-passwd,
-        $expect-enter,
-        $send-user-pass,
-        $closing-bracket,
-        $expect-retype,
-        $send-user-pass,
-        $closing-bracket,
+        $expect-enter-send-user-pass,
+        $expect-retype-send-user-pass,
         $expect-eof;
 
     my Str:D $passwd-cmdline =
         sprintf(q:to/EOF/.trim, |@passwd-cmdline);
         arch-chroot /mnt expect <<EOS
-          %s
-          %s
-          %s
-          %s
           %s
           %s
           %s
