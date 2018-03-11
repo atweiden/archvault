@@ -413,7 +413,6 @@ method !pacstrap-base(--> Nil)
     my Str:D @packages-base = qw<
         acpi
         arch-install-scripts
-        asp
         base
         base-devel
         bash-completion
@@ -429,30 +428,27 @@ method !pacstrap-base(--> Nil)
         gptfdisk
         grub-bios
         haveged
+        ifplugd
         iproute2
         iw
         kbd
-        kexec-tools
         net-tools
         nftables
         openresolv
         openssh
-        reflector
         rsync
-        sshpass
         systemd-swap
         tmux
         unzip
+        vim
         wget
         wireless_tools
-        wpa_actiond
-        wpa_supplicant
         zip
-        zsh
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
     push(@packages-base, 'intel-ucode') if $processor eq 'intel';
+    push(@packages-base, 'reflector') if $.config.reflector;
 
     # download and install packages with pacman in chroot
     run(qw<pacstrap /mnt>, @packages-base);
