@@ -7,7 +7,6 @@ constant $VERSION = v0.0.1;
 
 method new(
     *%opts (
-        Bool :addusers($),
         Bool :augment($),
         Str :disktype($),
         Str :graphics($),
@@ -17,10 +16,9 @@ method new(
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
-        Str :rootpass($),
+        Str :sshusername($),
         Str :timezone($),
         Str :username($),
-        Str :userpass($),
         Str :vaultname($),
         Str :vaultpass($)
     )

@@ -462,17 +462,17 @@ method !pacstrap-base(--> Nil)
 method !configure-users(--> Nil)
 {
     my UserName:D $user-name = $.config.user-name;
-    configure-users-privileged($user-name);
-    my UserName:D @user = $.config.user if $.config.add-users;
-    configure-users-unprivileged(@user) if $.config.add-users;
+    my UserName:D $ssh-user-name = $.config.ssh-user-name;
+    configure-users('trusted', $user-name);
+    configure-users('untrusted', $ssh-user-name);
 }
 
-sub configure-users-privileged(UserName:D $user-name --> Nil)
+multi sub configure-users('trusted', UserName:D $user-name --> Nil)
 {
     say('Setting root password...');
     loop-passwd-cmdline-proc('root');
 
-    say("Creating new privileged user named $user-name...");
+    say("Creating new trusted admin user named $user-name...");
     run(qqw<
         arch-chroot
         /mnt
@@ -484,7 +484,7 @@ sub configure-users-privileged(UserName:D $user-name --> Nil)
         $user-name
     >);
 
-    say("Setting password for the privileged user named $user-name...");
+    say("Setting password for the trusted admin user named $user-name...");
     loop-passwd-cmdline-proc($user-name);
 
     say("Giving sudo privileges to the user named $user-name...");
@@ -496,24 +496,24 @@ sub configure-users-privileged(UserName:D $user-name --> Nil)
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
 }
 
-sub configure-users-unprivileged(@user --> Nil)
+multi sub configure-users('untrusted', UserName:D $ssh-user-name --> Nil)
 {
-    # NOTE: does not handle duplicate of C<$.config.user-name>
-    @user.unique.sort.map(-> $user-name {
-        say("Creating new unprivileged user named $user-name...");
-        run(qqw<
-            arch-chroot
-            /mnt
-            useradd
-            -m
-            -s /bin/bash
-            -g users
-            $user-name
-        >);
+    say("Creating new untrusted SSH user named $ssh-user-name...");
+    run(qqw<
+        arch-chroot
+        /mnt
+        useradd
+        -m
+        -s /bin/false
+        -g users
+        $ssh-user-name
+    >);
 
-        say("Setting password for the user named $user-name...");
-        loop-passwd-cmdline-proc($user-name);
-    });
+    say(
+        "Setting password for the untrusted SSH user named ",
+        " $ssh-user-name..."
+    );
+    loop-passwd-cmdline-proc($ssh-user-name);
 }
 
 # modify user password on disk
@@ -926,13 +926,13 @@ method !configure-nftables(--> Nil)
 
 method !configure-openssh(--> Nil)
 {
-    my UserName:D $user-name = $.config.user-name;
+    my UserName:D $ssh-user-name = $.config.ssh-user-name;
 
     copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
     copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
 
     my Str:D $allow-users = qq:to/EOF/;
-    AllowUsers $user-name
+    AllowUsers $ssh-user-name
     EOF
     spurt('/mnt/etc/ssh/sshd_config', "\n" ~ $allow-users, :append);
 

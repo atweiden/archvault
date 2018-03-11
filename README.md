@@ -9,8 +9,7 @@ Synopsis
 
 ```bash
 archvault --username="live"                     \
-          --userpass="your new user's password" \
-          --rootpass="your root password"       \
+          --sshusername="variable"              \
           --vaultname="luckbox"                 \
           --vaultpass="your vault password"     \
           --hostname="luckbox"                  \
@@ -21,7 +20,6 @@ archvault --username="live"                     \
           --locale="en_US"                      \
           --keymap="us"                         \
           --timezone="America/Los_Angeles"      \
-          --addusers                            \
           --augment                             \
           new
 ```
@@ -42,6 +40,7 @@ arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`           | Y
 base-devel           | building AUR packages                           | N
 btrfs-progs          | Btrfs setup                                     | Y
 cryptsetup           | FDE with LUKS                                   | Y
+dialog               | ncurses user input menu                         | Y
 expect               | interactive command prompt automation           | N
 findutils            | `find`                                          | Y
 gawk                 | `awk`                                           | Y
@@ -64,15 +63,7 @@ Optional Dependencies
 
 Name      | Provides                | Included in Arch ISO?
 ---       | ---                     | ---
-dialog    | ncurses user input menu | Y
 reflector | optimize pacman mirrors | N
-
-`dialog` is needed if you do not provide by cmdline flag or environment
-variable values for all configuration options aside from `--hostname`,
-`--username`, `--userpass`, `--rootpass`, and `--vaultname`. For user
-input of all other options, the `dialog` program is used.
-
-`dialog` is needed if you enable the `--addusers` option.
 
 `reflector` is needed if you pass the `--reflector` cmdline flag to
 Archvault. You are recommended to edit `/etc/pacman.d/mirrorlist`

@@ -38,7 +38,6 @@ multi sub MAIN('help', $? --> Nil)
 multi sub MAIN(
     'new',
     *%opts (
-        Bool :addusers($),
         Bool :augment($),
         Str :disktype($),
         Str :graphics($),
@@ -48,10 +47,9 @@ multi sub MAIN(
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
-        Str :rootpass($),
+        Str :sshusername($),
         Str :timezone($),
         Str :username($),
-        Str :userpass($),
         Str :vaultname($),
         Str :vaultpass($)
     )
@@ -132,8 +130,7 @@ multi sub USAGE('new' --> Nil)
     constant $HELP = q:to/EOF/.trim;
     Usage:
       archvault --username="live"                     \
-                --userpass="your new user's password" \
-                --rootpass="your root password"       \
+                --sshusername="variable"              \
                 --vaultname="luckbox"                 \
                 --vaultpass="your vault password"     \
                 --hostname="luckbox"                  \
@@ -144,12 +141,10 @@ multi sub USAGE('new' --> Nil)
                 --locale="en_US"                      \
                 --keymap="us"                         \
                 --timezone="America/Los_Angeles"      \
-                --addusers                            \
                 --augment                             \
                 new
 
     Options:
-      --addusers                   add unprivileged user accounts
       --augment                    drop to Bash console mid-execution
       --disktype=<disktype>        hard drive type
       --graphics=<graphics>        graphics card type
@@ -159,10 +154,9 @@ multi sub USAGE('new' --> Nil)
       --partition=<device-path>    partition target for install
       --processor=<processor>      processor type
       --reflector                  optimize pacman mirrors
-      --rootpass=<password>        root password
+      --sshusername=<username>     user name for untrusted ssh account
       --timezone=<timezone>        timezone
-      --username=<username>        user name
-      --userpass=<password>        user password
+      --username=<username>        user name for trusted admin account
       --vaultname=<vault-name>     vault name
       --vaultpass=<password>       vault password
     EOF

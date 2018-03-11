@@ -9,16 +9,15 @@ unit class Archvault::Config;
 # - attributes appear in specific order for prompting user
 # - defaults are geared towards live media installation
 
-# name for privileged user (default: live)
+# name for trusted admin user (default: live)
 has UserName:D $.user-name =
     %*ENV<USER_NAME> ?? self.gen-user-name(%*ENV<USER_NAME>)
-                     !! prompt-name(:user);
+                     !! prompt-name(:user, :trusted);
 
-# add unprivileged users
-has Bool:D $.add-users = ?%*ENV<ADD_USERS>;
-
-# names of additional unprivileged users
-has UserName:D @.user = $!add-users && prompt-add-users();
+# name for untrusted ssh user (default: variable)
+has UserName:D $.ssh-user-name =
+    %*ENV<SSH_USER_NAME> ?? self.gen-user-name(%*ENV<SSH_USER_NAME>)
+                         !! prompt-name(:user, :untrusted);
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -81,7 +80,6 @@ has Bool:D $.reflector = ?%*ENV<REFLECTOR>;
 # -----------------------------------------------------------------------------
 
 submethod BUILD(
-    Bool :$addusers,
     Bool :$augment,
     Str :$disktype,
     Str :$graphics,
@@ -91,18 +89,14 @@ submethod BUILD(
     Str :$partition,
     Str :$processor,
     Bool :$reflector,
-    Str :$rootpass,
+    Str :$sshusername,
     Str :$timezone,
     Str :$username,
-    Str :$userpass,
     Str :$vaultname,
     Str :$vaultpass
     --> Nil
 )
 {
-    # if --addusers, initialize $.add-users to True
-    $!add-users = $addusers if $addusers;
-
     # if --augment, initialize $.augment to True
     $!augment = $augment if $augment;
 
@@ -121,12 +115,6 @@ submethod BUILD(
     # if --locale, initialize $.locale to Locale
     $!locale = self.gen-locale($locale) if $locale;
 
-    # if --vaultname, initialize $.vault-name to VaultName
-    $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
-
-    # if --vaultpass, initialize $.vault-pass to VaultPass
-    $!vault-pass = self.gen-vault-pass($vaultpass) if $vaultpass;
-
     # if --partition, initialize $.partition to Partition
     $!partition = $partition if $partition;
 
@@ -136,16 +124,24 @@ submethod BUILD(
     # if --reflector, initialize $.reflector to True
     $!reflector = $reflector if $reflector;
 
+    # if --sshusername, initialize $.user-name to UserName
+    $!ssh-user-name = self.gen-user-name($sshusername) if $sshusername;
+
     # if --timezone, initialize $.timezone to Timezone
     $!timezone = self.gen-timezone($timezone) if $timezone;
 
     # if --username, initialize $.user-name to UserName
     $!user-name = self.gen-user-name($username) if $username;
+
+    # if --vaultname, initialize $.vault-name to VaultName
+    $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
+
+    # if --vaultpass, initialize $.vault-pass to VaultPass
+    $!vault-pass = self.gen-vault-pass($vaultpass) if $vaultpass;
 }
 
 method new(
     *%opts (
-        Bool :addusers($),
         Bool :augment($),
         Str :disktype($),
         Str :graphics($),
@@ -155,10 +151,9 @@ method new(
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
-        Str :rootpass($),
+        Str :sshusername($),
         Str :timezone($),
         Str :username($),
-        Str :userpass($),
         Str :vaultname($),
         Str :vaultpass($)
     )
@@ -488,7 +483,7 @@ multi sub prompt-name(Bool:D :host($)! where *.so --> HostName:D)
 {
     my HostName:D $host-name = do {
         my HostName:D $response-default = 'vault';
-        my Str:D $prompt-text = 'Enter hostname [vault]: ';
+        my Str:D $prompt-text = "Enter hostname [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
         Determining hostname...
 
@@ -505,28 +500,38 @@ multi sub prompt-name(Bool:D :host($)! where *.so --> HostName:D)
 
 multi sub prompt-name(
     Bool:D :user($)! where *.so,
-    Bool:D :add($)! where *.so
+    Bool:D :trusted($)! where *.so
+    --> UserName:D
+)
+{
+    my UserName:D $user-name = do {
+        my UserName:D $response-default = 'live';
+        my Str:D $prompt-text = "Enter username [$response-default]: ";
+        my Str:D $help-text = q:to/EOF/.trim;
+        Determining name for trusted admin user...
+
+        Leave blank if you don't know what this is
+        EOF
+        tprompt(
+            UserName,
+            $response-default,
+            :$prompt-text,
+            :$help-text
+        );
+    }
+}
+
+multi sub prompt-name(
+    Bool:D :user($)! where *.so,
+    Bool:D :untrusted($)! where *.so
     --> UserName:D
 )
 {
     my UserName:D $user-name = do {
         my UserName:D $response-default = 'variable';
-        my Str:D $prompt-text = 'Enter username [variable]: ';
-        tprompt(
-            UserName,
-            $response-default,
-            :$prompt-text
-        );
-    }
-}
-
-multi sub prompt-name(Bool:D :user($)! where *.so --> UserName:D)
-{
-    my UserName:D $user-name = do {
-        my UserName:D $response-default = 'live';
-        my Str:D $prompt-text = 'Enter username [live]: ';
+        my Str:D $prompt-text = "Enter username [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
-        Determining username...
+        Determining name for untrusted SSH user...
 
         Leave blank if you don't know what this is
         EOF
@@ -543,7 +548,7 @@ multi sub prompt-name(Bool:D :vault($)! where *.so --> VaultName:D)
 {
     my VaultName:D $vault-name = do {
         my VaultName:D $response-default = 'vault';
-        my Str:D $prompt-text = 'Enter vault name [vault]: ';
+        my Str:D $prompt-text = "Enter vault name [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
         Determining name of LUKS encrypted volume...
 
@@ -556,22 +561,6 @@ multi sub prompt-name(Bool:D :vault($)! where *.so --> VaultName:D)
             :$help-text
         );
     }
-}
-
-sub prompt-add-users(--> Array[UserName:D])
-{
-    my UInt:D $additional-users-requested = do {
-        my UInt:D $response-default = 1;
-        my Str:D $prompt-text =
-            'Enter number of unprivileged users to add [1]: ';
-        tprompt(UInt:D, $response-default, :$prompt-text);
-    }
-
-    say('Enter name for each unprivileged user to add.');
-    my UserName:D @user =
-        (0..^$additional-users-requested).map({
-            my UserName:D $user-name = prompt-name(:user, :add);
-        });
 }
 
 sub prompt-partition(Str:D @ls-partitions --> Str:D)
