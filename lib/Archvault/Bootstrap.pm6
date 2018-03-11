@@ -418,7 +418,6 @@ method !pacstrap-base(--> Nil)
         bash-completion
         btrfs-progs
         ca-certificates
-        cronie
         dhclient
         dialog
         dnscrypt-proxy
