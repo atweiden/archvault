@@ -43,7 +43,7 @@ python -c 'import crypt,getpass; print(crypt.crypt(getpass.getpass(), crypt.mksa
 #### configuring system
 
 ```sh
-chpasswd -e
+echo "${name}:${digest}" | chpasswd -e
 ```
 
 ## other ideas
