@@ -29,8 +29,9 @@ VMWare Fusion 10.1.1
 ### Bootstrap Archvault
 
 - Press Play
-- Press <kbd>Tab</kbd>
-  - Append `copytoram=y copytoram_size=7G cow_spacesize=7G`
+- Press <kbd>Tab</kbd> when you see the boot loader screen
+  - Append `copytoram=y copytoram_size=7G cow_spacesize=7G` to the
+    kernel line
   - Press <kbd>Enter</kbd>
 - Allow time for the LiveCD to boot up
 - Configure pacman mirrorlist
@@ -39,7 +40,7 @@ VMWare Fusion 10.1.1
   - `vim /etc/pacman.conf`
   - Uncomment `Color`
   - Uncomment `TotalDownload`
-  - Add `ILoveCandy` on line beneathe `CheckSpace`
+  - Add `ILoveCandy` on new line beneathe `CheckSpace`
   - Add spidermario's private Rakudo Perl 6 binary repo:
 
 ```dosini
@@ -58,8 +59,8 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `cd archvault`
   - `export PERL6LIB=lib`
   - `bin/archvault --help`
-  - `bin/archvault --addusers new`
-- Follow the prompts, let Archvault finish to completion
+  - `bin/archvault new`
+- Follow the prompts as needed, let Archvault finish to completion
 - Shutdown the LiveCD
   - `shutdown now`
 
@@ -71,4 +72,4 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 - Press Play
 - Enter vault password
 - Login as user
-  - Root login will fail due to /etc/securetty config
+  - Root login will fail due to `/etc/securetty` config
