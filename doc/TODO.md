@@ -15,6 +15,8 @@
 
 ## idea: implement improved password digest generation in Config.pm6
 
+add `archvault gen-pass-digest` functionality with this
+
 #### generating password digest
 
 **dovecot**
