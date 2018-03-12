@@ -11,83 +11,98 @@ unit class Archvault::Config;
 
 # name for trusted admin user (default: live)
 has UserName:D $.user-name =
-    %*ENV<USER_NAME> ?? self.gen-user-name(%*ENV<USER_NAME>)
-                     !! prompt-name(:user, :trusted);
+    %*ENV<ARCHVAULT_USERNAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_USERNAME>)
+        !! prompt-name(:user, :trusted);
 
 # password for trusted admin user
 has Str $.user-pass =
-    %*ENV<USER_PASS> ?? %*ENV<USER_PASS>
-                     !! Nil;
+    %*ENV<ARCHVAULT_USERPASS>
+        ?? %*ENV<ARCHVAULT_USERPASS>
+        !! Nil;
 
 # name for untrusted ssh user (default: variable)
 has UserName:D $.ssh-user-name =
-    %*ENV<SSH_USER_NAME> ?? self.gen-user-name(%*ENV<SSH_USER_NAME>)
-                         !! prompt-name(:user, :untrusted);
+    %*ENV<ARCHVAULT_SSH_USERNAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_SSH_USERNAME>)
+        !! prompt-name(:user, :untrusted);
 
 # password for untrusted ssh user
 has Str $.ssh-user-pass =
-    %*ENV<SSH_USER_PASS> ?? %*ENV<SSH_USER_PASS>
-                         !! Nil;
+    %*ENV<ARCHVAULT_SSH_USERPASS>
+        ?? %*ENV<ARCHVAULT_SSH_USERPASS>
+        !! Nil;
 
 # password for root
 has Str $.root-pass =
-    %*ENV<ROOT_PASS> ?? %*ENV<ROOT_PASS>
-                     !! Nil;
+    %*ENV<ARCHVAULT_ROOTPASS>
+        ?? %*ENV<ARCHVAULT_ROOTPASS>
+        !! Nil;
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
-    %*ENV<VAULT_NAME> ?? self.gen-vault-name(%*ENV<VAULT_NAME>)
-                      !! prompt-name(:vault);
+    %*ENV<ARCHVAULT_VAULTNAME>
+        ?? self.gen-vault-name(%*ENV<ARCHVAULT_VAULTNAME>)
+        !! prompt-name(:vault);
 
 # password for LUKS encrypted volume
 has VaultPass $.vault-pass =
-    %*ENV<VAULT_PASS> ?? self.gen-vault-pass(%*ENV<VAULT_PASS>)
-                      !! Nil;
+    %*ENV<ARCHVAULT_VAULTPASS>
+        ?? self.gen-vault-pass(%*ENV<ARCHVAULT_VAULTPASS>)
+        !! Nil;
 
 # name for host (default: vault)
 has HostName:D $.host-name =
-    %*ENV<HOST_NAME> ?? self.gen-host-name(%*ENV<HOST_NAME>)
-                     !! prompt-name(:host);
+    %*ENV<ARCHVAULT_HOSTNAME>
+        ?? self.gen-host-name(%*ENV<ARCHVAULT_HOSTNAME>)
+        !! prompt-name(:host);
 
 # device path of target partition (default: /dev/sdb)
 has Str:D $.partition =
-    %*ENV<PARTITION> || prompt-partition(self.ls-partitions);
+    %*ENV<ARCHVAULT_PARTITION>
+        || prompt-partition(self.ls-partitions);
 
 # type of processor (default: other)
 has Processor:D $.processor =
-    %*ENV<PROCESSOR> ?? self.gen-processor(%*ENV<PROCESSOR>)
-                     !! prompt-processor();
+    %*ENV<ARCHVAULT_PROCESSOR>
+        ?? self.gen-processor(%*ENV<ARCHVAULT_PROCESSOR>)
+        !! prompt-processor();
 
 # type of graphics card (default: intel)
 has Graphics:D $.graphics =
-    %*ENV<GRAPHICS> ?? self.gen-graphics(%*ENV<GRAPHICS>)
-                    !! prompt-graphics();
+    %*ENV<ARCHVAULT_GRAPHICS>
+        ?? self.gen-graphics(%*ENV<ARCHVAULT_GRAPHICS>)
+        !! prompt-graphics();
 
 # type of hard drive (default: usb)
 has DiskType:D $.disk-type =
-    %*ENV<DISK_TYPE> ?? self.gen-disk-type(%*ENV<DISK_TYPE>)
-                     !! prompt-disk-type();
+    %*ENV<ARCHVAULT_DISKTYPE>
+        ?? self.gen-disk-type(%*ENV<ARCHVAULT_DISKTYPE>)
+        !! prompt-disk-type();
 
 # locale (default: en_US)
 has Locale:D $.locale =
-    %*ENV<LOCALE> ?? self.gen-locale(%*ENV<LOCALE>)
-                  !! prompt-locale();
+    %*ENV<ARCHVAULT_LOCALE>
+        ?? self.gen-locale(%*ENV<ARCHVAULT_LOCALE>)
+        !! prompt-locale();
 
 # keymap (default: us)
 has Keymap:D $.keymap =
-    %*ENV<KEYMAP> ?? self.gen-keymap(%*ENV<KEYMAP>)
-                  !! prompt-keymap();
+    %*ENV<ARCHVAULT_KEYMAP>
+        ?? self.gen-keymap(%*ENV<ARCHVAULT_KEYMAP>)
+        !! prompt-keymap();
 
 # timezone (default: America/Los_Angeles)
 has Timezone:D $.timezone =
-    %*ENV<TIMEZONE> ?? self.gen-timezone(%*ENV<TIMEZONE>)
-                    !! prompt-timezone();
+    %*ENV<ARCHVAULT_TIMEZONE>
+        ?? self.gen-timezone(%*ENV<ARCHVAULT_TIMEZONE>)
+        !! prompt-timezone();
 
 # augment
-has Bool:D $.augment = ?%*ENV<AUGMENT>;
+has Bool:D $.augment = ?%*ENV<ARCHVAULT_AUGMENT>;
 
 # reflector
-has Bool:D $.reflector = ?%*ENV<REFLECTOR>;
+has Bool:D $.reflector = ?%*ENV<ARCHVAULT_REFLECTOR>;
 
 
 # -----------------------------------------------------------------------------
