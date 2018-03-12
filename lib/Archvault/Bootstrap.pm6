@@ -313,10 +313,11 @@ multi sub build-cryptsetup-luks-open-cmdline(
 )
 {
     my Str:D $spawn-cryptsetup-luks-open =
-        "spawn cryptsetup luksOpen $partition-vault $vault-name";
+                "spawn cryptsetup luksOpen $partition-vault $vault-name";
     my Str:D $expect-enter-send-vault-pass =
         sprintf('expect "Enter*" { send "%s\r" }', $vault-pass);
-    my Str:D $expect-eof = 'expect eof';
+    my Str:D $expect-eof =
+                'expect eof';
 
     my Str:D @cryptsetup-luks-open-cmdline =
         $spawn-cryptsetup-luks-open,
@@ -829,26 +830,7 @@ method !install-bootloader(--> Nil)
     configure-bootloader('GRUB_SAVEDEFAULT');
     configure-bootloader('GRUB_ENABLE_CRYPTODISK');
     configure-bootloader('GRUB_DISABLE_SUBMENU');
-    run(qw<
-        arch-chroot
-        /mnt
-        grub-install
-        --target=i386-pc
-        --recheck
-    >, $partition);
-    run(qw<
-        arch-chroot
-        /mnt
-        cp
-        /usr/share/locale/en@quot/LC_MESSAGES/grub.mo
-        /boot/grub/locale/en.mo
-    >);
-    run(qw<
-        arch-chroot
-        /mnt
-        grub-mkconfig
-        -o /boot/grub/grub.cfg
-    >);
+    install-bootloader($partition);
 }
 
 multi sub configure-bootloader(
@@ -901,6 +883,30 @@ multi sub configure-bootloader('GRUB_DISABLE_SUBMENU' --> Nil)
     GRUB_DISABLE_SUBMENU=y
     EOF
     spurt('/mnt/etc/default/grub', "\n" ~ $grub-disable-submenu, :append);
+}
+
+sub install-bootloader(Str:D $partition --> Nil)
+{
+    run(qw<
+        arch-chroot
+        /mnt
+        grub-install
+        --target=i386-pc
+        --recheck
+    >, $partition);
+    run(qw<
+        arch-chroot
+        /mnt
+        cp
+        /usr/share/locale/en@quot/LC_MESSAGES/grub.mo
+        /boot/grub/locale/en.mo
+    >);
+    run(qw<
+        arch-chroot
+        /mnt
+        grub-mkconfig
+        -o /boot/grub/grub.cfg
+    >);
 }
 
 method !configure-sysctl(--> Nil)
