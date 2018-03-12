@@ -23,14 +23,14 @@ has Str $.user-pass =
 
 # name for untrusted ssh user (default: variable)
 has UserName:D $.ssh-user-name =
-    %*ENV<ARCHVAULT_SSH_USERNAME>
-        ?? self.gen-user-name(%*ENV<ARCHVAULT_SSH_USERNAME>)
+    %*ENV<ARCHVAULT_SSHUSERNAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_SSHUSERNAME>)
         !! prompt-name(:user, :untrusted);
 
 # password for untrusted ssh user
 has Str $.ssh-user-pass =
-    %*ENV<ARCHVAULT_SSH_USERPASS>
-        ?? %*ENV<ARCHVAULT_SSH_USERPASS>
+    %*ENV<ARCHVAULT_SSHUSERPASS>
+        ?? %*ENV<ARCHVAULT_SSHUSERPASS>
         !! Nil;
 
 # password for root
