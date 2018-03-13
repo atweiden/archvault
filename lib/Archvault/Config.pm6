@@ -99,10 +99,12 @@ has Timezone:D $.timezone =
         !! prompt-timezone();
 
 # augment
-has Bool:D $.augment = ?%*ENV<ARCHVAULT_AUGMENT>;
+has Bool:D $.augment =
+    ?%*ENV<ARCHVAULT_AUGMENT>;
 
 # reflector
-has Bool:D $.reflector = ?%*ENV<ARCHVAULT_REFLECTOR>;
+has Bool:D $.reflector =
+    ?%*ENV<ARCHVAULT_REFLECTOR>;
 
 
 # -----------------------------------------------------------------------------
