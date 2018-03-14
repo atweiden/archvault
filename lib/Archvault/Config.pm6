@@ -408,6 +408,7 @@ sub stprompt(Str:D $prompt-text --> Str:D)
     run(qw<stty -echo>);
     my Str:D $secret = prompt($prompt-text);
     run(qw<stty echo>);
+    say('');
     $secret;
 }
 

@@ -140,8 +140,8 @@ multi sub USAGE(--> Nil)
       archvault [-p|--pass=<password>] gen-pass-hash
 
     Commands:
-      help                        Show help for subcommands
       gen-pass-hash               Generate SHA512 password hash
+      help                        Show help for subcommands
       ls                          List keymaps, locales, partitions, timezones
       new                         Bootstrap Arch system with FDE
 
