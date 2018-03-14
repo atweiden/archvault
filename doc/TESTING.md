@@ -20,8 +20,6 @@ VMWare Fusion 10.1.1
   - Processors and Memory
     - 1 processor core
     - Memory: 2048 MB
-  - Hard Disk (SCSI)
-    - Disk Size: 16 GB
   - Isolation
     - uncheck Enable Drag and Drop
     - uncheck Enable Copy and Paste
