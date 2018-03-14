@@ -177,14 +177,14 @@ submethod BUILD(
     # if --username, initialize $.user-name-admin to UserName
     $!user-name-admin = self.gen-user-name($username) if $username;
 
+    # if --sshusername, initialize $.user-name-ssh to UserName
+    $!user-name-ssh = self.gen-user-name($sshusername) if $sshusername;
+
     # if --userpass, initialize $.user-pass-hash-admin to sha512 salted hash
     $!user-pass-hash-admin = self.gen-pass-hash($userpass) if $userpass;
 
     # if --rootpass, initialize $.user-pass-hash-root to sha512 salted hash
     $!user-pass-hash-root = self.gen-pass-hash($rootpass) if $rootpass;
-
-    # if --sshusername, initialize $.user-name-ssh to UserName
-    $!user-name-ssh = self.gen-user-name($sshusername) if $sshusername;
 
     # if --sshuserpass, initialize $.user-pass-hash-ssh to sha512 salted hash
     $!user-pass-hash-ssh = self.gen-pass-hash($sshuserpass) if $sshuserpass;
@@ -408,7 +408,6 @@ sub stprompt(Str:D $prompt-text --> Str:D)
     run(qw<stty -echo>);
     my Str:D $secret = prompt($prompt-text);
     run(qw<stty echo>);
-    say('');
     $secret;
 }
 

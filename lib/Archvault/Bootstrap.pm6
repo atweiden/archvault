@@ -3,7 +3,17 @@ use Archvault::Config;
 use Archvault::Types;
 unit class Archvault::Bootstrap;
 
+
+# -----------------------------------------------------------------------------
+# attributes
+# -----------------------------------------------------------------------------
+
 has Archvault::Config:D $.config is required;
+
+
+# -----------------------------------------------------------------------------
+# bootstrap
+# -----------------------------------------------------------------------------
 
 method bootstrap(::?CLASS:D: --> Nil)
 {
@@ -41,6 +51,11 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!augment if $.config.augment;
     self!unmount;
 }
+
+
+# -----------------------------------------------------------------------------
+# worker functions
+# -----------------------------------------------------------------------------
 
 method !setup(--> Nil)
 {
@@ -1037,7 +1052,10 @@ method !unmount(--> Nil)
     run(qqw<cryptsetup luksClose $vault-name>);
 }
 
-# helper functions {{{
+
+# -----------------------------------------------------------------------------
+# helper functions
+# -----------------------------------------------------------------------------
 
 sub loop-cmdline-proc(
     Str:D $message where *.so,
@@ -1052,7 +1070,5 @@ sub loop-cmdline-proc(
         last if $proc.exitcode == 0;
     }
 }
-
-# end helper functions }}}
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0 nowrap:
