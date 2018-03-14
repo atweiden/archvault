@@ -50,10 +50,10 @@ glibc                | locale data in `/usr/share/i18n/locales`        | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`             | Y
 kbd                  | keymap data in `/usr/share/kbd/keymaps`         | Y
 kmod                 | `modprobe`                                      | Y
+openssl              | user password salts                             | Y
 pacman               | `makepkg`, `pacman`                             | Y
 rakudo               | `archvault` Perl6 runtime                       | N
 sed                  | `sed`                                           | Y
-shadow               | `passwd`                                        | Y
 tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab` | Y
 util-linux           | `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`   | Y
 
@@ -73,10 +73,9 @@ variable values for all configuration options aside from `--hostname`,
 `--username`, `--userpass`, `--sshusername`, `--sshuserpass`,
 `--rootpass`, `--vaultname`, `--vaultpass`, `--augment` and
 `--reflector`. For these options, console input is read with either the
-built-in Perl6 subroutine `prompt()`, or a shell program like `passwd`
-or `cryptsetup`. In the case of `--augment` and `--reflector`, no console
-input is read. For user input of all other options, the `dialog` program
-is used.
+built-in Perl6 subroutine `prompt()` or a program like `cryptsetup`. In
+the case of `--augment` and `--reflector`, no console input is read. For
+user input of all other options, the `dialog` program is used.
 
 `reflector` is needed if you provide by cmdline flag or environment
 variable a value for the `--reflector` configuration option. The

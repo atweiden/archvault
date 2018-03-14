@@ -16,7 +16,8 @@
         "Archvault::Bootstrap" : "lib/Archvault/Bootstrap.pm6",
         "Archvault::Config"    : "lib/Archvault/Config.pm6",
         "Archvault::Grammar"   : "lib/Archvault/Grammar.pm6",
-        "Archvault::Types"     : "lib/Archvault/Types.pm6"
+        "Archvault::Types"     : "lib/Archvault/Types.pm6",
+        "Crypt::Libcrypt"      : "lib/Crypt/Libcrypt.pm6"
     },
     "resources" : [
         "etc/X11/xorg.conf.d/20-natural-scrolling.conf",

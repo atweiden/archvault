@@ -10,8 +10,30 @@ use Archvault;
 
 
 # -----------------------------------------------------------------------------
+# gen-pass-hash
+# -----------------------------------------------------------------------------
+
+multi sub MAIN('gen-pass-hash', Str:D :p(:$pass)! --> Nil)
+{
+    say(Archvault::Config.gen-pass-hash($pass));
+}
+
+multi sub MAIN('gen-pass-hash' --> Nil)
+{
+    say(Archvault::Config.prompt-pass-hash);
+}
+
+
+
+
+# -----------------------------------------------------------------------------
 # help
 # -----------------------------------------------------------------------------
+
+multi sub MAIN('help', 'gen-pass-hash' --> Nil)
+{
+    USAGE('gen-pass-hash');
+}
 
 multi sub MAIN('help', 'ls' --> Nil)
 {
@@ -115,15 +137,30 @@ multi sub USAGE(--> Nil)
     Usage:
       archvault new
       archvault ls <keymaps|locales|partitions|timezones>
+      archvault [-p|--pass=<password>] gen-pass-hash
 
     Commands:
       help                        Show help for subcommands
+      gen-pass-hash               Generate SHA512 password hash
       ls                          List keymaps, locales, partitions, timezones
       new                         Bootstrap Arch system with FDE
 
     Options:
       -h, --help                  Print this help message
       --version                   Print version and exit
+    EOF
+    say($HELP);
+}
+
+multi sub USAGE('gen-pass-hash' --> Nil)
+{
+    constant $HELP = q:to/EOF/.trim;
+    Usage:
+      archvault [-p|-pass=<password>] gen-pass-hash
+
+    Options:
+      -p,--pass
+        plaintext password to generate hash from
     EOF
     say($HELP);
 }

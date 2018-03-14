@@ -443,140 +443,105 @@ method !pacstrap-base(--> Nil)
 # secure user configuration
 method !configure-users(--> Nil)
 {
-    my UserName:D $user-name = $.config.user-name;
-    my UserName:D $ssh-user-name = $.config.ssh-user-name;
-    my Str $root-pass = $.config.root-pass;
-    my Str $user-pass = $.config.user-pass;
-    my Str $ssh-user-pass = $.config.ssh-user-pass;
-    configure-users('root', :$root-pass);
-    configure-users('trusted', $user-name, :$user-pass);
-    configure-users('untrusted', $ssh-user-name, :$ssh-user-pass);
+    my UserName:D $user-name-admin = $.config.user-name-admin;
+    my UserName:D $user-name-ssh = $.config.user-name-ssh;
+    my Str:D $user-pass-hash-admin = $.config.user-pass-hash-admin;
+    my Str:D $user-pass-hash-root = $.config.user-pass-hash-root;
+    my Str:D $user-pass-hash-ssh = $.config.user-pass-hash-ssh;
+    configure-users('root', $user-pass-hash-root);
+    configure-users('admin', $user-name-admin, $user-pass-hash-admin);
+    configure-users('ssh', $user-name-ssh, $user-pass-hash-ssh);
 }
 
 multi sub configure-users(
     'root',
-    Str :root-pass($user-pass)
+    Str:D $user-pass-hash-root
     --> Nil
 )
 {
-    mkpasswd('root', :$user-pass);
+    usermod('root', $user-pass-hash-root);
 }
 
 multi sub configure-users(
-    'trusted',
-    UserName:D $user-name,
-    Str :$user-pass
+    'admin',
+    UserName:D $user-name-admin,
+    Str:D $user-pass-hash-admin
     --> Nil
 )
 {
-    useradd('trusted', $user-name);
-    mkpasswd($user-name, :$user-pass);
-    configure-sudoers($user-name);
+    useradd('admin', $user-name-admin, $user-pass-hash-admin);
+    configure-sudoers($user-name-admin);
 }
 
 multi sub configure-users(
-    'untrusted',
-    UserName:D $ssh-user-name,
-    Str :ssh-user-pass($user-pass)
+    'ssh',
+    UserName:D $user-name-ssh,
+    Str:D $user-pass-hash-ssh
     --> Nil
 )
 {
-    useradd('untrusted', $ssh-user-name);
-    mkpasswd($ssh-user-name, :$user-pass);
+    useradd('ssh', $user-name-ssh, $user-pass-hash-ssh);
 }
 
-multi sub mkpasswd(Str:D $user-name, Str:D :$user-pass where *.so --> Nil)
+sub usermod(
+    'root',
+    Str:D $user-pass-hash-root
+    --> Nil
+)
 {
-    my Str:D $passwd-cmdline =
-        build-passwd-cmdline(:non-interactive, $user-name, $user-pass);
-    say("Setting password for $user-name...");
-    shell($passwd-cmdline);
+    say('Updating root password...');
+    run(qqw<arch-chroot /mnt usermod -p $user-pass-hash-root root>);
 }
 
-multi sub mkpasswd(Str:D $user-name, Str :user-pass($) --> Nil)
+multi sub useradd(
+    'admin',
+    UserName:D $user-name-admin,
+    Str:D $user-pass-hash-admin
+    --> Nil
+)
 {
-    my Str:D $passwd-cmdline = build-passwd-cmdline(:interactive, $user-name);
-    loop-cmdline-proc("Setting password for $user-name...", $passwd-cmdline);
-}
-
-multi sub useradd('trusted', UserName:D $user-name --> Nil)
-{
-    say("Creating new trusted admin user named $user-name...");
+    say("Creating new trusted admin user named $user-name-admin...");
     run(qqw<
         arch-chroot
         /mnt
         useradd
         -m
+        -p $user-pass-hash-admin
         -s /bin/bash
         -g users
         -G audio,games,log,lp,network,optical,power,scanner,storage,video,wheel
-        $user-name
+        $user-name-admin
     >);
 }
 
-multi sub useradd('untrusted', UserName:D $user-name --> Nil)
+multi sub useradd(
+    'ssh',
+    UserName:D $user-name-ssh,
+    Str:D $user-pass-hash-ssh
+    --> Nil
+)
 {
-    say("Creating new untrusted SSH user named $user-name...");
+    say("Creating new untrusted SSH user named $user-name-ssh...");
     run(qqw<
         arch-chroot
         /mnt
         useradd
         -m
+        -p $user-pass-hash-ssh
         -s /bin/false
-        $user-name
+        $user-name-ssh
     >);
 }
 
-sub configure-sudoers(UserName:D $user-name --> Nil)
+sub configure-sudoers(UserName:D $user-name-admin --> Nil)
 {
-    say("Giving sudo privileges to the user named $user-name...");
+    say("Giving sudo privileges to the user named $user-name-admin...");
     my Str:D $sudoers = qq:to/EOF/;
-    $user-name ALL=(ALL) ALL
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/reboot
-    $user-name ALL=(ALL) NOPASSWD: /usr/bin/shutdown
+    $user-name-admin ALL=(ALL) ALL
+    $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/reboot
+    $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/shutdown
     EOF
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
-}
-
-multi sub build-passwd-cmdline(
-    Str:D $user-name,
-    Bool:D :interactive($)! where *.so
-    --> Str:D
-)
-{
-    my Str:D $passwd-cmdline = "arch-chroot /mnt passwd $user-name";
-}
-
-multi sub build-passwd-cmdline(
-    Str:D $user-name,
-    Str:D $user-pass,
-    Bool:D :non-interactive($)! where *.so
-    --> Str:D
-)
-{
-    my Str:D $spawn-passwd =
-        sprintf('spawn passwd %s', $user-name);
-    my Str:D $expect-enter-send-user-pass =
-        sprintf('expect "New*" { send "%s\r" }', $user-pass);
-    my Str:D $expect-retype-send-user-pass =
-        sprintf('expect "Retype*" { send "%s\r" }', $user-pass);
-    my Str:D $expect-eof =
-                'expect eof';
-    my Str:D @passwd-cmdline =
-        $spawn-passwd,
-        $expect-enter-send-user-pass,
-        $expect-retype-send-user-pass,
-        $expect-eof;
-
-    my Str:D $passwd-cmdline =
-        sprintf(q:to/EOF/.trim, |@passwd-cmdline);
-        arch-chroot /mnt expect <<EOS
-          %s
-          %s
-          %s
-          %s
-        EOS
-        EOF
 }
 
 method !genfstab(--> Nil)
@@ -984,13 +949,13 @@ method !configure-nftables(--> Nil)
 
 method !configure-openssh(--> Nil)
 {
-    my UserName:D $ssh-user-name = $.config.ssh-user-name;
+    my UserName:D $user-name-ssh = $.config.user-name-ssh;
 
     copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
     copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
 
     my Str:D $allow-users = qq:to/EOF/;
-    AllowUsers $ssh-user-name
+    AllowUsers $user-name-ssh
     EOF
     spurt('/mnt/etc/ssh/sshd_config', "\n" ~ $allow-users, :append);
 

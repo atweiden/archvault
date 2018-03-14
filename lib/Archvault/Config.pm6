@@ -1,5 +1,6 @@
 use v6;
 use Archvault::Types;
+use Crypt::Libcrypt:auth<atweiden>;
 unit class Archvault::Config;
 
 # -----------------------------------------------------------------------------
@@ -10,34 +11,34 @@ unit class Archvault::Config;
 # - defaults are geared towards live media installation
 
 # name for trusted admin user (default: live)
-has UserName:D $.user-name =
+has UserName:D $.user-name-admin =
     %*ENV<ARCHVAULT_USERNAME>
         ?? self.gen-user-name(%*ENV<ARCHVAULT_USERNAME>)
         !! prompt-name(:user, :trusted);
 
-# password for trusted admin user
-has Str $.user-pass =
+# sha512 password hash for trusted admin user
+has Str:D $.user-pass-hash-admin =
     %*ENV<ARCHVAULT_USERPASS>
-        ?? %*ENV<ARCHVAULT_USERPASS>
-        !! Nil;
+        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
+        !! self.prompt-pass-hash($!user-name-admin);
 
 # name for untrusted ssh user (default: variable)
-has UserName:D $.ssh-user-name =
+has UserName:D $.user-name-ssh =
     %*ENV<ARCHVAULT_SSHUSERNAME>
         ?? self.gen-user-name(%*ENV<ARCHVAULT_SSHUSERNAME>)
         !! prompt-name(:user, :untrusted);
 
-# password for untrusted ssh user
-has Str $.ssh-user-pass =
-    %*ENV<ARCHVAULT_SSHUSERPASS>
-        ?? %*ENV<ARCHVAULT_SSHUSERPASS>
-        !! Nil;
+# sha512 password hash for untrusted ssh user
+has Str:D $.user-pass-hash-ssh =
+    %*ENV<ARCHVAULT_USERPASS>
+        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
+        !! self.prompt-pass-hash($!user-name-ssh);
 
-# password for root
-has Str $.root-pass =
+# sha512 password hash for root user
+has Str:D $.user-pass-hash-root =
     %*ENV<ARCHVAULT_ROOTPASS>
-        ?? %*ENV<ARCHVAULT_ROOTPASS>
-        !! Nil;
+        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_ROOTPASS>)
+        !! self.prompt-pass-hash('root');
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -108,6 +109,17 @@ has Bool:D $.reflector =
 
 
 # -----------------------------------------------------------------------------
+# constants
+# -----------------------------------------------------------------------------
+
+# linux crypt encryption scheme for user password hash generation
+constant $SCHEME = 'SHA512';
+
+# linux crypt encryption rounds
+constant $ROUNDS = 700_000;
+
+
+# -----------------------------------------------------------------------------
 # class instantation
 # -----------------------------------------------------------------------------
 
@@ -159,23 +171,23 @@ submethod BUILD(
     # if --reflector, initialize $.reflector to True
     $!reflector = $reflector if $reflector;
 
-    # if --rootpass, initialize $.root-pass to Str
-    $!root-pass = $rootpass if $rootpass;
-
-    # if --sshusername, initialize $.user-name to UserName
-    $!ssh-user-name = self.gen-user-name($sshusername) if $sshusername;
-
-    # if --sshuserpass, initialize $.ssh-user-pass to Str
-    $!ssh-user-pass = $sshuserpass if $sshuserpass;
-
     # if --timezone, initialize $.timezone to Timezone
     $!timezone = self.gen-timezone($timezone) if $timezone;
 
-    # if --username, initialize $.user-name to UserName
-    $!user-name = self.gen-user-name($username) if $username;
+    # if --username, initialize $.user-name-admin to UserName
+    $!user-name-admin = self.gen-user-name($username) if $username;
 
-    # if --userpass, initialize $.user-pass to Str
-    $!user-pass = $userpass if $userpass;
+    # if --userpass, initialize $.user-pass-hash-admin to sha512 salted hash
+    $!user-pass-hash-admin = self.gen-pass-hash($userpass) if $userpass;
+
+    # if --rootpass, initialize $.user-pass-hash-root to sha512 salted hash
+    $!user-pass-hash-root = self.gen-pass-hash($rootpass) if $rootpass;
+
+    # if --sshusername, initialize $.user-name-ssh to UserName
+    $!user-name-ssh = self.gen-user-name($sshusername) if $sshusername;
+
+    # if --sshuserpass, initialize $.user-pass-hash-ssh to sha512 salted hash
+    $!user-pass-hash-ssh = self.gen-pass-hash($sshuserpass) if $sshuserpass;
 
     # if --vaultname, initialize $.vault-name to VaultName
     $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
@@ -243,6 +255,13 @@ method gen-keymap(Str:D $k --> Keymap:D)
 method gen-locale(Str:D $l --> Locale:D)
 {
     my Locale:D $locale = $l or die("Sorry, invalid locale 「$l」");
+}
+
+# generate sha512 salted password hash from plaintext password
+method gen-pass-hash(Str:D $user-pass --> Str:D)
+{
+    my Str:D $salt = gen-pass-salt();
+    my Str:D $pass-hash = crypt($user-pass, $salt);
 }
 
 # confirm processor $p is valid Processor and return Processor
@@ -381,6 +400,16 @@ multi sub dprompt(
     }
 
     $response;
+}
+
+# user input prompt (secret text)
+sub stprompt(Str:D $prompt-text --> Str:D)
+{
+    run(qw<stty -echo>);
+    my Str:D $secret = prompt($prompt-text);
+    run(qw<stty echo>);
+    say('');
+    $secret;
 }
 
 # user input prompt (text)
@@ -630,6 +659,31 @@ sub prompt-partition(Str:D @ls-partitions --> Str:D)
     }
 }
 
+# generate sha512 salted password hash from interactive user input
+method prompt-pass-hash(Str $user-name? --> Str:D)
+{
+    my Str:D $salt = gen-pass-salt();
+    my Str:D $pass-hash-blank = crypt('', $salt);
+    my Str $pass-hash;
+    loop
+    {
+        say("Generating password hash for $user-name...") if $user-name;
+        my Str:D $user-pass = stprompt('Enter new password: ');
+        $pass-hash = crypt($user-pass, $salt);
+        if $pass-hash eqv $pass-hash-blank
+        {
+            say('Password cannot be blank. Please try again');
+            next;
+        }
+        my Str:D $user-pass-confirm = stprompt('Retype new password: ');
+        my Str:D $pass-hash-confirm = crypt($user-pass-confirm, $salt);
+        last if $pass-hash eqv $pass-hash-confirm;
+        # passwords do not match
+        say('Please try again');
+    }
+    $pass-hash;
+}
+
 sub prompt-processor(--> Processor:D)
 {
     my Processor:D $processor = do {
@@ -747,5 +801,25 @@ method ls-timezones(--> Array[Timezone:D])
         >.trim.split("\n").sort,
         'UTC';
 }
+
+
+# -----------------------------------------------------------------------------
+# helper functions
+# -----------------------------------------------------------------------------
+
+sub gen-pass-salt(--> Str:D)
+{
+    my Str:D $scheme = gen-scheme-id($SCHEME);
+    my Str:D $rounds = ~$ROUNDS;
+    my Str:D $rand =
+        qx<openssl rand -base64 16>.trim.subst(/<[+=]>/, :g, '').substr(0, 16);
+    my Str:D $salt = sprintf('$%s$rounds=%s$%s$', $scheme, $rounds, $rand);
+}
+
+# linux crypt encrypted method id accessed by encryption method
+multi sub gen-scheme-id('MD5' --> Str:D)      { '1' }
+multi sub gen-scheme-id('BLOWFISH' --> Str:D) { '2a' }
+multi sub gen-scheme-id('SHA256' --> Str:D)   { '5' }
+multi sub gen-scheme-id('SHA512' --> Str:D)   { '6' }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:
