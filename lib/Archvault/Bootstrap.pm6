@@ -280,6 +280,8 @@ multi sub build-cryptsetup-luks-format-cmdline(
         --verify-passphrase
         luksFormat $partition-vault
     >.join(' ');
+    my Str:D $sleep =
+                'sleep 1';
     my Str:D $expect-are-you-sure-send-yes =
                 'expect "Are you sure*" { send "YES\r" }';
     my Str:D $expect-enter-send-vault-pass =
@@ -291,14 +293,22 @@ multi sub build-cryptsetup-luks-format-cmdline(
 
     my Str:D @cryptsetup-luks-format-cmdline =
         $spawn-cryptsetup-luks-format,
+        $sleep,
         $expect-are-you-sure-send-yes,
+        $sleep,
         $expect-enter-send-vault-pass,
+        $sleep,
         $expect-verify-send-vault-pass,
+        $sleep,
         $expect-eof;
 
     my Str:D $cryptsetup-luks-format-cmdline =
         sprintf(q:to/EOF/.trim, |@cryptsetup-luks-format-cmdline);
         expect <<EOS
+          %s
+          %s
+          %s
+          %s
           %s
           %s
           %s
@@ -329,6 +339,8 @@ multi sub build-cryptsetup-luks-open-cmdline(
 {
     my Str:D $spawn-cryptsetup-luks-open =
                 "spawn cryptsetup luksOpen $partition-vault $vault-name";
+    my Str:D $sleep =
+                'sleep 1';
     my Str:D $expect-enter-send-vault-pass =
         sprintf('expect "Enter*" { send "%s\r" }', $vault-pass);
     my Str:D $expect-eof =
@@ -336,12 +348,16 @@ multi sub build-cryptsetup-luks-open-cmdline(
 
     my Str:D @cryptsetup-luks-open-cmdline =
         $spawn-cryptsetup-luks-open,
+        $sleep,
         $expect-enter-send-vault-pass,
+        $sleep,
         $expect-eof;
 
     my Str:D $cryptsetup-luks-open-cmdline =
         sprintf(q:to/EOF/.trim, |@cryptsetup-luks-open-cmdline);
         expect <<EOS
+          %s
+          %s
           %s
           %s
           %s
