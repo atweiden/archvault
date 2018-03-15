@@ -559,7 +559,7 @@ multi sub useradd(
         useradd
         -m
         -p $user-pass-hash-ssh
-        -s /bin/false
+        -s /sbin/nologin
         $user-name-ssh
     >);
 }
@@ -606,7 +606,7 @@ method !configure-dnscrypt-proxy(--> Nil)
         -m
         -d /usr/share/dnscrypt-proxy
         -g dnscrypt
-        -s /bin/nologin
+        -s /sbin/nologin
         dnscrypt
     >);
     configure-dnscrypt-proxy('User');
