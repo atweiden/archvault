@@ -30,8 +30,8 @@ has UserName:D $.user-name-ssh =
 
 # sha512 password hash for untrusted ssh user
 has Str:D $.user-pass-hash-ssh =
-    %*ENV<ARCHVAULT_USERPASS>
-        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
+    %*ENV<ARCHVAULT_SSHUSERPASS>
+        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_SSHUSERPASS>)
         !! self.prompt-pass-hash($!user-name-ssh);
 
 # sha512 password hash for root user
