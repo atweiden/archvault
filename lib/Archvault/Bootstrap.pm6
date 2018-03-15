@@ -17,6 +17,8 @@ has Archvault::Config:D $.config is required;
 
 method bootstrap(::?CLASS:D: --> Nil)
 {
+    my Bool:D $augment = $.config.augment;
+
     # verify root permissions
     $*USER == 0 or die('root privileges required');
     self!setup;
@@ -48,7 +50,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-x11;
     self!enable-systemd-services;
     self!disable-btrfs-cow;
-    self!augment if $.config.augment;
+    self!augment if $augment;
     self!unmount;
 }
 
@@ -59,6 +61,8 @@ method bootstrap(::?CLASS:D: --> Nil)
 
 method !setup(--> Nil)
 {
+    my Bool:D $reflector = $.config.reflector;
+
     # initialize pacman-keys
     run(qw<haveged -w 1024>);
     run(qw<pacman-key --init>);
@@ -81,7 +85,7 @@ method !setup(--> Nil)
     run(qw<setfont Lat2-Terminus16>);
 
     # optionally run reflector
-    reflector() if $.config.reflector;
+    reflector() if $reflector;
 }
 
 sub reflector(--> Nil)
@@ -424,6 +428,7 @@ sub mkbootpart(Str:D $partition --> Nil)
 method !pacstrap-base(--> Nil)
 {
     my Processor:D $processor = $.config.processor;
+    my Bool:D $reflector = $.config.reflector;
 
     # base packages
     my Str:D @packages-base = qw<
@@ -465,7 +470,7 @@ method !pacstrap-base(--> Nil)
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
     push(@packages-base, 'intel-ucode') if $processor eq 'intel';
-    push(@packages-base, 'reflector') if $.config.reflector;
+    push(@packages-base, 'reflector') if $reflector;
 
     # download and install packages with pacman in chroot
     run(qw<pacstrap /mnt>, @packages-base);
