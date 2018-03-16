@@ -1045,9 +1045,7 @@ sub chattrify(
     my Str:D $orig-dir = ~$directory.IO.resolve;
     $orig-dir.IO.e && $orig-dir.IO.r && $orig-dir.IO.d
         or die('directory failed exists readable directory test');
-
     my Str:D $backup-dir = $orig-dir ~ '-old';
-
     rename($orig-dir, $backup-dir);
     mkdir($orig-dir);
     chmod($permissions, $orig-dir);
