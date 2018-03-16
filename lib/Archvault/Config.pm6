@@ -783,7 +783,7 @@ method ls-partitions(--> Array[Str:D])
 {
     my Str:D @partitions = qx<
         lsblk --output NAME --nodeps --noheadings --raw
-    >.trim.split("\n").sort.hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) });
+    >.trim.split("\n").hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) }).sort;
 }
 
 # list timezones
