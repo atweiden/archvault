@@ -14,7 +14,7 @@ unit class Archvault::Config;
 has UserName:D $.user-name-admin =
     %*ENV<ARCHVAULT_USERNAME>
         ?? self.gen-user-name(%*ENV<ARCHVAULT_USERNAME>)
-        !! prompt-name(:user, :trusted);
+        !! prompt-name(:user, :admin);
 
 # sha512 password hash for trusted admin user
 has Str:D $.user-pass-hash-admin =
@@ -26,7 +26,7 @@ has Str:D $.user-pass-hash-admin =
 has UserName:D $.user-name-ssh =
     %*ENV<ARCHVAULT_SSHUSERNAME>
         ?? self.gen-user-name(%*ENV<ARCHVAULT_SSHUSERNAME>)
-        !! prompt-name(:user, :untrusted);
+        !! prompt-name(:user, :ssh);
 
 # sha512 password hash for untrusted ssh user
 has Str:D $.user-pass-hash-ssh =
@@ -574,7 +574,7 @@ multi sub prompt-name(Bool:D :host($)! where *.so --> HostName:D)
 
 multi sub prompt-name(
     Bool:D :user($)! where *.so,
-    Bool:D :trusted($)! where *.so
+    Bool:D :admin($)! where *.so
     --> UserName:D
 )
 {
@@ -597,7 +597,7 @@ multi sub prompt-name(
 
 multi sub prompt-name(
     Bool:D :user($)! where *.so,
-    Bool:D :untrusted($)! where *.so
+    Bool:D :ssh($)! where *.so
     --> UserName:D
 )
 {
