@@ -405,11 +405,9 @@ multi sub dprompt(
 # user input prompt (secret text)
 sub stprompt(Str:D $prompt-text --> Str:D)
 {
-    run(qw<stty -echo>);
+    ENTER { run(qw<stty -echo>); }
+    LEAVE { run(qw<stty echo>); say(''); }
     my Str:D $secret = prompt($prompt-text);
-    run(qw<stty echo>);
-    say('');
-    $secret;
 }
 
 # user input prompt (text)
@@ -667,7 +665,7 @@ method prompt-pass-hash(Str $user-name? --> Str:D)
     my Str $pass-hash;
     loop
     {
-        say("Generating password hash for $user-name...") if $user-name;
+        say("Determining password for $user-name...") if $user-name;
         my Str:D $user-pass = stprompt('Enter new password: ');
         $pass-hash = crypt($user-pass, $salt);
         if $pass-hash eqv $pass-hash-blank
