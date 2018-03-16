@@ -637,11 +637,9 @@ multi sub prompt-name(Bool:D :vault($)! where *.so --> VaultName:D)
     }
 }
 
-sub prompt-partition(Str:D @ls-partitions --> Str:D)
+sub prompt-partition(Str:D @partitions --> Str:D)
 {
     my Str:D $partition = do {
-        my Str:D @partitions =
-            @ls-partitions.hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) });
         my Str:D $default-item = '/dev/sdb';
         my Str:D $prompt-text = 'Select partition for installing Arch:';
         my Str:D $title = 'PARTITION SELECTION';
@@ -785,7 +783,7 @@ method ls-partitions(--> Array[Str:D])
 {
     my Str:D @partitions = qx<
         lsblk --output NAME --nodeps --noheadings --raw
-    >.trim.split("\n").sort;
+    >.trim.split("\n").sort.hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) });
 }
 
 # list timezones
