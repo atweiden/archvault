@@ -536,7 +536,7 @@ multi sub useradd(
     --> Nil
 )
 {
-    say("Creating new trusted admin user named $user-name-admin...");
+    say("Creating new admin user named $user-name-admin...");
     run(qqw<
         arch-chroot
         /mnt
@@ -557,7 +557,7 @@ multi sub useradd(
     --> Nil
 )
 {
-    say("Creating new untrusted SSH user named $user-name-ssh...");
+    say("Creating new SSH user named $user-name-ssh...");
     run(qqw<
         arch-chroot
         /mnt
@@ -571,7 +571,7 @@ multi sub useradd(
 
 sub configure-sudoers(UserName:D $user-name-admin --> Nil)
 {
-    say("Giving sudo privileges to the user named $user-name-admin...");
+    say("Giving sudo privileges to admin user $user-name-admin...");
     my Str:D $sudoers = qq:to/EOF/;
     $user-name-admin ALL=(ALL) ALL
     $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/reboot

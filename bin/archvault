@@ -70,11 +70,14 @@ multi sub MAIN(
         Str :processor($),
         Bool :reflector($),
         Str :rootpass($),
+        Str :rootpasshash($),
         Str :sshusername($),
         Str :sshuserpass($),
+        Str :sshuserpasshash($),
         Str :timezone($),
         Str :username($),
         Str :userpass($),
+        Str :userpasshash($),
         Str :vaultname($),
         Str :vaultpass($)
     )
@@ -170,9 +173,9 @@ multi sub USAGE('new' --> Nil)
     constant $HELP = q:to/EOF/.trim;
     Usage:
       archvault --username="live"                                   \
-                --userpass="your trusted admin user's password"     \
+                --userpass="your admin user's password"             \
                 --sshusername="variable"                            \
-                --sshuserpass="your untrusted ssh user's password"  \
+                --sshuserpass="your ssh user's password"            \
                 --rootpass="your root password"                     \
                 --vaultname="vault"                                 \
                 --vaultpass="your LUKS encrypted volume's password" \
@@ -198,11 +201,14 @@ multi sub USAGE('new' --> Nil)
       --processor=<processor>      processor type
       --reflector                  optimize pacman mirrors
       --rootpass=<password>        password for root account
-      --sshusername=<username>     user name for untrusted ssh account
-      --sshuserpass=<password>     password for untrusted ssh account
+      --rootpasshash=<passhash>    encrypted password hash for root account
+      --sshusername=<username>     user name for ssh account
+      --sshuserpass=<password>     password for ssh account
+      --sshuserpasshash=<passhash> encrypted password hash for ssh account
       --timezone=<timezone>        timezone
-      --username=<username>        user name for trusted admin account
-      --userpass=<username>        password for trusted admin account
+      --username=<username>        user name for admin account
+      --userpass=<password>        password for admin account
+      --userpasshash=<passhash>    encrypted password hash for admin account
       --vaultname=<vault-name>     name for LUKS encrypted volume
       --vaultpass=<password>       password for LUKS encrypted volume
     EOF

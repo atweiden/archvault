@@ -17,11 +17,14 @@ method new(
         Str :processor($),
         Bool :reflector($),
         Str :rootpass($),
+        Str :rootpasshash($),
         Str :sshusername($),
         Str :sshuserpass($),
+        Str :sshuserpasshash($),
         Str :timezone($),
         Str :username($),
         Str :userpass($),
+        Str :userpasshash($),
         Str :vaultname($),
         Str :vaultpass($)
     )

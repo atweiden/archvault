@@ -9,9 +9,9 @@ Synopsis
 
 ```bash
 archvault --username="live"                                   \
-          --userpass="your trusted admin user's password"     \
+          --userpass="your admin user's password"             \
           --sshusername="variable"                            \
-          --sshuserpass="your untrusted ssh user's password"  \
+          --sshuserpass="your ssh user's password"            \
           --rootpass="your root password"                     \
           --vaultname="vault"                                 \
           --vaultpass="your LUKS encrypted volume's password" \
@@ -70,12 +70,14 @@ reflector | optimize pacman mirrors | N
 
 `dialog` is needed if you do not provide by cmdline flag or environment
 variable values for all configuration options aside from `--hostname`,
-`--username`, `--userpass`, `--sshusername`, `--sshuserpass`,
-`--rootpass`, `--vaultname`, `--vaultpass`, `--augment` and
-`--reflector`. For these options, console input is read with either the
-built-in Perl6 subroutine `prompt()` or a program like `cryptsetup`. In
-the case of `--augment` and `--reflector`, no console input is read. For
-user input of all other options, the `dialog` program is used.
+`--username`, `--userpass`, `--userpasshash`, `--sshusername`,
+`--sshuserpass`,`--sshuserpasshash`, `--rootpass`, `--rootpasshash`,
+`--vaultname`, `--vaultpass`, `--augment` and `--reflector`. For these
+options, console input is read with either the built-in Perl6 subroutine
+`prompt()` or a program like `cryptsetup`. In the case of `--augment`,
+`--reflector`, `--userpasshash`, `--sshuserpasshash` and `--rootpasshash`
+no console input is read. For user input of all other options, the
+`dialog` program is used.
 
 `reflector` is needed if you provide by cmdline flag or environment
 variable a value for the `--reflector` configuration option. The

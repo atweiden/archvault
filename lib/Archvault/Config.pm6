@@ -10,35 +10,41 @@ unit class Archvault::Config;
 # - attributes appear in specific order for prompting user
 # - defaults are geared towards live media installation
 
-# name for trusted admin user (default: live)
+# name for admin user (default: live)
 has UserName:D $.user-name-admin =
     %*ENV<ARCHVAULT_USERNAME>
         ?? self.gen-user-name(%*ENV<ARCHVAULT_USERNAME>)
         !! prompt-name(:user, :admin);
 
-# sha512 password hash for trusted admin user
+# sha512 password hash for admin user
 has Str:D $.user-pass-hash-admin =
-    %*ENV<ARCHVAULT_USERPASS>
-        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
-        !! self.prompt-pass-hash($!user-name-admin);
+    %*ENV<ARCHVAULT_USERPASSHASH>
+        ?? %*ENV<ARCHVAULT_USERPASSHASH>
+        !! %*ENV<ARCHVAULT_USERPASS>
+            ?? self.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
+            !! self.prompt-pass-hash($!user-name-admin);
 
-# name for untrusted ssh user (default: variable)
+# name for ssh user (default: variable)
 has UserName:D $.user-name-ssh =
     %*ENV<ARCHVAULT_SSHUSERNAME>
         ?? self.gen-user-name(%*ENV<ARCHVAULT_SSHUSERNAME>)
         !! prompt-name(:user, :ssh);
 
-# sha512 password hash for untrusted ssh user
+# sha512 password hash for ssh user
 has Str:D $.user-pass-hash-ssh =
-    %*ENV<ARCHVAULT_SSHUSERPASS>
-        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_SSHUSERPASS>)
-        !! self.prompt-pass-hash($!user-name-ssh);
+    %*ENV<ARCHVAULT_SSHUSERPASSHASH>
+        ?? %*ENV<ARCHVAULT_SSHUSERPASSHASH>
+        !! %*ENV<ARCHVAULT_SSHUSERPASS>
+            ?? self.gen-pass-hash(%*ENV<ARCHVAULT_SSHUSERPASS>)
+            !! self.prompt-pass-hash($!user-name-ssh);
 
 # sha512 password hash for root user
 has Str:D $.user-pass-hash-root =
-    %*ENV<ARCHVAULT_ROOTPASS>
-        ?? self.gen-pass-hash(%*ENV<ARCHVAULT_ROOTPASS>)
-        !! self.prompt-pass-hash('root');
+    %*ENV<ARCHVAULT_ROOTPASSHASH>
+        ?? %*ENV<ARCHVAULT_ROOTPASSHASH>
+        !! %*ENV<ARCHVAULT_ROOTPASS>
+            ?? self.gen-pass-hash(%*ENV<ARCHVAULT_ROOTPASS>)
+            !! self.prompt-pass-hash('root');
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -134,11 +140,14 @@ submethod BUILD(
     Str :$processor,
     Bool :$reflector,
     Str :$rootpass,
+    Str :$rootpasshash,
     Str :$sshusername,
     Str :$sshuserpass,
+    Str :$sshuserpasshash,
     Str :$timezone,
     Str :$username,
     Str :$userpass,
+    Str :$userpasshash,
     Str :$vaultname,
     Str :$vaultpass
     --> Nil
@@ -183,11 +192,20 @@ submethod BUILD(
     # if --userpass, initialize $.user-pass-hash-admin to sha512 salted hash
     $!user-pass-hash-admin = self.gen-pass-hash($userpass) if $userpass;
 
+    # if --userpasshash, initialize $.user-pass-hash-admin to it
+    $!user-pass-hash-admin = $userpasshash if $userpasshash;
+
     # if --rootpass, initialize $.user-pass-hash-root to sha512 salted hash
     $!user-pass-hash-root = self.gen-pass-hash($rootpass) if $rootpass;
 
+    # if --rootpasshash, initialize $.user-pass-hash-root to it
+    $!user-pass-hash-root = $rootpasshash if $rootpasshash;
+
     # if --sshuserpass, initialize $.user-pass-hash-ssh to sha512 salted hash
     $!user-pass-hash-ssh = self.gen-pass-hash($sshuserpass) if $sshuserpass;
+
+    # if --sshuserpasshash, initialize $.user-pass-hash-ssh to it
+    $!user-pass-hash-ssh = $sshuserpasshash if $sshuserpasshash;
 
     # if --vaultname, initialize $.vault-name to VaultName
     $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
@@ -208,11 +226,14 @@ method new(
         Str :processor($),
         Bool :reflector($),
         Str :rootpass($),
+        Str :rootpasshash($),
         Str :sshusername($),
         Str :sshuserpass($),
+        Str :sshuserpasshash($),
         Str :timezone($),
         Str :username($),
         Str :userpass($),
+        Str :userpasshash($),
         Str :vaultname($),
         Str :vaultpass($)
     )
@@ -582,7 +603,7 @@ multi sub prompt-name(
         my UserName:D $response-default = 'live';
         my Str:D $prompt-text = "Enter username [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
-        Determining name for trusted admin user...
+        Determining name for admin user...
 
         Leave blank if you don't know what this is
         EOF
@@ -605,7 +626,7 @@ multi sub prompt-name(
         my UserName:D $response-default = 'variable';
         my Str:D $prompt-text = "Enter username [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
-        Determining name for untrusted SSH user...
+        Determining name for SSH user...
 
         Leave blank if you don't know what this is
         EOF

@@ -3,9 +3,9 @@
 export PATH="bin:$PATH"
 export PERL6LIB="lib"
 archvault --username="live"                                   \
-          --userpass="your trusted admin user's password"     \
+          --userpass="your admin user's password"             \
           --sshusername="variable"                            \
-          --sshuserpass="your untrusted ssh user's password"  \
+          --sshuserpass="your ssh user's password"            \
           --rootpass="your root password"                     \
           --vaultname="vault"                                 \
           --vaultpass="your LUKS encrypted volume's password" \
