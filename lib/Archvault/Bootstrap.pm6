@@ -457,6 +457,7 @@ method !pacstrap-base(--> Nil)
         openresolv
         openssh
         rsync
+        scponly
         systemd-swap
         tmux
         unzip
@@ -564,7 +565,7 @@ multi sub useradd(
         useradd
         -m
         -p $user-pass-hash-ssh
-        -s /sbin/nologin
+        -s /usr/bin/scponly
         $user-name-ssh
     >);
 }
