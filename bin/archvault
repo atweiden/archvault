@@ -159,7 +159,7 @@ multi sub USAGE('gen-pass-hash' --> Nil)
       archvault [-p|--pass=<password>] gen-pass-hash
 
     Options:
-      -p, --pass
+      -p, --pass=<password>
         plaintext password to generate hash from
     EOF
     say($HELP);
