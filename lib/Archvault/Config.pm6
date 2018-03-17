@@ -153,64 +153,25 @@ submethod BUILD(
     --> Nil
 )
 {
-    # if --augment, initialize $.augment to True
     $!augment = $augment if $augment;
-
-    # if --disktype, initialize $.disk-type to DiskType
     $!disk-type = self.gen-disk-type($disktype) if $disktype;
-
-    # if --graphics, initialize $.graphics to Graphics
     $!graphics = self.gen-graphics($graphics) if $graphics;
-
-    # if --hostname, initialize $.hostname to HostName
     $!host-name = self.gen-host-name($hostname) if $hostname;
-
-    # if --keymap, initialize $.keymap to Keymap
     $!keymap = self.gen-keymap($keymap) if $keymap;
-
-    # if --locale, initialize $.locale to Locale
     $!locale = self.gen-locale($locale) if $locale;
-
-    # if --partition, initialize $.partition to Partition
     $!partition = $partition if $partition;
-
-    # if --processor, initialize $.processor to Processor
     $!processor = self.gen-processor($processor) if $processor;
-
-    # if --reflector, initialize $.reflector to True
     $!reflector = $reflector if $reflector;
-
-    # if --timezone, initialize $.timezone to Timezone
     $!timezone = self.gen-timezone($timezone) if $timezone;
-
-    # if --username, initialize $.user-name-admin to UserName
     $!user-name-admin = self.gen-user-name($username) if $username;
-
-    # if --sshusername, initialize $.user-name-ssh to UserName
     $!user-name-ssh = self.gen-user-name($sshusername) if $sshusername;
-
-    # if --userpass, initialize $.user-pass-hash-admin to sha512 salted hash
     $!user-pass-hash-admin = self.gen-pass-hash($userpass) if $userpass;
-
-    # if --userpasshash, initialize $.user-pass-hash-admin to it
     $!user-pass-hash-admin = $userpasshash if $userpasshash;
-
-    # if --rootpass, initialize $.user-pass-hash-root to sha512 salted hash
     $!user-pass-hash-root = self.gen-pass-hash($rootpass) if $rootpass;
-
-    # if --rootpasshash, initialize $.user-pass-hash-root to it
     $!user-pass-hash-root = $rootpasshash if $rootpasshash;
-
-    # if --sshuserpass, initialize $.user-pass-hash-ssh to sha512 salted hash
     $!user-pass-hash-ssh = self.gen-pass-hash($sshuserpass) if $sshuserpass;
-
-    # if --sshuserpasshash, initialize $.user-pass-hash-ssh to it
     $!user-pass-hash-ssh = $sshuserpasshash if $sshuserpasshash;
-
-    # if --vaultname, initialize $.vault-name to VaultName
     $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
-
-    # if --vaultpass, initialize $.vault-pass to VaultPass
     $!vault-pass = self.gen-vault-pass($vaultpass) if $vaultpass;
 }
 
