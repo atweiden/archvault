@@ -1021,10 +1021,9 @@ method !configure-openssh(--> Nil)
     copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
     copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
 
-    my Str:D $allow-users = qq:to/EOF/;
-    AllowUsers $user-name-ssh
-    EOF
-    spurt('/mnt/etc/ssh/sshd_config', "\n" ~ $allow-users, :append);
+    # restrict allowed connections to $user-name-ssh
+    my Str:D $sed-cmd = "3iAllowUsers $user-name-ssh";
+    shell("sed -i '$sed-cmd' /mnt/etc/ssh/sshd_config");
 
     # restrict allowed connections to LAN
     copy(%?RESOURCES<etc/hosts.allow>, '/mnt/etc/hosts.allow');
