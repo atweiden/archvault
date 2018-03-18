@@ -1,3 +1,4 @@
+- idea: replace dnscrypt-proxy with dnscrypt-proxy-go
 - idea: `archvault new [profile]`
   - `archvault new amnesia`
     - https://tails.boum.org/contribute/design/memory_erasure/
