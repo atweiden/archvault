@@ -534,16 +534,33 @@ multi sub useradd(
     --> Nil
 )
 {
+    my Str:D $user-group-admin = qw<
+        audio
+        games
+        log
+        lp
+        network
+        optical
+        power
+        scanner
+        storage
+        users
+        video
+        wheel
+    >.join(',');
+    my Str:D $user-shell-admin = '/bin/bash';
+
     say("Creating new admin user named $user-name-admin...");
+    run(qqw<arch-chroot /mnt groupadd $user-group-admin>);
     run(qqw<
         arch-chroot
         /mnt
         useradd
         -m
+        -g $user-name-admin
+        -G $user-group-admin
         -p $user-pass-hash-admin
-        -s /bin/bash
-        -g users
-        -G audio,games,log,lp,network,optical,power,scanner,storage,video,wheel
+        -s $user-shell-admin
         $user-name-admin
     >);
 }
@@ -573,7 +590,7 @@ multi sub useradd(
         arch-chroot
         /mnt
         useradd
-        -M
+        -m
         -d $home-dir
         -g $user-name-ssh
         -G $user-group-ssh
@@ -581,7 +598,6 @@ multi sub useradd(
         -s $user-shell-ssh
         $user-name-ssh
     >);
-    arch-chroot-mkdir($home-dir, $user-name-ssh, $user-name-ssh, $permissions);
 }
 
 sub configure-sudoers(UserName:D $user-name-admin --> Nil)
