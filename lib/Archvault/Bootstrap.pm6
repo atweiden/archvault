@@ -72,12 +72,10 @@ method !setup(--> Nil)
     # fetch dependencies needed prior to pacstrap
     my Str:D @deps = qw<
         arch-install-scripts
-        base-devel
         btrfs-progs
         expect
         gptfdisk
         kbd
-        nftables
     >;
     run(qw<pacman -Sy --needed --noconfirm>, @deps);
 

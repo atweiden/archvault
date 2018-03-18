@@ -40,7 +40,6 @@ Dependencies
 Name                 | Provides                                        | Included in Arch ISO¹?
 ---                  | ---                                             | ---
 arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`           | Y
-base-devel           | building AUR packages                           | N
 btrfs-progs          | Btrfs setup                                     | Y
 cryptsetup           | FDE with LUKS                                   | Y
 expect               | interactive command prompt automation           | N
