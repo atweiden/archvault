@@ -53,7 +53,7 @@ VersionAddendum none
 
 # sftp
 Match Group sftponly
-  ChrootDirectory /srv/ssh/jail
-  ForceCommand internal-sftp
-  PermitTTY no
-  PermitUserRC no
+    ChrootDirectory /srv/ssh/jail
+    ForceCommand internal-sftp
+    PermitTTY no
+    PermitUserRC no
