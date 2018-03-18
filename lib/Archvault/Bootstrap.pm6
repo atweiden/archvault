@@ -551,7 +551,7 @@ multi sub useradd(
     my Str:D $user-shell-admin = '/bin/bash';
 
     say("Creating new admin user named $user-name-admin...");
-    run(qqw<arch-chroot /mnt groupadd $user-group-admin>);
+    run(qqw<arch-chroot /mnt groupadd $user-name-admin>);
     run(qqw<
         arch-chroot
         /mnt
