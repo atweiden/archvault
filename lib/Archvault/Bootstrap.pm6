@@ -875,19 +875,16 @@ multi sub configure-bootloader(
 {
     my Str:D $partition-vault = $partition ~ '3';
     my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
-
     my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
             ~ ' rootflags=subvol=@';
     $grub-cmdline-linux ~= ' radeon.dpm=1' if $graphics eq 'RADEON';
-
     my Str:D $sed-cmd =
           q{s,}
         ~ q{^\(GRUB_CMDLINE_LINUX\)=.*}
         ~ q{,}
         ~ q{\1=\"} ~ $grub-cmdline-linux ~ q{\"}
         ~ q{,};
-
     shell("sed -i '$sed-cmd' /mnt/etc/default/grub");
 }
 
