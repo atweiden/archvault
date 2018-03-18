@@ -457,7 +457,6 @@ method !pacstrap-base(--> Nil)
         openresolv
         openssh
         rsync
-        scponly
         systemd-swap
         tmux
         unzip
@@ -551,6 +550,7 @@ multi sub useradd(
     >);
 }
 
+# https://wiki.archlinux.org/index.php/SFTP_chroot
 multi sub useradd(
     'ssh',
     UserName:D $user-name-ssh,
@@ -558,16 +558,32 @@ multi sub useradd(
     --> Nil
 )
 {
+    my Str:D $user-group-ssh = 'sftponly';
+    my Str:D $user-shell-ssh = '/sbin/nologin';
+    my Str:D $auth-dir = '/etc/ssh/authorized_keys';
+    # NOTE: $jail-dir must match ChrootDirectory in sshd_config
+    my Str:D $jail-dir = '/srv/ssh/jail';
+    my Str:D $home-dir = "$jail-dir/$user-name-ssh";
+    my Str:D @root-dir = $auth-dir, $jail-dir;
+    my UInt:D $permissions = 0o755;
+
     say("Creating new SSH user named $user-name-ssh...");
+    arch-chroot-mkdir(@root-dir, 'root', 'root', $permissions);
+    run(qqw<arch-chroot /mnt groupadd $user-group-ssh>);
+    run(qqw<arch-chroot /mnt groupadd $user-name-ssh>);
     run(qqw<
         arch-chroot
         /mnt
         useradd
-        -m
+        -M
+        -d $home-dir
+        -g $user-name-ssh
+        -G $user-group-ssh
         -p $user-pass-hash-ssh
-        -s /usr/bin/scponly
+        -s $user-shell-ssh
         $user-name-ssh
     >);
+    arch-chroot-mkdir($home-dir, $user-name-ssh, $user-name-ssh, $permissions);
 }
 
 sub configure-sudoers(UserName:D $user-name-admin --> Nil)
@@ -1034,9 +1050,52 @@ method !disable-btrfs-cow(--> Nil)
     chattrify('/mnt/var/log', 0o755, 'root', 'root');
 }
 
+# interactive console
+method !augment(--> Nil)
+{
+    # launch fully interactive Bash console, type 'exit' to exit
+    shell('expect -c "spawn /bin/bash; interact"');
+}
+
+method !unmount(--> Nil)
+{
+    shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
+    my VaultName:D $vault-name = $.config.vault-name;
+    run(qqw<cryptsetup luksClose $vault-name>);
+}
+
+
+# -----------------------------------------------------------------------------
+# helper functions
+# -----------------------------------------------------------------------------
+
+multi sub arch-chroot-mkdir(
+    Str:D @dir,
+    Str:D $user,
+    Str:D $group,
+    # permissions should be octal: https://doc.perl6.org/routine/chmod
+    UInt:D $permissions
+    --> Nil
+)
+{
+    @dir.map({ arch-chroot-mkdir($_, $user, $group, $permissions) });
+}
+
+multi sub arch-chroot-mkdir(
+    Str:D $dir,
+    Str:D $user,
+    Str:D $group,
+    UInt:D $permissions
+    --> Nil
+)
+{
+    mkdir("/mnt/$dir");
+    chmod($permissions, "/mnt/$dir");
+    run(qqw<arch-chroot /mnt chown $user:$group $dir>);
+}
+
 sub chattrify(
     Str:D $directory where *.so,
-    # permissions should be octal: https://doc.perl6.org/routine/chmod
     UInt:D $permissions,
     Str:D $user where *.so,
     Str:D $group where *.so
@@ -1057,25 +1116,6 @@ sub chattrify(
     run(qqw<chown -R $user:$group $orig-dir>);
     run(qqw<rm -rf $backup-dir>);
 }
-
-# interactive console
-method !augment(--> Nil)
-{
-    # launch fully interactive Bash console, type 'exit' to exit
-    shell('expect -c "spawn /bin/bash; interact"');
-}
-
-method !unmount(--> Nil)
-{
-    shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
-    my VaultName:D $vault-name = $.config.vault-name;
-    run(qqw<cryptsetup luksClose $vault-name>);
-}
-
-
-# -----------------------------------------------------------------------------
-# helper functions
-# -----------------------------------------------------------------------------
 
 sub loop-cmdline-proc(
     Str:D $message where *.so,
