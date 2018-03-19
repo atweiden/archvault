@@ -36,7 +36,7 @@ PermitTTY yes
 PermitTunnel no
 PermitUserEnvironment no
 StrictModes yes
-Subsystem sftp /usr/lib/ssh/sftp-server
+Subsystem sftp internal-sftp
 UsePrivilegeSeparation sandbox
 X11DisplayOffset 10
 X11Forwarding no
@@ -54,6 +54,6 @@ VersionAddendum none
 # sftp
 Match Group sftponly
     ChrootDirectory /srv/ssh/jail
-    ForceCommand internal-sftp
+    ForceCommand internal-sftp -d %u
     PermitTTY no
     PermitUserRC no
