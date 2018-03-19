@@ -74,9 +74,13 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 - Enter vault password
 - Login as admin user
   - root login will fail due to `/etc/securetty` config
+- Get online
+  - `sudo systemctl start dhcpcd`
+  - `sudo systemctl enable dhcpcd`
 - Synchronize time
   - `sudo systemctl start systemd-timesyncd`
   - `sudo systemctl enable systemd-timesyncd`
+  - `sudo timedatectl set-ntp true`
   - `timedatectl status`
 - Get pkgs
   - `sudo pacman -S colordiff git ripgrep pacmatic the_silver_searcher`
