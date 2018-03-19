@@ -73,9 +73,19 @@ method !setup(--> Nil)
     my Str:D @deps = qw<
         arch-install-scripts
         btrfs-progs
+        cryptsetup
+        dialog
         expect
+        findutils
+        gawk
+        glibc
         gptfdisk
         kbd
+        kmod
+        openssl
+        sed
+        tzdata
+        util-linux
     >;
     run(qw<pacman -Sy --needed --noconfirm>, @deps);
 
