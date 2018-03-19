@@ -195,10 +195,10 @@ multi sub USAGE('disable-cow' --> Nil)
     Options:
       -g, --group=<groupname>
         named group to own file (defaults to $*GROUP)
-      -u, --user=<username>
-        named user to own file (defaults to $*USER)
       -p, --permissions=<octal>
         octal file mode bits (defaults to 0o755)
+      -u, --user=<username>
+        named user to own file (defaults to $*USER)
     EOF
     say($HELP);
 }
