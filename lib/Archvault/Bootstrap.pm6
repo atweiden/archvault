@@ -498,15 +498,6 @@ method !configure-users(--> Nil)
 }
 
 multi sub configure-users(
-    'root',
-    Str:D $user-pass-hash-root
-    --> Nil
-)
-{
-    usermod('root', $user-pass-hash-root);
-}
-
-multi sub configure-users(
     'admin',
     UserName:D $user-name-admin,
     Str:D $user-pass-hash-admin
@@ -518,6 +509,15 @@ multi sub configure-users(
 }
 
 multi sub configure-users(
+    'root',
+    Str:D $user-pass-hash-root
+    --> Nil
+)
+{
+    usermod('root', $user-pass-hash-root);
+}
+
+multi sub configure-users(
     'ssh',
     UserName:D $user-name-ssh,
     Str:D $user-pass-hash-ssh
@@ -525,16 +525,6 @@ multi sub configure-users(
 )
 {
     useradd('ssh', $user-name-ssh, $user-pass-hash-ssh);
-}
-
-sub usermod(
-    'root',
-    Str:D $user-pass-hash-root
-    --> Nil
-)
-{
-    say('Updating root password...');
-    run(qqw<arch-chroot /mnt usermod -p $user-pass-hash-root root>);
 }
 
 multi sub useradd(
@@ -598,7 +588,6 @@ multi sub useradd(
     >);
 }
 
-# https://wiki.archlinux.org/index.php/SFTP_chroot
 multi sub useradd(
     'ssh',
     UserName:D $user-name-ssh,
@@ -606,10 +595,10 @@ multi sub useradd(
     --> Nil
 )
 {
+    # https://wiki.archlinux.org/index.php/SFTP_chroot
     my Str:D $user-group-ssh = 'sftponly';
     my Str:D $user-shell-ssh = '/sbin/nologin';
     my Str:D $auth-dir = '/etc/ssh/authorized_keys';
-    # NOTE: $jail-dir must match ChrootDirectory in sshd_config
     my Str:D $jail-dir = '/srv/ssh/jail';
     my Str:D $home-dir = "$jail-dir/$user-name-ssh";
     my Str:D @root-dir = $auth-dir, $jail-dir;
@@ -631,6 +620,16 @@ multi sub useradd(
         $user-name-ssh
     >);
     arch-chroot-mkdir($home-dir, $user-name-ssh, $user-name-ssh, 0o700);
+}
+
+sub usermod(
+    'root',
+    Str:D $user-pass-hash-root
+    --> Nil
+)
+{
+    say('Updating root password...');
+    run(qqw<arch-chroot /mnt usermod -p $user-pass-hash-root root>);
 }
 
 sub configure-sudoers(UserName:D $user-name-admin --> Nil)
