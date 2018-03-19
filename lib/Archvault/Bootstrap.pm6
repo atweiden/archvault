@@ -393,30 +393,42 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
     run(qqw<mount -t btrfs -o $mount-options /dev/mapper/$vault-name /mnt2>);
 
     # btrfs subvolumes, starting with root / ('')
-    my Str:D @btrfs-dirs = '', 'home', 'opt', 'srv', 'tmp', 'usr', 'var';
+    my Str:D @btrfs-dir = '', 'home', 'opt', 'srv', 'usr', 'var';
 
     # create btrfs subvolumes
     chdir('/mnt2');
-    @btrfs-dirs.map(-> $btrfs-dir {
+    @btrfs-dir.map(-> $btrfs-dir {
         run(qqw<btrfs subvolume create @$btrfs-dir>);
     });
     chdir('/');
 
     # mount btrfs subvolumes
-    @btrfs-dirs.map(-> $btrfs-dir {
-        mkdir("/mnt/$btrfs-dir");
-        run(qqw<
-            mount
-            -t btrfs
-            -o $mount-options,subvol=@$btrfs-dir
-            /dev/mapper/$vault-name
-            /mnt/$btrfs-dir
-        >);
+    @btrfs-dir.map(-> $btrfs-dir {
+        mount-btrfs-subvolume($btrfs-dir, $mount-options, $vault-name);
     });
 
     # unmount /mnt2 and remove
     run(qw<umount /mnt2>);
     rmdir('/mnt2');
+}
+
+sub mount-btrfs-subvolume(
+    Str:D $btrfs-dir,
+    Str:D $mount-options is copy,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    # mount /srv and /var with options nodev, noexec, nosuid
+    $mount-options ~= ',nodev,noexec,nosuid' if $btrfs-dir ~~ /srv|var/;
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,subvol=@$btrfs-dir
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
 }
 
 # create and mount boot partition
@@ -757,7 +769,6 @@ method !set-hwclock(--> Nil)
 method !configure-tmpfiles(--> Nil)
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
-    run(qw<arch-chroot /mnt systemctl mask tmp.mount>);
     copy(%?RESOURCES<etc/tmpfiles.d/tmp.conf>, '/mnt/etc/tmpfiles.d/tmp.conf');
 }
 
@@ -970,11 +981,8 @@ method !configure-sysctl(--> Nil)
 {
     my DiskType:D $disk-type = $.config.disk-type;
     copy(%?RESOURCES<etc/sysctl.conf>, '/mnt/etc/sysctl.conf');
-    if $disk-type eq 'SSD' || $disk-type eq 'USB'
-    {
-        configure-sysctl('vm.vfs_cache_pressure');
-        configure-sysctl('vm.swappiness');
-    }
+    configure-sysctl('vm.vfs_cache_pressure') if $disk-type ~~ /SSD|USB/;
+    configure-sysctl('vm.swappiness') if $disk-type ~~ /SSD|USB/;
     run(qw<arch-chroot /mnt sysctl --system>);
 }
 
@@ -1019,9 +1027,9 @@ method !configure-hidepid(--> Nil)
 
     my Str:D $fstab-hidepid = q:to/EOF/;
     # /proc with hidepid (https://wiki.archlinux.org/index.php/Security#hidepid)
-    proc                                      /proc       procfs      hidepid=2,gid=proc                                              0 0
+    proc                                      /proc       procfs      hidepid=2,gid=proc 0 0
     EOF
-    spurt('/mnt/etc/fstab', "\n" ~ $fstab-hidepid, :append);
+    spurt('/mnt/etc/fstab', $fstab-hidepid, :append);
 }
 
 method !configure-securetty(--> Nil)
@@ -1101,7 +1109,7 @@ method !augment(--> Nil)
 
 method !unmount(--> Nil)
 {
-    shell('umount /mnt/{boot,home,opt,srv,tmp,usr,var,}');
+    shell('umount /mnt/{boot,home,opt,srv,usr,var,}');
     my VaultName:D $vault-name = $.config.vault-name;
     run(qqw<cryptsetup luksClose $vault-name>);
 }
