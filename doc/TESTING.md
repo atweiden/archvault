@@ -84,13 +84,14 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `timedatectl status`
 - Get pkgs
   - `sudo pacman -S colordiff git ripgrep pacmatic the_silver_searcher`
+  - `sudo pacman -S mlocate moreutils tree`
   - `sudo pacman -S ccrypt pwgen socat tor torsocks`
 - Get AUR pkgs
   - `git clone https://aur.archlinux.org/clonepkg.git`
   - `cd clonepkg && makepkg -Acsi --noconfirm`
   - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
   - `clonepkg pacnew_scripts pkgbuild-introspection pkgcacheclean`
-  - `clonepkg cower downgrade icdiff pacaur repacman2`
+  - `clonepkg cower downgrade icdiff pacaur repacman2 subrepo`
 - Get dotfiles
   - `git clone https://github.com/atweiden/ttyfiles ~/.ttyfiles`
   - `cd ~/.ttyfiles`
