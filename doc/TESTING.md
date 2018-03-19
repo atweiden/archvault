@@ -67,7 +67,34 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 - Configure VMWare Fusion virtual machine to not use Arch Linux ISO
   - Virtual Machine->Settings->CD/DVD (IDE)
     - Uncheck Connect CD/DVD Drive
+- Configure VMWare Fusion virtual machine to pass battery status to guest
+  - Virtual Machine->Settings->Advanced
+    - Check Pass power status to VM
 - Press Play
 - Enter vault password
-- Login as user
-  - Root login will fail due to `/etc/securetty` config
+- Login as admin user
+  - root login will fail due to `/etc/securetty` config
+- Synchronize time
+  - `sudo systemctl start systemd-timesyncd`
+  - `sudo systemctl enable systemd-timesyncd`
+  - `timedatectl status`
+- Get pkgs
+  - `sudo pacman -S colordiff git ripgrep pacmatic the_silver_searcher`
+  - `sudo pacman -S ccrypt pwgen socat tor torsocks`
+- Get AUR pkgs
+  - `git clone https://aur.archlinux.org/clonepkg.git`
+  - `cd clonepkg && makepkg -Acsi --noconfirm`
+  - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
+  - `clonepkg pacnew_scripts pkgbuild-introspection pkgcacheclean`
+  - `clonepkg cower downgrade icdiff pacaur repacman2`
+- Get dotfiles
+  - `git clone https://github.com/atweiden/ttyfiles ~/.ttyfiles`
+  - `cd ~/.ttyfiles`
+  - `./bootstrap.sh`
+  - `./fetch-gpg-keys.sh`
+- Try sftp
+  - `ssh-keygen -t ed25519 -b 521`
+  - `sudo cp ~/.ssh/id_ed25519.pub /etc/ssh/authorized_keys/variable`
+  - `sudo chmod 644 /etc/ssh/authorized_keys/variable`
+  - `sudo systemctl start sshd`
+  - `sftp $user-name-ssh@127.0.0.1`
