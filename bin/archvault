@@ -10,6 +10,29 @@ use Archvault;
 
 
 # -----------------------------------------------------------------------------
+# disable-cow
+# -----------------------------------------------------------------------------
+
+multi sub MAIN(
+    'disable-cow',
+    Str :g(:$group),
+    UInt :p(:$permissions),
+    Str :u(:$user),
+    *@directory
+    --> Nil
+)
+{
+    my %opt;
+    %opt<group> = $group if $group;
+    %opt<permissions> = $permissions if $permissions;
+    %opt<user> = $user if $user;
+    Archvault::Bootstrap.disable-cow(@directory, |%opt);
+}
+
+
+
+
+# -----------------------------------------------------------------------------
 # gen-pass-hash
 # -----------------------------------------------------------------------------
 
@@ -29,6 +52,11 @@ multi sub MAIN('gen-pass-hash' --> Nil)
 # -----------------------------------------------------------------------------
 # help
 # -----------------------------------------------------------------------------
+
+multi sub MAIN('help', 'disable-cow' --> Nil)
+{
+    USAGE('disable-cow');
+}
 
 multi sub MAIN('help', 'gen-pass-hash' --> Nil)
 {
@@ -138,11 +166,14 @@ multi sub USAGE(--> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
+      archvault disable-cow <dir> <dir>...
+      archvault gen-pass-hash
+      archvault help <command>
+      archvault ls <info>
       archvault new
-      archvault ls <keymaps|locales|partitions|timezones>
-      archvault [-p|--pass=<password>] gen-pass-hash
 
     Commands:
+      disable-cow                 Disable copy-on-write at directory
       gen-pass-hash               Generate SHA512 password hash
       help                        Show help for subcommands
       ls                          List keymaps, locales, partitions, timezones
@@ -151,6 +182,23 @@ multi sub USAGE(--> Nil)
     Options:
       -h, --help                  Print this help message
       --version                   Print version and exit
+    EOF
+    say($HELP);
+}
+
+multi sub USAGE('disable-cow' --> Nil)
+{
+    constant $HELP = q:to/EOF/.trim;
+    Usage:
+      archvault -p=0o700 -u=root -g=root disable-cow dir1 dir2
+
+    Options:
+      -g, --group=<groupname>
+        named group to own file (defaults to $*GROUP)
+      -u, --user=<username>
+        named user to own file (defaults to $*USER)
+      -p, --permissions=<octal>
+        octal file mode bits (defaults to 0o755)
     EOF
     say($HELP);
 }
@@ -164,6 +212,15 @@ multi sub USAGE('gen-pass-hash' --> Nil)
     Options:
       -p, --pass=<password>
         plaintext password to generate hash from
+    EOF
+    say($HELP);
+}
+
+multi sub USAGE('ls' --> Nil)
+{
+    constant $HELP = q:to/EOF/.trim;
+    Usage:
+      archvault ls <keymaps|locales|partitions|timezones>
     EOF
     say($HELP);
 }
@@ -199,30 +256,18 @@ multi sub USAGE('new' --> Nil)
       --locale=<locale>            locale
       --partition=<device-path>    partition target for install
       --processor=<processor>      processor type
-      --reflector                  optimize pacman mirrors
+      --reflector                  optimize Pacman mirrors
       --rootpass=<password>        password for root account
       --rootpasshash=<passhash>    encrypted password hash for root account
-      --sshusername=<username>     user name for ssh account
-      --sshuserpass=<password>     password for ssh account
-      --sshuserpasshash=<passhash> encrypted password hash for ssh account
+      --sshusername=<username>     user name for SSH account
+      --sshuserpass=<password>     password for SSH account
+      --sshuserpasshash=<passhash> encrypted password hash for SSH account
       --timezone=<timezone>        timezone
       --username=<username>        user name for admin account
       --userpass=<password>        password for admin account
       --userpasshash=<passhash>    encrypted password hash for admin account
       --vaultname=<vault-name>     name for LUKS encrypted volume
       --vaultpass=<password>       password for LUKS encrypted volume
-    EOF
-    say($HELP);
-}
-
-multi sub USAGE('ls' --> Nil)
-{
-    constant $HELP = q:to/EOF/.trim;
-    Usage:
-      archvault ls keymaps
-      archvault ls locales
-      archvault ls partitions
-      archvault ls timezones
     EOF
     say($HELP);
 }

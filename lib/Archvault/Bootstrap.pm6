@@ -1083,7 +1083,11 @@ method !enable-systemd-services(--> Nil)
 
 method !disable-btrfs-cow(--> Nil)
 {
-    chattrify('/mnt/var/log', 0o755, 'root', 'root');
+    my Str:D @directory = '/mnt/var/log';
+    my UInt:D $permissions = 0o755;
+    my Str:D $user = 'root';
+    my Str:D $group = 'root';
+    self.disable-cow(|@directory, :$permissions, :$user, :$group);
 }
 
 # interactive console
@@ -1130,11 +1134,23 @@ multi sub arch-chroot-mkdir(
     run(qqw<arch-chroot /mnt chown $user:$group $dir>);
 }
 
-sub chattrify(
-    Str:D $directory where *.so,
+method disable-cow(
+    UInt:D :$permissions = 0o755,
+    Str:D :$user = $*USER,
+    Str:D :$group = $*GROUP,
+    *@directory
+    --> Nil
+)
+{
+    # https://wiki.archlinux.org/index.php/Btrfs#Disabling_CoW
+    @directory.map({ disable-cow($_, $permissions, $user, $group) });
+}
+
+sub disable-cow(
+    Str:D $directory,
     UInt:D $permissions,
-    Str:D $user where *.so,
-    Str:D $group where *.so
+    Str:D $user,
+    Str:D $group
     --> Nil
 )
 {
