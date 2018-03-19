@@ -603,10 +603,9 @@ multi sub useradd(
     my Str:D $jail-dir = '/srv/ssh/jail';
     my Str:D $home-dir = "$jail-dir/$user-name-ssh";
     my Str:D @root-dir = $auth-dir, $jail-dir;
-    my UInt:D $permissions = 0o755;
 
     say("Creating new SSH user named $user-name-ssh...");
-    arch-chroot-mkdir(@root-dir, 'root', 'root', $permissions);
+    arch-chroot-mkdir(@root-dir, 'root', 'root', 0o755);
     run(qqw<arch-chroot /mnt groupadd $user-group-ssh>);
     run(qqw<arch-chroot /mnt groupadd $user-name-ssh>);
     run(qqw<
@@ -621,7 +620,7 @@ multi sub useradd(
         -s $user-shell-ssh
         $user-name-ssh
     >);
-    arch-chroot-mkdir($home-dir, $user-name-ssh, $user-name-ssh, $permissions);
+    arch-chroot-mkdir($home-dir, $user-name-ssh, $user-name-ssh, 0o700);
 }
 
 sub configure-sudoers(UserName:D $user-name-admin --> Nil)
