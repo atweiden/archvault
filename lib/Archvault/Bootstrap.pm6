@@ -1,6 +1,7 @@
 use v6;
 use Archvault::Config;
 use Archvault::Types;
+use Archvault::Utils;
 unit class Archvault::Bootstrap;
 
 
@@ -49,7 +50,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-openssh;
     self!configure-x11;
     self!enable-systemd-services;
-    self!disable-btrfs-cow;
+    self!disable-cow;
     self!augment if $augment;
     self!unmount;
 }
@@ -1081,13 +1082,13 @@ method !enable-systemd-services(--> Nil)
     });
 }
 
-method !disable-btrfs-cow(--> Nil)
+method !disable-cow(--> Nil)
 {
     my Str:D @directory = '/mnt/var/log';
     my UInt:D $permissions = 0o755;
     my Str:D $user = 'root';
     my Str:D $group = 'root';
-    self.disable-cow(|@directory, :$permissions, :$user, :$group);
+    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
 }
 
 # interactive console
@@ -1132,41 +1133,6 @@ multi sub arch-chroot-mkdir(
     mkdir("/mnt/$dir");
     chmod($permissions, "/mnt/$dir");
     run(qqw<arch-chroot /mnt chown $user:$group $dir>);
-}
-
-method disable-cow(
-    UInt:D :$permissions = 0o755,
-    Str:D :$user = $*USER,
-    Str:D :$group = $*GROUP,
-    *@directory
-    --> Nil
-)
-{
-    # https://wiki.archlinux.org/index.php/Btrfs#Disabling_CoW
-    @directory.map({ disable-cow($_, $permissions, $user, $group) });
-}
-
-sub disable-cow(
-    Str:D $directory,
-    UInt:D $permissions,
-    Str:D $user,
-    Str:D $group
-    --> Nil
-)
-{
-    my Str:D $orig-dir = ~$directory.IO.resolve;
-    $orig-dir.IO.e && $orig-dir.IO.r && $orig-dir.IO.d
-        or die('directory failed exists readable directory test');
-    my Str:D $backup-dir = $orig-dir ~ '-old';
-    rename($orig-dir, $backup-dir);
-    mkdir($orig-dir);
-    chmod($permissions, $orig-dir);
-    run(qqw<chattr +C $orig-dir>);
-    dir($backup-dir).race.map(-> $file {
-        run(qqw<cp -dpr --no-preserve=ownership $file $orig-dir>)
-    });
-    run(qqw<chown -R $user:$group $orig-dir>);
-    run(qqw<rm -rf $backup-dir>);
 }
 
 sub loop-cmdline-proc(

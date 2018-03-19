@@ -5,6 +5,7 @@
 
 use v6;
 use Archvault;
+use Archvault::Utils;
 
 
 
@@ -26,7 +27,7 @@ multi sub MAIN(
     %opt<group> = $group if $group;
     %opt<permissions> = $permissions if $permissions;
     %opt<user> = $user if $user;
-    Archvault::Bootstrap.disable-cow(@directory, |%opt);
+    Archvault::Utils.disable-cow(@directory, |%opt);
 }
 
 
@@ -38,12 +39,12 @@ multi sub MAIN(
 
 multi sub MAIN('gen-pass-hash', Str:D :p(:$pass)! --> Nil)
 {
-    say(Archvault::Config.gen-pass-hash($pass));
+    say(Archvault::Utils.gen-pass-hash($pass));
 }
 
 multi sub MAIN('gen-pass-hash' --> Nil)
 {
-    say(Archvault::Config.prompt-pass-hash);
+    say(Archvault::Utils.prompt-pass-hash);
 }
 
 
@@ -124,22 +125,22 @@ multi sub MAIN(
 
 multi sub MAIN('ls', 'keymaps' --> Nil)
 {
-    Archvault::Config.ls-keymaps.map({ .say });
+    Archvault::Utils.ls-keymaps.map({ .say });
 }
 
 multi sub MAIN('ls', 'locales' --> Nil)
 {
-    Archvault::Config.ls-locales.map({ .say });
+    Archvault::Utils.ls-locales.map({ .say });
 }
 
 multi sub MAIN('ls', 'partitions' --> Nil)
 {
-    Archvault::Config.ls-partitions.map({ .say });
+    Archvault::Utils.ls-partitions.map({ .say });
 }
 
 multi sub MAIN('ls', 'timezones' --> Nil)
 {
-    Archvault::Config.ls-timezones.map({ .say });
+    Archvault::Utils.ls-timezones.map({ .say });
 }
 
 

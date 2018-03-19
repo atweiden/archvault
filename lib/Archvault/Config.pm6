@@ -1,6 +1,6 @@
 use v6;
 use Archvault::Types;
-use Crypt::Libcrypt:auth<atweiden>;
+use Archvault::Utils;
 unit class Archvault::Config;
 
 # -----------------------------------------------------------------------------
@@ -21,8 +21,8 @@ has Str:D $.user-pass-hash-admin =
     %*ENV<ARCHVAULT_USERPASSHASH>
         ?? %*ENV<ARCHVAULT_USERPASSHASH>
         !! %*ENV<ARCHVAULT_USERPASS>
-            ?? self.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
-            !! self.prompt-pass-hash($!user-name-admin);
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
+            !! Archvault::Utils.prompt-pass-hash($!user-name-admin);
 
 # name for ssh user (default: variable)
 has UserName:D $.user-name-ssh =
@@ -35,16 +35,16 @@ has Str:D $.user-pass-hash-ssh =
     %*ENV<ARCHVAULT_SSHUSERPASSHASH>
         ?? %*ENV<ARCHVAULT_SSHUSERPASSHASH>
         !! %*ENV<ARCHVAULT_SSHUSERPASS>
-            ?? self.gen-pass-hash(%*ENV<ARCHVAULT_SSHUSERPASS>)
-            !! self.prompt-pass-hash($!user-name-ssh);
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_SSHUSERPASS>)
+            !! Archvault::Utils.prompt-pass-hash($!user-name-ssh);
 
 # sha512 password hash for root user
 has Str:D $.user-pass-hash-root =
     %*ENV<ARCHVAULT_ROOTPASSHASH>
         ?? %*ENV<ARCHVAULT_ROOTPASSHASH>
         !! %*ENV<ARCHVAULT_ROOTPASS>
-            ?? self.gen-pass-hash(%*ENV<ARCHVAULT_ROOTPASS>)
-            !! self.prompt-pass-hash('root');
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_ROOTPASS>)
+            !! Archvault::Utils.prompt-pass-hash('root');
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -67,7 +67,7 @@ has HostName:D $.host-name =
 # device path of target partition (default: /dev/sdb)
 has Str:D $.partition =
     %*ENV<ARCHVAULT_PARTITION>
-        || prompt-partition(self.ls-partitions);
+        || prompt-partition(Archvault::Utils.ls-partitions);
 
 # type of processor (default: other)
 has Processor:D $.processor =
@@ -115,17 +115,6 @@ has Bool:D $.reflector =
 
 
 # -----------------------------------------------------------------------------
-# constants
-# -----------------------------------------------------------------------------
-
-# linux crypt encryption scheme for user password hash generation
-constant $SCHEME = 'SHA512';
-
-# linux crypt encryption rounds
-constant $ROUNDS = 700_000;
-
-
-# -----------------------------------------------------------------------------
 # class instantation
 # -----------------------------------------------------------------------------
 
@@ -165,11 +154,14 @@ submethod BUILD(
     $!timezone = self.gen-timezone($timezone) if $timezone;
     $!user-name-admin = self.gen-user-name($username) if $username;
     $!user-name-ssh = self.gen-user-name($sshusername) if $sshusername;
-    $!user-pass-hash-admin = self.gen-pass-hash($userpass) if $userpass;
+    $!user-pass-hash-admin =
+        Archvault::Utils.gen-pass-hash($userpass) if $userpass;
     $!user-pass-hash-admin = $userpasshash if $userpasshash;
-    $!user-pass-hash-root = self.gen-pass-hash($rootpass) if $rootpass;
+    $!user-pass-hash-root =
+        Archvault::Utils.gen-pass-hash($rootpass) if $rootpass;
     $!user-pass-hash-root = $rootpasshash if $rootpasshash;
-    $!user-pass-hash-ssh = self.gen-pass-hash($sshuserpass) if $sshuserpass;
+    $!user-pass-hash-ssh =
+        Archvault::Utils.gen-pass-hash($sshuserpass) if $sshuserpass;
     $!user-pass-hash-ssh = $sshuserpasshash if $sshuserpasshash;
     $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
     $!vault-pass = self.gen-vault-pass($vaultpass) if $vaultpass;
@@ -237,13 +229,6 @@ method gen-keymap(Str:D $k --> Keymap:D)
 method gen-locale(Str:D $l --> Locale:D)
 {
     my Locale:D $locale = $l or die("Sorry, invalid locale 「$l」");
-}
-
-# generate sha512 salted password hash from plaintext password
-method gen-pass-hash(Str:D $user-pass --> Str:D)
-{
-    my Str:D $salt = gen-pass-salt();
-    my Str:D $pass-hash = crypt($user-pass, $salt);
 }
 
 # confirm processor $p is valid Processor and return Processor
@@ -382,14 +367,6 @@ multi sub dprompt(
     }
 
     $response;
-}
-
-# user input prompt (secret text)
-sub stprompt(Str:D $prompt-text --> Str:D)
-{
-    ENTER { run(qw<stty -echo>); }
-    LEAVE { run(qw<stty echo>); say(''); }
-    my Str:D $secret = prompt($prompt-text);
 }
 
 # user input prompt (text)
@@ -637,31 +614,6 @@ sub prompt-partition(Str:D @partitions --> Str:D)
     }
 }
 
-# generate sha512 salted password hash from interactive user input
-method prompt-pass-hash(Str $user-name? --> Str:D)
-{
-    my Str:D $salt = gen-pass-salt();
-    my Str:D $pass-hash-blank = crypt('', $salt);
-    my Str $pass-hash;
-    loop
-    {
-        say("Determining password for $user-name...") if $user-name;
-        my Str:D $user-pass = stprompt('Enter new password: ');
-        $pass-hash = crypt($user-pass, $salt);
-        if $pass-hash eqv $pass-hash-blank
-        {
-            say('Password cannot be blank. Please try again');
-            next;
-        }
-        my Str:D $user-pass-confirm = stprompt('Retype new password: ');
-        my Str:D $pass-hash-confirm = crypt($user-pass-confirm, $salt);
-        last if $pass-hash eqv $pass-hash-confirm;
-        # passwords do not match
-        say('Please try again');
-    }
-    $pass-hash;
-}
-
 sub prompt-processor(--> Processor:D)
 {
     my Processor:D $processor = do {
@@ -729,75 +681,5 @@ sub prompt-timezone(--> Timezone:D)
 
     my Timezone:D $timezone = @timezones.grep("$region/$subregion").first;
 }
-
-
-# -----------------------------------------------------------------------------
-# utilities
-# -----------------------------------------------------------------------------
-
-# list keymaps
-method ls-keymaps(--> Array[Keymap:D])
-{
-    # equivalent to `localectl list-keymaps --no-pager`
-    # see: src/basic/def.h in systemd source code
-    my Keymap:D @keymaps = qx<
-        find /usr/share/kbd/keymaps -type f \
-               \( ! -name "*compose*" \)    \
-            -a \( ! -name "*.doc*"    \)    \
-            -a \( ! -name "*.html*"   \)    \
-            -a \( ! -name "*.inc*"    \)    \
-            -a \( ! -name "*.latin1*" \)    \
-            -a \( ! -name "*.m4*"     \)    \
-            -printf '%f\n'
-    >.trim.split("\n").hyper.map({ .subst(/'.map.gz'$/, '') }).sort;
-}
-
-# list locales
-method ls-locales(--> Array[Locale:D])
-{
-    my Locale:D @locales = qx<
-        find /usr/share/i18n/locales -type f -printf '%f\n'
-    >.trim.split("\n").sort;
-}
-
-# list block devices (partitions)
-method ls-partitions(--> Array[Str:D])
-{
-    my Str:D @partitions = qx<
-        lsblk --output NAME --nodeps --noheadings --raw
-    >.trim.split("\n").hyper.map({ .subst(/(.*)/, -> $/ { "/dev/$0" }) }).sort;
-}
-
-# list timezones
-method ls-timezones(--> Array[Timezone:D])
-{
-    # equivalent to `timedatectl list-timezones --no-pager`
-    # see: src/basic/time-util.c in systemd source code
-    my Timezone:D @timezones =
-        |qx<
-            sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
-        >.trim.split("\n").sort,
-        'UTC';
-}
-
-
-# -----------------------------------------------------------------------------
-# helper functions
-# -----------------------------------------------------------------------------
-
-sub gen-pass-salt(--> Str:D)
-{
-    my Str:D $scheme = gen-scheme-id($SCHEME);
-    my Str:D $rounds = ~$ROUNDS;
-    my Str:D $rand =
-        qx<openssl rand -base64 16>.trim.subst(/<[+=]>/, :g, '').substr(0, 16);
-    my Str:D $salt = sprintf('$%s$rounds=%s$%s$', $scheme, $rounds, $rand);
-}
-
-# linux crypt encrypted method id accessed by encryption method
-multi sub gen-scheme-id('MD5' --> Str:D)      { '1' }
-multi sub gen-scheme-id('BLOWFISH' --> Str:D) { '2a' }
-multi sub gen-scheme-id('SHA256' --> Str:D)   { '5' }
-multi sub gen-scheme-id('SHA512' --> Str:D)   { '6' }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:

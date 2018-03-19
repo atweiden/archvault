@@ -17,6 +17,7 @@
         "Archvault::Config"    : "lib/Archvault/Config.pm6",
         "Archvault::Grammar"   : "lib/Archvault/Grammar.pm6",
         "Archvault::Types"     : "lib/Archvault/Types.pm6",
+        "Archvault::Utils"     : "lib/Archvault/Utils.pm6",
         "Crypt::Libcrypt"      : "lib/Crypt/Libcrypt.pm6"
     },
     "resources" : [
