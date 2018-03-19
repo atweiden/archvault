@@ -565,6 +565,29 @@ multi sub useradd(
     >);
 }
 
+multi sub useradd(
+    'dnscrypt',
+    UserName:D $user-name-dnscrypt
+    --> Nil
+)
+{
+    my Str:D $user-home-dnscrypt = '/usr/share/dnscrypt-proxy';
+    my Str:D $user-shell-dnscrypt = '/bin/false';
+
+    say("Creating new DNSCrypt user named $user-name-dnscrypt...");
+    run(qqw<arch-chroot /mnt groupadd $user-name-dnscrypt>);
+    run(qqw<
+        arch-chroot
+        /mnt
+        useradd
+        -M
+        -d $user-home-dnscrypt
+        -g $user-name-dnscrypt
+        -s $user-shell-dnscrypt
+        $user-name-dnscrypt
+    >);
+}
+
 # https://wiki.archlinux.org/index.php/SFTP_chroot
 multi sub useradd(
     'ssh',
@@ -590,7 +613,7 @@ multi sub useradd(
         arch-chroot
         /mnt
         useradd
-        -m
+        -M
         -d $home-dir
         -g $user-name-ssh
         -G $user-group-ssh
@@ -598,6 +621,7 @@ multi sub useradd(
         -s $user-shell-ssh
         $user-name-ssh
     >);
+    arch-chroot-mkdir($home-dir, $user-name-ssh, $user-name-ssh, $permissions);
 }
 
 sub configure-sudoers(UserName:D $user-name-admin --> Nil)
@@ -633,29 +657,23 @@ method !configure-dhcpcd(--> Nil)
 
 method !configure-dnscrypt-proxy(--> Nil)
 {
-    # create dnscrypt user/group
-    run(qw<arch-chroot /mnt groupadd dnscrypt>);
-    run(qqw<
-        arch-chroot
-        /mnt
-        useradd
-        -m
-        -d /usr/share/dnscrypt-proxy
-        -g dnscrypt
-        -s /sbin/nologin
-        dnscrypt
-    >);
-    configure-dnscrypt-proxy('User');
+    my Str:D $user-name-dnscrypt = 'dnscrypt';
+    useradd('dnscrypt', $user-name-dnscrypt);
+    configure-dnscrypt-proxy('User', $user-name-dnscrypt);
     configure-dnscrypt-proxy('EphemeralKeys');
 }
 
-multi sub configure-dnscrypt-proxy('User' --> Nil)
+multi sub configure-dnscrypt-proxy(
+    'User',
+    UserName:D $user-name-dnscrypt
+    --> Nil
+)
 {
     my Str:D $sed-cmd =
           q{s,}
         ~ q{^# User.*}
         ~ q{,}
-        ~ q{User dnscrypt}
+        ~ qq{User $user-name-dnscrypt}
         ~ q{,};
     shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
 }
