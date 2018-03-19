@@ -564,6 +564,7 @@ multi sub useradd(
         -s $user-shell-admin
         $user-name-admin
     >);
+    chmod(0o700, "/mnt/home/$user-name-admin");
 }
 
 multi sub useradd(
