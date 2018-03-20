@@ -84,8 +84,8 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `timedatectl status`
 - Get pkgs
   - `sudo pacman -S colordiff git ripgrep pacmatic the_silver_searcher`
-  - `sudo pacman -S mlocate moreutils tree`
-  - `sudo pacman -S ccrypt pwgen socat tor torsocks`
+  - `sudo pacman -S arch-wiki-docs arch-wiki-lite mlocate sdcv tree`
+  - `sudo pacman -S ccrypt moreutils pwgen socat tor torsocks`
 - Get AUR pkgs
   - `git clone https://aur.archlinux.org/clonepkg.git`
   - `cd clonepkg && makepkg -Acsi --noconfirm`
@@ -97,6 +97,9 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `setfont Tamsyn10x20r`
   - `vim /etc/vconsole.conf`
     - `FONT=Tamsyn10x20r`
+- Get Stardict dictionary/thesaurus
+  - http://download.huzheng.org/bigdict/
+    - /usr/share/stardict/dic
 - Get dotfiles
   - `git clone https://github.com/atweiden/ttyfiles ~/.ttyfiles`
   - `cd ~/.ttyfiles`
