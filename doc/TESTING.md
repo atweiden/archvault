@@ -92,6 +92,11 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
   - `clonepkg fzf-git fzf-extras pacnew_scripts pkgcacheclean`
   - `clonepkg cower downgrade icdiff pacaur repacman2 subrepo`
+- Get console font
+  - `clonepkg tamsyn-console-font`
+  - `setfont Tamsyn10x20r`
+  - `vim /etc/vconsole.conf`
+    - `FONT=Tamsyn10x20r`
 - Get dotfiles
   - `git clone https://github.com/atweiden/ttyfiles ~/.ttyfiles`
   - `cd ~/.ttyfiles`
