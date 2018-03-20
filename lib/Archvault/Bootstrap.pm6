@@ -393,7 +393,14 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
     run(qqw<mount -t btrfs -o $mount-options /dev/mapper/$vault-name /mnt2>);
 
     # btrfs subvolumes, starting with root / ('')
-    my Str:D @btrfs-dir = '', 'home', 'opt', 'srv', 'usr', 'var';
+    my Str:D @btrfs-dir =
+        '',
+        'home',
+        'opt',
+        'srv',
+        'usr',
+        'var-lib-ex',
+        'var-tmp';
 
     # create btrfs subvolumes
     chdir('/mnt2');
@@ -412,15 +419,67 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
     rmdir('/mnt2');
 }
 
-sub mount-btrfs-subvolume(
-    Str:D $btrfs-dir,
-    Str:D $mount-options is copy,
+multi sub mount-btrfs-subvolume(
+    'srv',
+    Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
 )
 {
-    # mount /srv and /var with options nodev, noexec, nosuid
-    $mount-options ~= ',nodev,noexec,nosuid' if $btrfs-dir ~~ /srv|var/;
+    my Str:D $btrfs-dir = 'srv';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var-lib-ex',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/lib/ex';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,nodev,noexec,nosuid,subvol=@var-lib-ex
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var-tmp',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/tmp';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,nodev,noexec,nosuid,subvol=@var-tmp
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    Str:D $btrfs-dir,
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
     mkdir("/mnt/$btrfs-dir");
     run(qqw<
         mount
@@ -1109,7 +1168,7 @@ method !augment(--> Nil)
 
 method !unmount(--> Nil)
 {
-    shell('umount /mnt/{boot,home,opt,srv,usr,var,}');
+    shell('umount -R /mnt');
     my VaultName:D $vault-name = $.config.vault-name;
     run(qqw<cryptsetup luksClose $vault-name>);
 }
