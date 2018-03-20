@@ -446,7 +446,7 @@ multi sub mount-btrfs-subvolume(
 )
 {
     my Str:D $btrfs-dir = 'var/lib/ex';
-    mkdir("/mnt/$btrfs-dir");
+    mkdir("/mnt/$btrfs-dir", 0o777);
     run(qqw<
         mount
         -t btrfs
@@ -464,7 +464,7 @@ multi sub mount-btrfs-subvolume(
 )
 {
     my Str:D $btrfs-dir = 'var/tmp';
-    mkdir("/mnt/$btrfs-dir");
+    mkdir("/mnt/$btrfs-dir", 0o777);
     run(qqw<
         mount
         -t btrfs
@@ -1200,8 +1200,7 @@ multi sub arch-chroot-mkdir(
     --> Nil
 )
 {
-    mkdir("/mnt/$dir");
-    chmod($permissions, "/mnt/$dir");
+    mkdir("/mnt/$dir", $permissions);
     run(qqw<arch-chroot /mnt chown $user:$group $dir>);
 }
 
