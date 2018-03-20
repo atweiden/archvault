@@ -399,6 +399,7 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
         'opt',
         'srv',
         'usr',
+        'var',
         'var-lib-ex',
         'var-tmp';
 
@@ -915,6 +916,7 @@ multi sub configure-initramfs('HOOKS', DiskType:D $disk-type --> Nil)
         encrypt
         btrfs
         filesystems
+        fsck
         shutdown
         usr
     >;
