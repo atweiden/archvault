@@ -9,7 +9,6 @@ PasswordAuthentication no
 PermitEmptyPasswords no
 PermitRootLogin no
 Port 22
-UseLogin no
 UsePAM no
 
 # connection
@@ -37,7 +36,6 @@ PermitTunnel no
 PermitUserEnvironment no
 StrictModes yes
 Subsystem sftp internal-sftp
-UsePrivilegeSeparation sandbox
 X11DisplayOffset 10
 X11Forwarding no
 X11UseLocalhost yes
