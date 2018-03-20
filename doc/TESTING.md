@@ -90,7 +90,7 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `git clone https://aur.archlinux.org/clonepkg.git`
   - `cd clonepkg && makepkg -Acsi --noconfirm`
   - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
-  - `clonepkg pacnew_scripts pkgbuild-introspection pkgcacheclean`
+  - `clonepkg fzf-git fzf-extras pacnew_scripts pkgcacheclean`
   - `clonepkg cower downgrade icdiff pacaur repacman2 subrepo`
 - Get dotfiles
   - `git clone https://github.com/atweiden/ttyfiles ~/.ttyfiles`
