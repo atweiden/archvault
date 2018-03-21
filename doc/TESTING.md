@@ -1,8 +1,6 @@
-Testing Archvault
-=================
+# Testing Archvault
 
-VMWare Fusion 10.1.1
---------------------
+## VMWare Fusion 10.1.1
 
 ### Pre-Setup
 
@@ -114,3 +112,51 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `sudo chmod 644 /etc/ssh/authorized_keys/variable`
   - `sudo systemctl start sshd`
   - `sftp variable@127.0.0.1`
+
+## VirtualBox
+
+- configure vbox for host-guest SSH
+  - on host machine
+    - `VBoxManage modifyvm arch64 --natpf1 "ssh,tcp,,3022,,22"`
+      - where `arch64` is the name you gave the VirtualBox VM
+- try host-guest SSH
+  - on guest machine
+    - temporarily amend `/etc/ssh/sshd_config` to allow password
+      authentication
+      - `vim /etc/ssh/sshd_config`
+        - `PasswordAuthentication yes`
+    - start `sshd`
+      - `systemctl start sshd`
+  - on host machine
+    - `sftp -P 3022 variable@127.0.0.1`
+      - succeeds
+    - `ssh -p 3022 variable@127.0.0.1`
+      - fails
+        - only sftp is allowed
+- configure SSH pubkey authentication for host-guest SSH
+  - on host machine
+    - create SSH keypair
+      - `ssh-keygen -t ed25519 -b 521`
+      - `mkdir ~/.ssh/user-vbox-arch64`
+      - `mv ~/.ssh/id_ed25519* ~/.ssh/user-vbox-arch64`
+    - upload SSH pubkey to guest
+      - `sftp -P 3022 variable@127.0.0.1`
+        - `put /Users/user/.ssh/user-vbox-arch64/id_ed25519.pub .`
+        - `quit`
+  - on guest machine
+    - stop sshd
+      `systemctl stop sshd`
+    - disallow password authentication
+      - `vim /etc/ssh/sshd_config`
+        - `PasswordAuthentication no`
+    - add uploaded SSH pubkey to `/etc/ssh/authorized_keys`
+      - for fresh key
+        - `mv /srv/ssh/jail/variable/id_ed25519.pub /etc/ssh/authorized_keys/variable`
+        - `chmod 644 /etc/ssh/authorized_keys/variable`
+      - for additional key
+        - `cat /srv/ssh/jail/variable/id_ed25519.pub >> /etc/ssh/authorized_keys/variable`
+    - start sshd
+      `systemctl start sshd`
+- try passwordless host-guest SSH
+  - on host machine
+    - `sftp -P 3022 -i ~/.ssh/user-vbox-arch64/id_ed25519 variable@127.0.0.1`
