@@ -113,4 +113,4 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `sudo cp ~/.ssh/id_ed25519.pub /etc/ssh/authorized_keys/variable`
   - `sudo chmod 644 /etc/ssh/authorized_keys/variable`
   - `sudo systemctl start sshd`
-  - `sftp $user-name-ssh@127.0.0.1`
+  - `sftp variable@127.0.0.1`
