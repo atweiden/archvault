@@ -71,7 +71,7 @@ method !setup(--> Nil)
     run(qw<pkill haveged>);
 
     # fetch dependencies needed prior to pacstrap
-    my Str:D @deps = qw<
+    my Str:D @dep = qw<
         arch-install-scripts
         btrfs-progs
         cryptsetup
@@ -88,7 +88,13 @@ method !setup(--> Nil)
         tzdata
         util-linux
     >;
-    run(qw<pacman -Sy --needed --noconfirm>, @deps);
+
+    my Str:D $pacman-dep-cmdline =
+        sprintf('pacman -Sy --needed --noconfirm %s', @dep.join(' '));
+    loop-cmdline-proc(
+        'Installing dependencies...',
+        $pacman-dep-cmdline
+    );
 
     # use readable font
     run(qw<setfont Lat2-Terminus16>);
@@ -99,19 +105,27 @@ method !setup(--> Nil)
 
 sub reflector(--> Nil)
 {
-    run(qw<pacman -Sy --needed --noconfirm reflector>);
+    my Str:D $pacman-reflector-cmdline =
+        'pacman -Sy --needed --noconfirm reflector';
+    loop-cmdline-proc(
+        'Installing reflector...',
+        $pacman-reflector-cmdline
+    );
 
     # rank mirrors
-    say('Running reflector to optimize pacman mirrors');
     rename('/etc/pacman.d/mirrorlist', '/etc/pacman.d/mirrorlist.bak');
-    run(qw<
+    my Str:D $reflector-cmdline = qw<
         reflector
         --threads 5
         --protocol https
         --fastest 7
         --number 7
         --save /etc/pacman.d/mirrorlist
-    >);
+    >.join(' ');
+    loop-cmdline-proc(
+        'Running reflector to optimize pacman mirrors',
+        $reflector-cmdline
+    );
 }
 
 # secure disk configuration
@@ -514,7 +528,7 @@ method !pacstrap-base(--> Nil)
     my Bool:D $reflector = $.config.reflector;
 
     # base packages
-    my Str:D @packages-base = qw<
+    my Str:D @pkg = qw<
         acpi
         arch-install-scripts
         base
@@ -552,11 +566,15 @@ method !pacstrap-base(--> Nil)
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
-    push(@packages-base, 'intel-ucode') if $processor eq 'intel';
-    push(@packages-base, 'reflector') if $reflector;
+    push(@pkg, 'intel-ucode') if $processor eq 'intel';
+    push(@pkg, 'reflector') if $reflector;
 
     # download and install packages with pacman in chroot
-    run(qw<pacstrap /mnt>, @packages-base);
+    my Str:D $pacstrap-cmdline = sprintf('pacstrap /mnt %s', @pkg.join(' '));
+    loop-cmdline-proc(
+        'Running pacstrap...',
+        $pacstrap-cmdline
+    );
 }
 
 # secure user configuration
