@@ -446,7 +446,7 @@ multi sub mount-btrfs-subvolume(
 )
 {
     my Str:D $btrfs-dir = 'var/lib/ex';
-    mkdir("/mnt/$btrfs-dir", 0o777);
+    mkdir("/mnt/$btrfs-dir");
     run(qqw<
         mount
         -t btrfs
@@ -454,6 +454,7 @@ multi sub mount-btrfs-subvolume(
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
+    run(qqw<chmod 1777 /mnt/$btrfs-dir>);
 }
 
 multi sub mount-btrfs-subvolume(
@@ -464,7 +465,7 @@ multi sub mount-btrfs-subvolume(
 )
 {
     my Str:D $btrfs-dir = 'var/tmp';
-    mkdir("/mnt/$btrfs-dir", 0o777);
+    mkdir("/mnt/$btrfs-dir");
     run(qqw<
         mount
         -t btrfs
@@ -472,6 +473,7 @@ multi sub mount-btrfs-subvolume(
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
+    run(qqw<chmod 1777 /mnt/$btrfs-dir>);
 }
 
 multi sub mount-btrfs-subvolume(
