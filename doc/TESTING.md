@@ -105,6 +105,9 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `cd ~/.ttyfiles`
   - `./bootstrap.sh`
   - `./fetch-gpg-keys.sh`
+- Start systemd user services
+  - `userctl start kill-ssh-sessions`
+  - `userctl enable kill-ssh-sessions`
 - Try sftp
   - `ssh-keygen -t ed25519 -b 521`
   - `sudo cp ~/.ssh/id_ed25519.pub /etc/ssh/authorized_keys/variable`
