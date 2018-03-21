@@ -160,3 +160,16 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 - try passwordless host-guest SSH
   - on host machine
     - `sftp -P 3022 -i ~/.ssh/user-vbox-arch64/id_ed25519 variable@127.0.0.1`
+- create shortcut in `~/.ssh/config`
+  - on host machine
+
+```sshconfig
+Host vbox-arch64
+    HostName 127.0.0.1
+    Port 3022
+    IdentityFile ~/.ssh/user-vbox-arch64/id_ed25519
+```
+
+- try passwordless host-guest SSH with shortcut
+  - on host machine
+    - `sftp variable@vbox-arch64`
