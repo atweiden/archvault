@@ -31,7 +31,7 @@ archvault --username="live"                                   \
 Installation
 ------------
 
-See [INSTALL.md](INSTALL.md).
+See: [INSTALL.md](INSTALL.md).
 
 
 Dependencies
