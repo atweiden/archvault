@@ -1,52 +1,4 @@
-# Testing Archvault
-
-## VMWare Fusion 10.1.1
-
-### Pre-Setup
-
-**On host machine**:
-
-- If your computer is low on memory, close all other programs besides
-  VMWare Fusion
-- Determine the fastest pacman mirrors for your location
-
-### Setup
-
-**On host machine**:
-
-- Install VMWare Fusion
-- Launch VMWare Fusion
-- Select File->New
-- Drag and drop the official Arch Linux ISO into window from MacOS Finder
-- Select Linux->Other Linux 4.x or later kernel 64-bit
-- Select Legacy BIOS
-- Select Customize Settings
-  - Processors and Memory
-    - 1 processor core
-    - Memory: 2048 MB
-  - Isolation
-    - uncheck Enable Drag and Drop
-    - uncheck Enable Copy and Paste
-- Press Play
-
-### Bootstrap Archvault
-
-- Follow instructions from *Bootstrap Archvault* section at the bottom
-  of this document
-
-### Post-Setup
-
-**On host machine**:
-
-- Configure VMWare Fusion virtual machine to not use Arch Linux ISO
-  - Virtual Machine->Settings->CD/DVD (IDE)
-    - Uncheck Connect CD/DVD Drive
-- Configure VMWare Fusion virtual machine to pass battery status to guest
-  - Virtual Machine->Settings->Advanced
-    - Check Pass power status to VM
-- Press Play
-- Follow instructions from *Post Install* section at the bottom of
-  this document
+# Virtualization Instructions
 
 ## VirtualBox
 
@@ -210,6 +162,54 @@ Host vbox-arch64
 - Try `sftp` with shortcut
   - `sftp variable@vbox-arch64`
     - succeeds
+
+## VMWare Fusion 10.1.1
+
+### Pre-Setup
+
+**On host machine**:
+
+- If your computer is low on memory, close all other programs besides
+  VMWare Fusion
+- Determine the fastest pacman mirrors for your location
+
+### Setup
+
+**On host machine**:
+
+- Install VMWare Fusion
+- Launch VMWare Fusion
+- Select File->New
+- Drag and drop the official Arch Linux ISO into window from MacOS Finder
+- Select Linux->Other Linux 4.x or later kernel 64-bit
+- Select Legacy BIOS
+- Select Customize Settings
+  - Processors and Memory
+    - 1 processor core
+    - Memory: 2048 MB
+  - Isolation
+    - uncheck Enable Drag and Drop
+    - uncheck Enable Copy and Paste
+- Press Play
+
+### Bootstrap Archvault
+
+- Follow instructions from *Bootstrap Archvault* section at the bottom
+  of this document
+
+### Post-Setup
+
+**On host machine**:
+
+- Configure VMWare Fusion virtual machine to not use Arch Linux ISO
+  - Virtual Machine->Settings->CD/DVD (IDE)
+    - Uncheck Connect CD/DVD Drive
+- Configure VMWare Fusion virtual machine to pass battery status to guest
+  - Virtual Machine->Settings->Advanced
+    - Check Pass power status to VM
+- Press Play
+- Follow instructions from *Post Install* section at the bottom of
+  this document
 
 ## Bootstrap Archvault
 
