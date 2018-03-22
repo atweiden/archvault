@@ -4,12 +4,18 @@
 
 ### Pre-Setup
 
+**On host machine**:
+
 - If your computer is low on memory, close all other programs besides
   VMWare Fusion
 - Determine the fastest pacman mirrors for your location
 
 ### Setup
 
+**On host machine**:
+
+- Install VMWare Fusion
+- Launch VMWare Fusion
 - Select File->New
 - Drag and drop the official Arch Linux ISO into window from MacOS Finder
 - Select Linux->Other Linux 4.x or later kernel 64-bit
@@ -21,10 +27,194 @@
   - Isolation
     - uncheck Enable Drag and Drop
     - uncheck Enable Copy and Paste
+- Press Play
 
 ### Bootstrap Archvault
 
+- Follow instructions from *Bootstrap Archvault* section at the bottom
+  of this document
+
+### Post-Setup
+
+**On host machine**:
+
+- Configure VMWare Fusion virtual machine to not use Arch Linux ISO
+  - Virtual Machine->Settings->CD/DVD (IDE)
+    - Uncheck Connect CD/DVD Drive
+- Configure VMWare Fusion virtual machine to pass battery status to guest
+  - Virtual Machine->Settings->Advanced
+    - Check Pass power status to VM
 - Press Play
+- Follow instructions from *Post Install* section at the bottom of
+  this document
+
+## VirtualBox
+
+### Pre-Setup
+
+**On host machine**:
+
+- If your computer is low on memory, close all other programs besides
+  VirtualBox
+- Determine the fastest pacman mirrors for your location
+
+### Setup
+
+**On host machine**:
+
+- Install VirtualBox and VirtualBox Extension Pack from Oracle
+  - `brew cask install virtualbox virtualbox-extension-pack`
+- Launch VirtualBox
+- Change default Machine Folder
+  - VirtualBox->Preferences->Default Machine Folder->`~/Documents/vboxen`
+- New
+  - Name: arch64
+  - Continue
+  - Memory Size: 2048 MB
+  - Continue
+  - Create a virtual hard disk now
+  - Create
+  - VDI (VirtualBox Disk Image)
+  - Continue
+  - Dynamically allocated
+  - Continue
+  - File Size: 16 GB
+  - Create
+- With *arch64* selected in VirtualBox Manager, click *Settings*
+  - Storage
+    - Click the CD circle with the (+) sign
+      - Choose disk
+        - Navigate to official Arch Linux ISO
+          - Open
+  - Audio
+    - Uncheck Enable Audio
+  - Click OK
+- With *arch64* selected in VirtualBox Manager, click *Start*
+
+### Bootstrap Archvault
+
+- Follow instructions from *Bootstrap Archvault* section at the bottom
+  of this document
+
+### Post-Setup
+
+**On host machine**:
+
+- Configure VirtualBox virtual machine to not use Arch Linux ISO
+  - Storage
+    - Find the official Arch Linux ISO
+      - Right-click
+        - Remove Attachment
+- With *arch64* selected in VirtualBox Manager, click *Start*
+- Follow instructions from *Post Install* section at the bottom of
+  this document
+
+### Configure VirtualBox for Increased Resolution
+
+**On guest machine**:
+
+- `pacman -S hwinfo virtualbox-guest-utils-nox virtualbox-guest-modules-arch`
+- `systemctl start vboxservice`
+- `systemctl enable vboxservice`
+- `hwinfo --framebuffer`
+- `vim /etc/default/grub`
+  - Depending on host machine resolution
+    - Check About This Mac->Displays
+    - Either
+      - Append `video=1360x768` to `GRUB_CMDLINE_LINUX`
+      - Append `video=1440x900` to `GRUB_CMDLINE_LINUX`
+    - Either
+      - `GRUB_GFXMODE="1360x768x24"`
+      - `GRUB_GFXMODE="1440x900x24"`
+- `grub-mkconfig -o /boot/grub/grub.cfg`
+- `shutdown now`
+
+**On host machine**:
+
+- Depending on host machine resolution
+  - Either
+    - `VBoxManage setextradata arch64 "CustomVideoMode1" "1360x768x24"`
+    - `VBoxManage setextradata arch64 "CustomVideoMode1" "1440x900x24"`
+
+### Configure VirtualBox for Host-Guest SSH
+
+**On host machine**:
+
+- Configure port forwarding
+  - `VBoxManage modifyvm arch64 --natpf1 "ssh,tcp,,3022,,22"`
+
+#### Try Host-Guest SSH
+
+**On guest machine**:
+
+- Temporarily amend `/etc/ssh/sshd_config` to allow password
+  authentication
+  - `vim /etc/ssh/sshd_config`
+    - `PasswordAuthentication yes`
+- Start `sshd`
+  - `systemctl start sshd`
+
+**On host machine**:
+
+- `sftp -P 3022 variable@127.0.0.1`
+  - succeeds
+- `ssh -p 3022 variable@127.0.0.1`
+  - fails
+    - only sftp is allowed
+
+#### Configure SSH Pubkey Authentication for Host-Guest SSH
+
+**On host machine**:
+
+- Create SSH keypair
+  - `ssh-keygen -t ed25519 -b 521`
+  - `mkdir ~/.ssh/user-vbox-arch64`
+  - `mv ~/.ssh/id_ed25519* ~/.ssh/user-vbox-arch64`
+- Upload SSH pubkey to guest
+  - `sftp -P 3022 variable@127.0.0.1`
+    - `put /Users/user/.ssh/user-vbox-arch64/id_ed25519.pub .`
+    - `quit`
+
+**On guest machine**:
+
+- Stop `sshd`
+  - `systemctl stop sshd`
+- Disallow password authentication
+  - `vim /etc/ssh/sshd_config`
+    - `PasswordAuthentication no`
+- Add uploaded SSH pubkey to `/etc/ssh/authorized_keys`
+  - For fresh key
+    - `mv /srv/ssh/jail/variable/id_ed25519.pub /etc/ssh/authorized_keys/variable`
+    - `chmod 644 /etc/ssh/authorized_keys/variable`
+  - For additional key
+    - `cat /srv/ssh/jail/variable/id_ed25519.pub >> /etc/ssh/authorized_keys/variable`
+- Start `sshd`
+  `systemctl start sshd`
+
+#### Try Passwordless Host-Guest SSH
+
+**On host machine**:
+
+- Try `sftp`
+  - `sftp -P 3022 -i ~/.ssh/user-vbox-arch64/id_ed25519 variable@127.0.0.1`
+    - succeeds
+- Create shortcut in `~/.ssh/config` to make this easier:
+
+```sshconfig
+Host vbox-arch64
+    HostName 127.0.0.1
+    Port 3022
+    IdentityFile ~/.ssh/user-vbox-arch64/id_ed25519
+```
+
+- Try `sftp` with shortcut
+  - `sftp variable@vbox-arch64`
+    - succeeds
+
+## Bootstrap Archvault
+
+**On guest machine**:
+
 - Press <kbd>Tab</kbd> when you see the boot loader screen
   - Append `copytoram=y copytoram_size=7G cow_spacesize=7G` to the
     kernel line
@@ -60,15 +250,10 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 - Shutdown the LiveCD
   - `shutdown now`
 
-### Boot New Machine
+## Post-Install
 
-- Configure VMWare Fusion virtual machine to not use Arch Linux ISO
-  - Virtual Machine->Settings->CD/DVD (IDE)
-    - Uncheck Connect CD/DVD Drive
-- Configure VMWare Fusion virtual machine to pass battery status to guest
-  - Virtual Machine->Settings->Advanced
-    - Check Pass power status to VM
-- Press Play
+**On guest machine**:
+
 - Enter vault password
 - Login as admin user
   - root login will fail due to `/etc/securetty` config
@@ -104,72 +289,12 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `./bootstrap.sh`
   - `./fetch-gpg-keys.sh`
 - Start systemd user services
-  - `userctl start kill-ssh-sessions`
-  - `userctl enable kill-ssh-sessions`
-- Try sftp
+  - This will only work after a reboot:
+    - `userctl start kill-ssh-sessions`
+    - `userctl enable kill-ssh-sessions`
+- Try `sftp`
   - `ssh-keygen -t ed25519 -b 521`
   - `sudo cp ~/.ssh/id_ed25519.pub /etc/ssh/authorized_keys/variable`
   - `sudo chmod 644 /etc/ssh/authorized_keys/variable`
   - `sudo systemctl start sshd`
   - `sftp variable@127.0.0.1`
-
-## VirtualBox
-
-- configure vbox for host-guest SSH
-  - on host machine
-    - `VBoxManage modifyvm arch64 --natpf1 "ssh,tcp,,3022,,22"`
-      - where `arch64` is the name you gave the VirtualBox VM
-- try host-guest SSH
-  - on guest machine
-    - temporarily amend `/etc/ssh/sshd_config` to allow password
-      authentication
-      - `vim /etc/ssh/sshd_config`
-        - `PasswordAuthentication yes`
-    - start `sshd`
-      - `systemctl start sshd`
-  - on host machine
-    - `sftp -P 3022 variable@127.0.0.1`
-      - succeeds
-    - `ssh -p 3022 variable@127.0.0.1`
-      - fails
-        - only sftp is allowed
-- configure SSH pubkey authentication for host-guest SSH
-  - on host machine
-    - create SSH keypair
-      - `ssh-keygen -t ed25519 -b 521`
-      - `mkdir ~/.ssh/user-vbox-arch64`
-      - `mv ~/.ssh/id_ed25519* ~/.ssh/user-vbox-arch64`
-    - upload SSH pubkey to guest
-      - `sftp -P 3022 variable@127.0.0.1`
-        - `put /Users/user/.ssh/user-vbox-arch64/id_ed25519.pub .`
-        - `quit`
-  - on guest machine
-    - stop sshd
-      `systemctl stop sshd`
-    - disallow password authentication
-      - `vim /etc/ssh/sshd_config`
-        - `PasswordAuthentication no`
-    - add uploaded SSH pubkey to `/etc/ssh/authorized_keys`
-      - for fresh key
-        - `mv /srv/ssh/jail/variable/id_ed25519.pub /etc/ssh/authorized_keys/variable`
-        - `chmod 644 /etc/ssh/authorized_keys/variable`
-      - for additional key
-        - `cat /srv/ssh/jail/variable/id_ed25519.pub >> /etc/ssh/authorized_keys/variable`
-    - start sshd
-      `systemctl start sshd`
-- try passwordless host-guest SSH
-  - on host machine
-    - `sftp -P 3022 -i ~/.ssh/user-vbox-arch64/id_ed25519 variable@127.0.0.1`
-- create shortcut in `~/.ssh/config`
-  - on host machine
-
-```sshconfig
-Host vbox-arch64
-    HostName 127.0.0.1
-    Port 3022
-    IdentityFile ~/.ssh/user-vbox-arch64/id_ed25519
-```
-
-- try passwordless host-guest SSH with shortcut
-  - on host machine
-    - `sftp variable@vbox-arch64`
