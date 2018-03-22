@@ -21,6 +21,8 @@
   - VirtualBox->Preferences->Default Machine Folder->`~/Documents/vboxen`
 - New
   - Name: arch64
+  - Type: Linux
+  - Version: Arch Linux (64-bit)
   - Continue
   - Memory Size: 2048 MB
   - Continue
@@ -139,10 +141,6 @@ Host vbox-arch64
 
 **On guest machine**:
 
-- `pacman -S hwinfo virtualbox-guest-utils-nox virtualbox-guest-modules-arch`
-- `systemctl start vboxservice`
-- `systemctl enable vboxservice`
-- `hwinfo --framebuffer`
 - `vim /etc/default/grub`
   - Depending on host machine resolution
     - Check About This Mac->Displays
