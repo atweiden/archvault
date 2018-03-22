@@ -61,33 +61,6 @@
 - Follow instructions from *Post Install* section at the bottom of
   this document
 
-### Configure VirtualBox for Increased Resolution
-
-**On guest machine**:
-
-- `pacman -S hwinfo virtualbox-guest-utils-nox virtualbox-guest-modules-arch`
-- `systemctl start vboxservice`
-- `systemctl enable vboxservice`
-- `hwinfo --framebuffer`
-- `vim /etc/default/grub`
-  - Depending on host machine resolution
-    - Check About This Mac->Displays
-    - Either
-      - Append `video=1360x768` to `GRUB_CMDLINE_LINUX`
-      - Append `video=1440x900` to `GRUB_CMDLINE_LINUX`
-    - Either
-      - `GRUB_GFXMODE="1360x768x24"`
-      - `GRUB_GFXMODE="1440x900x24"`
-- `grub-mkconfig -o /boot/grub/grub.cfg`
-- `shutdown now`
-
-**On host machine**:
-
-- Depending on host machine resolution
-  - Either
-    - `VBoxManage setextradata arch64 "CustomVideoMode1" "1360x768x24"`
-    - `VBoxManage setextradata arch64 "CustomVideoMode1" "1440x900x24"`
-
 ### Configure VirtualBox for Host-Guest SSH
 
 **On host machine**:
@@ -162,6 +135,33 @@ Host vbox-arch64
 - Try `sftp` with shortcut
   - `sftp variable@vbox-arch64`
     - succeeds
+
+### Configure VirtualBox for Increased Resolution
+
+**On guest machine**:
+
+- `pacman -S hwinfo virtualbox-guest-utils-nox virtualbox-guest-modules-arch`
+- `systemctl start vboxservice`
+- `systemctl enable vboxservice`
+- `hwinfo --framebuffer`
+- `vim /etc/default/grub`
+  - Depending on host machine resolution
+    - Check About This Mac->Displays
+    - Either
+      - Append `video=1360x768` to `GRUB_CMDLINE_LINUX`
+      - Append `video=1440x900` to `GRUB_CMDLINE_LINUX`
+    - Either
+      - `GRUB_GFXMODE="1360x768x24"`
+      - `GRUB_GFXMODE="1440x900x24"`
+- `grub-mkconfig -o /boot/grub/grub.cfg`
+- `shutdown now`
+
+**On host machine**:
+
+- Depending on host machine resolution
+  - Either
+    - `VBoxManage setextradata arch64 "CustomVideoMode1" "1360x768x24"`
+    - `VBoxManage setextradata arch64 "CustomVideoMode1" "1440x900x24"`
 
 ## VMWare Fusion 10.1.1
 
