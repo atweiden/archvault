@@ -58,15 +58,16 @@
       - Right-click
         - Remove Attachment
 - With *arch64* selected in VirtualBox Manager, click *Start*
-- Follow instructions from *Post Install* section at the bottom of
+- Follow instructions from *Post-Install* section at the bottom of
   this document
 
 ### Configure VirtualBox for Host-Guest SSH
 
+#### Configure Port Forwarding
+
 **On host machine**:
 
-- Configure port forwarding
-  - `VBoxManage modifyvm arch64 --natpf1 "ssh,tcp,,3022,,22"`
+- `VBoxManage modifyvm arch64 --natpf1 "ssh,tcp,,3022,,22"`
 
 #### Try Host-Guest SSH
 
@@ -92,12 +93,11 @@
 **On host machine**:
 
 - Create SSH keypair
-  - `ssh-keygen -t ed25519 -b 521`
-  - `mkdir ~/.ssh/user-vbox-arch64`
-  - `mv ~/.ssh/id_ed25519* ~/.ssh/user-vbox-arch64`
+  - `mkdir ~/.ssh/vbox-arch64`
+  - `ssh-keygen -t ed25519 -b 521 -f ~/.ssh/vbox-arch64/id_ed25519`
 - Upload SSH pubkey to guest
   - `sftp -P 3022 variable@127.0.0.1`
-    - `put /Users/user/.ssh/user-vbox-arch64/id_ed25519.pub .`
+    - `put /Users/user/.ssh/vbox-arch64/id_ed25519.pub`
     - `quit`
 
 **On guest machine**:
@@ -110,7 +110,6 @@
 - Add uploaded SSH pubkey to `/etc/ssh/authorized_keys`
   - For fresh key
     - `mv /srv/ssh/jail/variable/id_ed25519.pub /etc/ssh/authorized_keys/variable`
-    - `chmod 644 /etc/ssh/authorized_keys/variable`
   - For additional key
     - `cat /srv/ssh/jail/variable/id_ed25519.pub >> /etc/ssh/authorized_keys/variable`
 - Start `sshd`
@@ -121,7 +120,7 @@
 **On host machine**:
 
 - Try `sftp`
-  - `sftp -P 3022 -i ~/.ssh/user-vbox-arch64/id_ed25519 variable@127.0.0.1`
+  - `sftp -P 3022 -i ~/.ssh/vbox-arch64/id_ed25519 variable@127.0.0.1`
     - succeeds
 - Create shortcut in `~/.ssh/config` to make this easier:
 
@@ -129,7 +128,7 @@
 Host vbox-arch64
     HostName 127.0.0.1
     Port 3022
-    IdentityFile ~/.ssh/user-vbox-arch64/id_ed25519
+    IdentityFile ~/.ssh/vbox-arch64/id_ed25519
 ```
 
 - Try `sftp` with shortcut
@@ -208,8 +207,33 @@ Host vbox-arch64
   - Virtual Machine->Settings->Advanced
     - Check Pass power status to VM
 - Press Play
-- Follow instructions from *Post Install* section at the bottom of
+- Follow instructions from *Post-Install* section at the bottom of
   this document
+
+### Configure VMWare Fusion for Host-Guest SSH
+
+#### Configure Port Forwarding
+
+**On guest machine**:
+
+- Get IP address of VM
+  - `ifconfig`
+    - Note the `inet-addr`
+      - Assume for sake of example it is `192.168.198.10`
+- Shut down VM
+  - `shutdown now`
+
+**On host machine**:
+
+- Edit `nat.conf`
+  - `vim /Library/Preferences/VMware\ Fusion/vmnet8/nat.conf`
+
+```dosini
+[incomingtcp]
+3022 = 192.168.198.10:22
+```
+
+The rest of the instructions are the same as with VirtualBox.
 
 ## Bootstrap Archvault
 
@@ -266,6 +290,7 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `sudo timedatectl set-ntp true`
   - `timedatectl status`
 - Get pkgs
+  - `sudo pacman -Syy`
   - `sudo pacman -S colordiff git ripgrep pacmatic the_silver_searcher`
   - `sudo pacman -S arch-wiki-docs arch-wiki-lite mlocate sdcv tree`
   - `sudo pacman -S ccrypt moreutils pwgen socat tor torsocks`
@@ -295,6 +320,5 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 - Try `sftp`
   - `ssh-keygen -t ed25519 -b 521`
   - `sudo cp ~/.ssh/id_ed25519.pub /etc/ssh/authorized_keys/variable`
-  - `sudo chmod 644 /etc/ssh/authorized_keys/variable`
   - `sudo systemctl start sshd`
   - `sftp variable@127.0.0.1`
