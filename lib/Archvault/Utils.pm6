@@ -144,8 +144,7 @@ multi sub gen-pass-hash-closure(Bool :grub($) --> Sub:D)
 {
     my &gen-pass-hash = sub (Str:D $user-pass --> Str:D)
     {
-        # state because otherwise new salt would be generated per closure call
-        state Str:D $salt = gen-pass-salt();
+        my Str:D $salt = gen-pass-salt();
         my Str:D $user-pass-hash = crypt($user-pass, $salt);
     };
 }
@@ -229,23 +228,24 @@ sub loop-prompt-pass-hash(
     --> Str:D
 )
 {
-    my Str:D $pass-hash-blank = &gen-pass-hash('');
     my Str $pass-hash;
+    my Str:D $blank = 'Password cannot be blank. Please try again';
+    my Str:D $no-match = 'Please try again';
     loop
     {
         say($context) if $context;
         my Str:D $pass = stprompt($enter);
-        $pass-hash = &gen-pass-hash($pass);
-        if $pass-hash eqv $pass-hash-blank
-        {
-            say('Password cannot be blank. Please try again');
+        $pass !eqv '' or do {
+            say($blank);
             next;
         }
         my Str:D $pass-confirm = stprompt($confirm);
-        my Str:D $pass-hash-confirm = &gen-pass-hash($pass-confirm);
-        last if $pass-hash eqv $pass-hash-confirm;
-        # passwords do not match
-        say('Please try again');
+        $pass eqv $pass-confirm or do {
+            say($no-match);
+            next;
+        }
+        $pass-hash = &gen-pass-hash($pass);
+        last;
     }
     $pass-hash;
 }
