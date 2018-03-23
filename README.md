@@ -12,6 +12,8 @@ archvault --username="live"                                   \
           --userpass="your admin user's password"             \
           --sshusername="variable"                            \
           --sshuserpass="your ssh user's password"            \
+          --grubusername="your grub user's name"              \
+          --grubuserpass="your grub user's password"          \
           --rootpass="your root password"                     \
           --vaultname="vault"                                 \
           --vaultpass="your LUKS encrypted volume's password" \
@@ -47,6 +49,7 @@ findutils            | `find`                                             | Y
 gawk                 | `awk`                                              | Y
 glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`                | Y
+grub                 | `grub-mkpasswd-pbkdf2`                             | Y
 kbd                  | keymap data in `/usr/share/kbd/keymaps`            | Y
 kmod                 | `modprobe`                                         | Y
 openssl              | user password salts                                | Y
@@ -68,21 +71,45 @@ dialog    | ncurses user input menu | Y
 reflector | optimize pacman mirrors | N
 
 `dialog` is needed if you do not provide by cmdline flag or environment
-variable values for all configuration options aside from `--hostname`,
-`--username`, `--userpass`, `--userpasshash`, `--sshusername`,
-`--sshuserpass`,`--sshuserpasshash`, `--rootpass`, `--rootpasshash`,
-`--vaultname`, `--vaultpass`, `--augment` and `--reflector`. For these
-options, console input is read with either the built-in Perl6 subroutine
-`prompt()` or a program like `cryptsetup`. In the case of `--augment`,
-`--reflector`, `--userpasshash`, `--sshuserpasshash` and `--rootpasshash`
-no console input is read. For user input of all other options, the
-`dialog` program is used.
+variable values for all configuration options aside from:
+
+- `--augment`
+- `--grubusername`
+- `--grubuserpass`
+- `--grubuserpasshash`
+- `--hostname`
+- `--reflector`
+- `--rootpass`
+- `--rootpasshash`
+- `--sshusername`
+- `--sshuserpass`
+- `--sshuserpasshash`
+- `--username`
+- `--userpass`
+- `--userpasshash`
+- `--vaultname`
+- `--vaultpass`
+
+For these options, console input is read with either `cryptsetup` or
+the built-in Perl6 subroutine `prompt()`.
+
+No console input is read for configuration options:
+
+- `--augment`
+- `--grubpasshash`
+- `--reflector`
+- `--rootpasshash`
+- `--sshuserpasshash`
+- `--userpasshash`
+
+For user input of all other options, the `dialog` program is used.
 
 `reflector` is needed if you provide by cmdline flag or environment
 variable a value for the `--reflector` configuration option. The
-reflector option is not enabled by default. You are recommended to edit
-`/etc/pacman.d/mirrorlist` by hand instead to save several minutes
-of time.
+reflector configuration option is not enabled by default. You are
+recommended to select the fastest pacman mirrors for your location
+by hand in `/etc/pacman.d/mirrorlist` instead of enabling `reflector`
+to save several minutes of time.
 
 
 Licensing

@@ -37,14 +37,14 @@ multi sub MAIN(
 # gen-pass-hash
 # -----------------------------------------------------------------------------
 
-multi sub MAIN('gen-pass-hash', Str:D :p(:$pass)! --> Nil)
+multi sub MAIN('gen-pass-hash', Str:D :p(:$pass)!, Bool :g(:$grub) --> Nil)
 {
-    say(Archvault::Utils.gen-pass-hash($pass));
+    say(Archvault::Utils.gen-pass-hash($pass, :$grub));
 }
 
-multi sub MAIN('gen-pass-hash' --> Nil)
+multi sub MAIN('gen-pass-hash', Bool :g(:$grub) --> Nil)
 {
-    say(Archvault::Utils.prompt-pass-hash);
+    say(Archvault::Utils.prompt-pass-hash(:$grub));
 }
 
 
@@ -92,6 +92,9 @@ multi sub MAIN(
         Bool :augment($),
         Str :disktype($),
         Str :graphics($),
+        Str :grubusername($),
+        Str :grubuserpass($),
+        Str :grubuserpasshash($),
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
@@ -175,7 +178,7 @@ multi sub USAGE(--> Nil)
 
     Commands:
       disable-cow                 Disable copy-on-write at directory
-      gen-pass-hash               Generate SHA512 password hash
+      gen-pass-hash               Generate password hash
       help                        Show help for subcommands
       ls                          List keymaps, locales, partitions, timezones
       new                         Bootstrap Arch system with FDE
@@ -208,9 +211,11 @@ multi sub USAGE('gen-pass-hash' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
-      archvault [-p|--pass=<password>] gen-pass-hash
+      archvault [-g|--grub] [-p|--pass=<password>] gen-pass-hash
 
     Options:
+      -g,--grub
+        generate PBKDF2 password hash for Grub
       -p, --pass=<password>
         plaintext password to generate hash from
     EOF
@@ -234,6 +239,8 @@ multi sub USAGE('new' --> Nil)
                 --userpass="your admin user's password"             \
                 --sshusername="variable"                            \
                 --sshuserpass="your ssh user's password"            \
+                --grubusername="your grub user's name"              \
+                --grubuserpass="your grub user's password"          \
                 --rootpass="your root password"                     \
                 --vaultname="vault"                                 \
                 --vaultpass="your LUKS encrypted volume's password" \
@@ -249,26 +256,29 @@ multi sub USAGE('new' --> Nil)
                 new
 
     Options:
-      --augment                    drop to Bash console mid-execution
-      --disktype=<disktype>        hard drive type
-      --graphics=<graphics>        graphics card type
-      --hostname=<hostname>        hostname
-      --keymap=<keymap>            keymap
-      --locale=<locale>            locale
-      --partition=<device-path>    partition target for install
-      --processor=<processor>      processor type
-      --reflector                  optimize Pacman mirrors
-      --rootpass=<password>        password for root account
-      --rootpasshash=<passhash>    encrypted password hash for root account
-      --sshusername=<username>     user name for SSH account
-      --sshuserpass=<password>     password for SSH account
-      --sshuserpasshash=<passhash> encrypted password hash for SSH account
-      --timezone=<timezone>        timezone
-      --username=<username>        user name for admin account
-      --userpass=<password>        password for admin account
-      --userpasshash=<passhash>    encrypted password hash for admin account
-      --vaultname=<vault-name>     name for LUKS encrypted volume
-      --vaultpass=<password>       password for LUKS encrypted volume
+      --augment                     drop to Bash console mid-execution
+      --disktype=<disktype>         hard drive type
+      --graphics=<graphics>         graphics card type
+      --grubusername=<username>     user name for Grub
+      --grubuserpass=<password>     password for Grub
+      --grubuserpasshash=<passhash> password hash for Grub
+      --hostname=<hostname>         hostname
+      --keymap=<keymap>             keymap
+      --locale=<locale>             locale
+      --partition=<device-path>     partition target for install
+      --processor=<processor>       processor type
+      --reflector                   optimize Pacman mirrors
+      --rootpass=<password>         password for root account
+      --rootpasshash=<passhash>     encrypted password hash for root account
+      --sshusername=<username>      user name for SSH account
+      --sshuserpass=<password>      password for SSH account
+      --sshuserpasshash=<passhash>  encrypted password hash for SSH account
+      --timezone=<timezone>         timezone
+      --username=<username>         user name for admin account
+      --userpass=<password>         password for admin account
+      --userpasshash=<passhash>     encrypted password hash for admin account
+      --vaultname=<vault-name>      name for LUKS encrypted volume
+      --vaultpass=<password>        password for LUKS encrypted volume
     EOF
     say($HELP);
 }

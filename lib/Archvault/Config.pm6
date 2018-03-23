@@ -24,6 +24,20 @@ has Str:D $.user-pass-hash-admin =
             ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
             !! Archvault::Utils.prompt-pass-hash($!user-name-admin);
 
+# name for grub user (default: grub)
+has UserName:D $.user-name-grub =
+    %*ENV<ARCHVAULT_GRUBUSERNAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_GRUBUSERNAME>)
+        !! prompt-name(:user, :grub);
+
+# pbkdf2 password hash for grub user
+has Str:D $.user-pass-hash-grub =
+    %*ENV<ARCHVAULT_GRUBUSERPASSHASH>
+        ?? %*ENV<ARCHVAULT_GRUBUSERPASSHASH>
+        !! %*ENV<ARCHVAULT_GRUBUSERPASS>
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_GRUBUSERPASS>, :grub)
+            !! Archvault::Utils.prompt-pass-hash($!user-name-grub, :grub);
+
 # name for ssh user (default: variable)
 has UserName:D $.user-name-ssh =
     %*ENV<ARCHVAULT_SSHUSERNAME>
@@ -122,6 +136,9 @@ submethod BUILD(
     Bool :$augment,
     Str :$disktype,
     Str :$graphics,
+    Str :$grubusername,
+    Str :$grubuserpass,
+    Str :$grubuserpasshash,
     Str :$hostname,
     Str :$keymap,
     Str :$locale,
@@ -153,10 +170,14 @@ submethod BUILD(
     $!reflector = $reflector if $reflector;
     $!timezone = self.gen-timezone($timezone) if $timezone;
     $!user-name-admin = self.gen-user-name($username) if $username;
+    $!user-name-grub = self.gen-user-name($grubusername) if $grubusername;
     $!user-name-ssh = self.gen-user-name($sshusername) if $sshusername;
     $!user-pass-hash-admin =
         Archvault::Utils.gen-pass-hash($userpass) if $userpass;
     $!user-pass-hash-admin = $userpasshash if $userpasshash;
+    $!user-pass-hash-grub =
+        Archvault::Utils.gen-pass-hash($grubuserpass, :grub) if $grubuserpass;
+    $!user-pass-hash-grub = $grubuserpasshash if $grubuserpasshash;
     $!user-pass-hash-root =
         Archvault::Utils.gen-pass-hash($rootpass) if $rootpass;
     $!user-pass-hash-root = $rootpasshash if $rootpasshash;
@@ -172,6 +193,9 @@ method new(
         Bool :augment($),
         Str :disktype($),
         Str :graphics($),
+        Str :grubusername($),
+        Str :grubuserpass($),
+        Str :grubuserpasshash($),
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
@@ -542,6 +566,29 @@ multi sub prompt-name(
         my Str:D $prompt-text = "Enter username [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
         Determining name for admin user...
+
+        Leave blank if you don't know what this is
+        EOF
+        tprompt(
+            UserName,
+            $response-default,
+            :$prompt-text,
+            :$help-text
+        );
+    }
+}
+
+multi sub prompt-name(
+    Bool:D :user($)! where *.so,
+    Bool:D :grub($)! where *.so
+    --> UserName:D
+)
+{
+    my UserName:D $user-name = do {
+        my UserName:D $response-default = 'grub';
+        my Str:D $prompt-text = "Enter username [$response-default]: ";
+        my Str:D $help-text = q:to/EOF/.trim;
+        Determining name for Grub user...
 
         Leave blank if you don't know what this is
         EOF
