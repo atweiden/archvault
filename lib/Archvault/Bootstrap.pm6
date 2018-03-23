@@ -974,6 +974,8 @@ method !install-bootloader(--> Nil)
 {
     my Graphics:D $graphics = $.config.graphics;
     my Str:D $partition = $.config.partition;
+    my UserName:D $user-name-grub = $.config.user-name-grub;
+    my Str:D $user-pass-hash-grub = $.config.user-pass-hash-grub;
     my VaultName:D $vault-name = $.config.vault-name;
     configure-bootloader(
         'GRUB_CMDLINE_LINUX',
@@ -985,6 +987,8 @@ method !install-bootloader(--> Nil)
     configure-bootloader('GRUB_SAVEDEFAULT');
     configure-bootloader('GRUB_ENABLE_CRYPTODISK');
     configure-bootloader('GRUB_DISABLE_SUBMENU');
+    configure-bootloader('superusers', $user-name-grub, $user-pass-hash-grub);
+    configure-bootloader('unrestricted');
     install-bootloader($partition);
 }
 
@@ -1035,6 +1039,29 @@ multi sub configure-bootloader('GRUB_DISABLE_SUBMENU' --> Nil)
     GRUB_DISABLE_SUBMENU=y
     EOF
     spurt('/mnt/etc/default/grub', "\n" ~ $grub-disable-submenu, :append);
+}
+
+multi sub configure-bootloader(
+    'superusers',
+    UserName:D $user-name-grub,
+    Str:D $user-pass-hash-grub
+    --> Nil
+)
+{
+    my Str:D $grub-superusers = qq:to/EOF/;
+    set superusers="$user-name-grub"
+    password_pbkdf2 $user-name-grub $user-pass-hash-grub
+    EOF
+    spurt('/mnt/etc/grub.d/40_custom', $grub-superusers, :append);
+}
+
+multi sub configure-bootloader(
+    'unrestricted'
+    --> Nil
+)
+{
+    my Str:D $sed-cmd = 's/\${CLASS}\s/--unrestricted ${CLASS} /';
+    shell("sed -i '$sed-cmd' /mnt/etc/grub.d/10_linux");
 }
 
 sub install-bootloader(Str:D $partition --> Nil)
