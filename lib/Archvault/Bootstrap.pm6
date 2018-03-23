@@ -258,20 +258,23 @@ multi sub build-cryptsetup-luks-format-cmdline(
 )
 {
     my Str:D $spawn-cryptsetup-luks-format = qqw<
-        spawn cryptsetup
-        --cipher aes-xts-plain64
-        --key-size 512
-        --hash sha512
-        --iter-time 5000
-        --use-random
-        --verify-passphrase
-        luksFormat $partition-vault
+         spawn cryptsetup
+         --cipher aes-xts-plain64
+         --key-size 512
+         --hash sha512
+         --iter-time 5000
+         --use-random
+         --verify-passphrase
+         luksFormat $partition-vault
     >.join(' ');
     my Str:D $expect-are-you-sure-send-yes =
         'expect "Are you sure*" { send "YES\r" }';
-    my Str:D $interact = 'interact';
-    my Str:D $catch-wait-result = 'catch wait result';
-    my Str:D $exit-lindex-result = 'exit [lindex $result 3]';
+    my Str:D $interact =
+        'interact';
+    my Str:D $catch-wait-result =
+        'catch wait result';
+    my Str:D $exit-lindex-result =
+        'exit [lindex $result 3]';
 
     my Str:D @cryptsetup-luks-format-cmdline =
         $spawn-cryptsetup-luks-format,
