@@ -74,6 +74,7 @@ reflector | optimize pacman mirrors | N
 variable values for all configuration options aside from:
 
 - `--augment`
+- `--base-devel`
 - `--grubusername`
 - `--grubuserpass`
 - `--grubuserpasshash`
@@ -96,6 +97,7 @@ the built-in Perl6 subroutine `prompt()`.
 No console input is read for configuration options:
 
 - `--augment`
+- `--base-devel`
 - `--grubpasshash`
 - `--reflector`
 - `--rootpasshash`

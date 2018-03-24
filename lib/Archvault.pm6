@@ -8,6 +8,7 @@ constant $VERSION = v0.0.1;
 method new(
     *%opts (
         Bool :augment($),
+        Bool :base-devel($),
         Str :disktype($),
         Str :graphics($),
         Str :grubusername($),
