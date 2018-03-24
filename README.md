@@ -53,7 +53,7 @@ glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`                | Y
 grub                 | `grub-mkpasswd-pbkdf2`                             | Y
 haveged              | `haveged`                                          | Y
-kbd                  | keymap data in `/usr/share/kbd/keymaps`            | Y
+kbd                  | keymap data in `/usr/share/kbd/keymaps`, `setfont` | Y
 kmod                 | `modprobe`                                         | Y
 openssl              | user password salts                                | Y
 pacman               | `makepkg`, `pacman`, `pacman-key`                  | Y
