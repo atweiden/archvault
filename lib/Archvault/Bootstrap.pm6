@@ -36,20 +36,17 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!set-keymap;
     self!set-timezone;
     self!set-hwclock;
-    self!configure-tmpfiles;
     self!configure-pacman;
-    self!configure-system-sleep;
     self!configure-modprobe;
     self!generate-initramfs;
-    self!configure-io-schedulers;
     self!install-bootloader;
     self!configure-sysctl;
+    self!configure-nftables;
+    self!configure-openssh;
     self!configure-systemd;
     self!configure-hidepid;
     self!configure-securetty;
-    self!configure-nftables;
-    self!configure-openssh;
-    self!configure-x11;
+    self!configure-xorg;
     self!enable-systemd-services;
     self!augment if $augment;
     self!unmount;
@@ -947,12 +944,6 @@ method !set-hwclock(--> Nil)
     run(qw<arch-chroot /mnt hwclock --systohc --utc>);
 }
 
-method !configure-tmpfiles(--> Nil)
-{
-    # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
-    copy(%?RESOURCES<etc/tmpfiles.d/tmp.conf>, '/mnt/etc/tmpfiles.d/tmp.conf');
-}
-
 method !configure-pacman(--> Nil)
 {
     configure-pacman('CheckSpace');
@@ -976,11 +967,6 @@ multi sub configure-pacman('multilib' --> Nil)
 {
     my Str:D $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
     shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
-}
-
-method !configure-system-sleep(--> Nil)
-{
-    copy(%?RESOURCES<etc/systemd/sleep.conf>, '/mnt/etc/systemd/sleep.conf');
 }
 
 method !configure-modprobe(--> Nil)
@@ -1071,15 +1057,6 @@ multi sub configure-initramfs('COMPRESSION' --> Nil)
 {
     my Str:D $sed-cmd = 's,^#\(COMPRESSION="lz4"\),\1,';
     run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
-}
-
-method !configure-io-schedulers(--> Nil)
-{
-    mkdir('/mnt/etc/udev/rules.d');
-    copy(
-        %?RESOURCES<etc/udev/rules.d/60-io-schedulers.rules>,
-        '/mnt/etc/udev/rules.d/60-io-schedulers.rules'
-    );
 }
 
 method !install-bootloader(--> Nil)
@@ -1208,12 +1185,74 @@ multi sub configure-sysctl('vm.swappiness' --> Nil)
     shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
 }
 
+method !configure-nftables(--> Nil)
+{
+    # XXX: customize nftables
+    Nil;
+}
+
+method !configure-openssh(--> Nil)
+{
+    my UserName:D $user-name-ssh = $.config.user-name-ssh;
+
+    copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
+    copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
+
+    # restrict allowed connections to $user-name-ssh
+    my Str:D $sed-cmd = "3iAllowUsers $user-name-ssh";
+    shell("sed -i '$sed-cmd' /mnt/etc/ssh/sshd_config");
+
+    # restrict allowed connections to LAN
+    copy(%?RESOURCES<etc/hosts.allow>, '/mnt/etc/hosts.allow');
+
+    # filter weak ssh moduli
+    shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
+}
+
 method !configure-systemd(--> Nil)
+{
+    configure-systemd('limits');
+    configure-systemd('mounts');
+    configure-systemd('sleep');
+    configure-systemd('tmpfiles');
+    configure-systemd('udev');
+}
+
+multi sub configure-systemd('limits' --> Nil)
 {
     mkdir('/mnt/etc/systemd/system.conf.d');
     copy(
-        %?RESOURCES</etc/systemd/system.conf.d/limits.conf>,
+        %?RESOURCES<etc/systemd/system.conf.d/limits.conf>,
         '/mnt/etc/systemd/system.conf.d/limits.conf'
+    );
+}
+
+multi sub configure-systemd('mounts' --> Nil)
+{
+    mkdir('/mnt/etc/systemd/tmp.mount.d');
+    copy(
+        %?RESOURCES<etc/systemd/system/tmp.mount.d/noexec.conf>,
+        '/mnt/etc/systemd/system/tmp.mount.d/noexec.conf'
+    );
+}
+
+multi sub configure-systemd('sleep' --> Nil)
+{
+    copy(%?RESOURCES<etc/systemd/sleep.conf>, '/mnt/etc/systemd/sleep.conf');
+}
+
+multi sub configure-systemd('tmpfiles' --> Nil)
+{
+    # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
+    copy(%?RESOURCES<etc/tmpfiles.d/tmp.conf>, '/mnt/etc/tmpfiles.d/tmp.conf');
+}
+
+multi sub configure-systemd('udev' --> Nil)
+{
+    mkdir('/mnt/etc/udev/rules.d');
+    copy(
+        %?RESOURCES<etc/udev/rules.d/60-io-schedulers.rules>,
+        '/mnt/etc/udev/rules.d/60-io-schedulers.rules'
     );
 }
 
@@ -1241,31 +1280,7 @@ method !configure-securetty(--> Nil)
     );
 }
 
-method !configure-nftables(--> Nil)
-{
-    # XXX: customize nftables
-    Nil;
-}
-
-method !configure-openssh(--> Nil)
-{
-    my UserName:D $user-name-ssh = $.config.user-name-ssh;
-
-    copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
-    copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
-
-    # restrict allowed connections to $user-name-ssh
-    my Str:D $sed-cmd = "3iAllowUsers $user-name-ssh";
-    shell("sed -i '$sed-cmd' /mnt/etc/ssh/sshd_config");
-
-    # restrict allowed connections to LAN
-    copy(%?RESOURCES<etc/hosts.allow>, '/mnt/etc/hosts.allow');
-
-    # filter weak ssh moduli
-    shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
-}
-
-method !configure-x11(--> Nil)
+method !configure-xorg(--> Nil)
 {
     mkdir('/mnt/etc/X11/xorg.conf.d');
     copy(
