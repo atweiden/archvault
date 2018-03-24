@@ -617,10 +617,7 @@ multi sub disable-cow('755' --> Nil)
         var/log
         var/spool
     >.map({ "/mnt/$_" });
-    my Str:D $permissions = '755';
-    my Str:D $user = 'root';
-    my Str:D $group = 'root';
-    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
+    Archvault::Utils.disable-cow(|@directory, :recursive);
 }
 
 multi sub disable-cow('1777' --> Nil)
@@ -629,10 +626,7 @@ multi sub disable-cow('1777' --> Nil)
         var/lib/ex
         var/tmp
     >.map({ "/mnt/$_" });
-    my Str:D $permissions = '1777';
-    my Str:D $user = 'root';
-    my Str:D $group = 'root';
-    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
+    Archvault::Utils.disable-cow(|@directory, :recursive);
 }
 
 # bootstrap initial chroot with pacstrap

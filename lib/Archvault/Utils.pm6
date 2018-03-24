@@ -28,22 +28,29 @@ constant $PBKDF2-LENGTH-SALT = 100;
 # -----------------------------------------------------------------------------
 
 method disable-cow(
-    Str:D :$permissions = '755',
-    Str:D :$user = $*USER,
-    Str:D :$group = $*GROUP,
+    *%opt (
+        Bool :clean($),
+        Bool :recursive($),
+        Str :permissions($),
+        Str :user($),
+        Str :group($)
+    ),
     *@directory
     --> Nil
 )
 {
     # https://wiki.archlinux.org/index.php/Btrfs#Disabling_CoW
-    @directory.map({ disable-cow($_, $permissions, $user, $group) });
+    @directory.map({ disable-cow($_, |%opt) });
 }
 
-sub disable-cow(
+multi sub disable-cow(
     Str:D $directory,
-    Str:D $permissions,
-    Str:D $user,
-    Str:D $group
+    Bool:D :clean($)! where *.so,
+    # ignored, recursive is implied with :clean
+    Bool :recursive($),
+    Str:D :$permissions = '755',
+    Str:D :$user = $*USER,
+    Str:D :$group = $*GROUP
     --> Nil
 )
 {
@@ -55,11 +62,43 @@ sub disable-cow(
     mkdir($orig-dir);
     run(qqw<chmod $permissions $orig-dir>);
     run(qqw<chown $user:$group $orig-dir>);
-    run(qqw<chattr +C $orig-dir>);
+    run(qqw<chattr -R +C $orig-dir>);
     dir($backup-dir).map(-> $file {
         run(qqw<cp -dpr $file $orig-dir>)
     });
     run(qqw<rm -rf $backup-dir>);
+}
+
+multi sub disable-cow(
+    Str:D $directory,
+    Bool :clean($),
+    Bool:D :recursive($)! where *.so,
+    Str :permissions($),
+    Str :user($),
+    Str :group($)
+    --> Nil
+)
+{
+    my Str:D $orig-dir = ~$directory.IO.resolve;
+    $orig-dir.IO.e && $orig-dir.IO.r && $orig-dir.IO.d
+        or die('directory failed exists readable directory test');
+    run(qqw<chattr -R +C $orig-dir>);
+}
+
+multi sub disable-cow(
+    Str:D $directory,
+    Bool :clean($),
+    Bool :recursive($),
+    Str :permissions($),
+    Str :user($),
+    Str :group($)
+    --> Nil
+)
+{
+    my Str:D $orig-dir = ~$directory.IO.resolve;
+    $orig-dir.IO.e && $orig-dir.IO.r && $orig-dir.IO.d
+        or die('directory failed exists readable directory test');
+    run(qqw<chattr +C $orig-dir>);
 }
 
 
