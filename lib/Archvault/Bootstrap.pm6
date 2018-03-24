@@ -858,7 +858,7 @@ multi sub configure-dnscrypt-proxy(
         arch-chroot
         /mnt
         systemd-sysusers
-        $path
+        /$path
     >);
 }
 
