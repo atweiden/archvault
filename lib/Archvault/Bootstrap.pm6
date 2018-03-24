@@ -411,13 +411,13 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
         'srv',
         'usr',
         'var',
-        'var/cache/pacman',
-        'var/lib/ex',
-        'var/lib/postgres',
-        'var/log',
-        'var/opt',
-        'var/spool',
-        'var/tmp';
+        'var-cache-pacman',
+        'var-lib-ex',
+        'var-lib-postgres',
+        'var-log',
+        'var-opt',
+        'var-spool',
+        'var-tmp';
 
     # create btrfs subvolumes
     chdir('/mnt2');
@@ -473,7 +473,25 @@ multi sub mount-btrfs-subvolume(
 }
 
 multi sub mount-btrfs-subvolume(
-    'var/lib/ex',
+    'var-cache-pacman',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/cache/pacman';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,subvol=@var-cache-pacman
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var-lib-ex',
     Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
@@ -484,7 +502,7 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@var-lib-ex
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
@@ -492,7 +510,7 @@ multi sub mount-btrfs-subvolume(
 }
 
 multi sub mount-btrfs-subvolume(
-    'var/lib/postgres',
+    'var-lib-postgres',
     Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
@@ -503,14 +521,14 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodatacow,subvol=@$btrfs-dir
+        -o $mount-options,nodatacow,subvol=@var-lib-postgres
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
 }
 
 multi sub mount-btrfs-subvolume(
-    'var/log',
+    'var-log',
     Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
@@ -521,14 +539,32 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@var-log
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
 }
 
 multi sub mount-btrfs-subvolume(
-    'var/spool',
+    'var-opt',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/opt';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,subvol=@var-opt
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var-spool',
     Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
@@ -539,14 +575,14 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@var-spool
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
 }
 
 multi sub mount-btrfs-subvolume(
-    'var/tmp',
+    'var-tmp',
     Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
@@ -557,7 +593,7 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@var-tmp
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
