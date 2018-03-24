@@ -24,6 +24,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     $*USER == 0 or die('root privileges required');
     self!setup;
     self!mkdisk;
+    self!disable-cow;
     self!pacstrap-base;
     self!configure-users;
     self!genfstab;
@@ -50,7 +51,6 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-openssh;
     self!configure-x11;
     self!enable-systemd-services;
-    self!disable-cow;
     self!augment if $augment;
     self!unmount;
 }
@@ -598,6 +598,39 @@ multi sub mount-btrfs-subvolume(
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
+}
+
+method !disable-cow(--> Nil)
+{
+    disable-cow('755');
+    disable-cow('1777');
+}
+
+multi sub disable-cow('755' --> Nil)
+{
+    my Str:D @directory = qw<
+        home
+        srv
+        var/lib/postgres
+        var/log
+        var/spool
+    >.map({ "/mnt/$_" });
+    my Str:D $permissions = '755';
+    my Str:D $user = 'root';
+    my Str:D $group = 'root';
+    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
+}
+
+multi sub disable-cow('1777' --> Nil)
+{
+    my Str:D @directory = qw<
+        var/lib/ex
+        var/tmp
+    >.map({ "/mnt/$_" });
+    my Str:D $permissions = '1777';
+    my Str:D $user = 'root';
+    my Str:D $group = 'root';
+    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
 }
 
 # bootstrap initial chroot with pacstrap
@@ -1268,39 +1301,6 @@ method !enable-systemd-services(--> Nil)
     @service.map(-> $service {
         run(qqw<arch-chroot /mnt systemctl enable $service>);
     });
-}
-
-method !disable-cow(--> Nil)
-{
-    disable-cow('755');
-    disable-cow('1777');
-}
-
-multi sub disable-cow('755' --> Nil)
-{
-    my Str:D @directory = qw<
-        home
-        srv
-        var/lib/postgres
-        var/log
-        var/spool
-    >.map({ "/mnt/$_" });
-    my Str:D $permissions = '755';
-    my Str:D $user = 'root';
-    my Str:D $group = 'root';
-    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
-}
-
-multi sub disable-cow('1777' --> Nil)
-{
-    my Str:D @directory = qw<
-        var/lib/ex
-        var/tmp
-    >.map({ "/mnt/$_" });
-    my Str:D $permissions = '1777';
-    my Str:D $user = 'root';
-    my Str:D $group = 'root';
-    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
 }
 
 # interactive console
