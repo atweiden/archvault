@@ -56,7 +56,7 @@ sub disable-cow(
     run(qqw<chmod $permissions $orig-dir>);
     run(qqw<chown $user:$group $orig-dir>);
     run(qqw<chattr +C $orig-dir>);
-    dir($backup-dir).race.map(-> $file {
+    dir($backup-dir).map(-> $file {
         run(qqw<cp -dpr $file $orig-dir>)
     });
     run(qqw<rm -rf $backup-dir>);
