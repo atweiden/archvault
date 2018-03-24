@@ -604,6 +604,9 @@ multi sub mount-btrfs-subvolume(
 
 method !disable-cow(--> Nil)
 {
+    my Str:D $var-lib-machines = '/mnt/var/lib/machines';
+    mkdir($var-lib-machines);
+    chmod(0o700, $var-lib-machines);
     my Str:D @directory = qw<
         home
         srv
