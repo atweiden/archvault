@@ -852,12 +852,13 @@ multi sub configure-dnscrypt-proxy(
     my Str:D $systemd-sysusers = qq:to/EOF/;
     u $user-name-dnscrypt - "DNSCrypt user" /usr/share/dnscrypt-proxy -
     EOF
-    spurt('/mnt/usr/lib/sysusers.d/dnscrypt.conf', $systemd-sysusers);
-    run(qw<
+    my Str:D $path = 'usr/lib/sysusers.d/dnscrypt.conf';
+    spurt("/mnt/$path", $systemd-sysusers);
+    run(qqw<
         arch-chroot
         /mnt
         systemd-sysusers
-        /usr/lib/sysusers.d/dnscrypt.conf
+        $path
     >);
 }
 
@@ -889,7 +890,8 @@ multi sub configure-dnscrypt-proxy('EphemeralKeys' --> Nil)
 
 method !set-nameservers(--> Nil)
 {
-    copy(%?RESOURCES<etc/resolv.conf.head>, '/mnt/etc/resolv.conf.head');
+    my Str:D $path = 'etc/resolv.conf.head';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 method !set-locale(--> Nil)
@@ -969,10 +971,8 @@ multi sub configure-pacman('multilib' --> Nil)
 
 method !configure-modprobe(--> Nil)
 {
-    copy(
-        %?RESOURCES<etc/modprobe.d/modprobe.conf>,
-        '/mnt/etc/modprobe.d/modprobe.conf'
-    );
+    my Str:D $path = 'etc/modprobe.d/modprobe.conf';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 method !generate-initramfs(--> Nil)
@@ -1155,7 +1155,8 @@ sub install-bootloader(Str:D $partition --> Nil)
 method !configure-sysctl(--> Nil)
 {
     my DiskType:D $disk-type = $.config.disk-type;
-    copy(%?RESOURCES<etc/sysctl.conf>, '/mnt/etc/sysctl.conf');
+    my Str:D $path = 'etc/sysctl.conf';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
     configure-sysctl('vm.vfs_cache_pressure') if $disk-type ~~ /SSD|USB/;
     configure-sysctl('vm.swappiness') if $disk-type ~~ /SSD|USB/;
     run(qw<arch-chroot /mnt sysctl --system>);
@@ -1192,17 +1193,37 @@ method !configure-nftables(--> Nil)
 method !configure-openssh(--> Nil)
 {
     my UserName:D $user-name-ssh = $.config.user-name-ssh;
+    configure-openssh('ssh_config');
+    configure-openssh('sshd_config', $user-name-ssh);
+    configure-openssh('hosts.allow');
+    configure-openssh('moduli');
+}
 
-    copy(%?RESOURCES<etc/ssh/ssh_config>, '/mnt/etc/ssh/ssh_config');
-    copy(%?RESOURCES<etc/ssh/sshd_config>, '/mnt/etc/ssh/sshd_config');
+multi sub configure-openssh('ssh_config' --> Nil)
+{
+    my Str:D $path = 'etc/ssh/ssh_config';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-openssh('sshd_config', UserName:D $user-name-ssh --> Nil)
+{
+    my Str:D $path = 'etc/ssh/sshd_config';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 
     # restrict allowed connections to $user-name-ssh
     my Str:D $sed-cmd = "3iAllowUsers $user-name-ssh";
-    shell("sed -i '$sed-cmd' /mnt/etc/ssh/sshd_config");
+    shell("sed -i '$sed-cmd' /mnt/$path");
+}
 
+multi sub configure-openssh('hosts.allow' --> Nil)
+{
     # restrict allowed connections to LAN
-    copy(%?RESOURCES<etc/hosts.allow>, '/mnt/etc/hosts.allow');
+    my Str:D $path = 'etc/hosts.allow';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
 
+multi sub configure-openssh('moduli' --> Nil)
+{
     # filter weak ssh moduli
     shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
 }
@@ -1218,49 +1239,47 @@ method !configure-systemd(--> Nil)
 
 multi sub configure-systemd('limits' --> Nil)
 {
-    mkdir('/mnt/etc/systemd/system.conf.d');
-    copy(
-        %?RESOURCES<etc/systemd/system.conf.d/limits.conf>,
-        '/mnt/etc/systemd/system.conf.d/limits.conf'
-    );
+    my Str:D $base-path = 'etc/systemd/system.conf.d';
+    my Str:D $path = "$base-path/limits.conf";
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-systemd('mounts' --> Nil)
 {
-    mkdir('/mnt/etc/systemd/tmp.mount.d');
-    copy(
-        %?RESOURCES<etc/systemd/system/tmp.mount.d/noexec.conf>,
-        '/mnt/etc/systemd/system/tmp.mount.d/noexec.conf'
-    );
+    my Str:D $base-path = 'etc/systemd/system/tmp.mount.d';
+    my Str:D $path = "$base-path/noexec.conf";
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-systemd('sleep' --> Nil)
 {
-    copy(%?RESOURCES<etc/systemd/sleep.conf>, '/mnt/etc/systemd/sleep.conf');
+    my Str:D $path = 'etc/systemd/sleep.conf';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-systemd('tmpfiles' --> Nil)
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
-    copy(%?RESOURCES<etc/tmpfiles.d/tmp.conf>, '/mnt/etc/tmpfiles.d/tmp.conf');
+    my Str:D $path = 'etc/tmpfiles.d/tmp.conf';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-systemd('udev' --> Nil)
 {
-    mkdir('/mnt/etc/udev/rules.d');
-    copy(
-        %?RESOURCES<etc/udev/rules.d/60-io-schedulers.rules>,
-        '/mnt/etc/udev/rules.d/60-io-schedulers.rules'
-    );
+    my Str:D $base-path = 'etc/udev/rules.d';
+    my Str:D $path = "$base-path/60-io-schedulers.rules";
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 method !configure-hidepid(--> Nil)
 {
-    mkdir('/mnt/etc/systemd/system/systemd-logind.service.d');
-    copy(
-        %?RESOURCES</etc/systemd/system/systemd-logind.service.d/hidepid.conf>,
-        '/mnt/etc/systemd/system/systemd-logind.service.d/hidepid.conf'
-    );
+    my Str:D $base-path = 'etc/systemd/system/systemd-logind.service.d';
+    my Str:D $path = "$base-path/hidepid.conf";
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 
     my Str:D $fstab-hidepid = q:to/EOF/;
     # /proc with hidepid (https://wiki.archlinux.org/index.php/Security#hidepid)
@@ -1271,24 +1290,39 @@ method !configure-hidepid(--> Nil)
 
 method !configure-securetty(--> Nil)
 {
-    copy(%?RESOURCES<etc/securetty>, '/mnt/etc/securetty');
-    copy(
-        %?RESOURCES<etc/profile.d/shell-timeout.sh>,
-        '/mnt/etc/profile.d/shell-timeout.sh'
-    );
+    configure-securetty('securetty');
+    configure-securetty('shell-timeout');
+}
+
+multi sub configure-securetty('securetty' --> Nil)
+{
+    my Str:D $path = 'etc/securetty';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-securetty('shell-timeout' --> Nil)
+{
+    my Str:D $path = 'etc/profile.d/shell-timeout.sh';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 method !configure-xorg(--> Nil)
 {
     mkdir('/mnt/etc/X11/xorg.conf.d');
-    copy(
-        %?RESOURCES<etc/X11/xorg.conf.d/20-natural-scrolling.conf>,
-        '/mnt/etc/X11/xorg.conf.d/20-natural-scrolling.conf'
-    );
-    copy(
-        %?RESOURCES<etc/X11/xorg.conf.d/99-security.conf>,
-        '/mnt/etc/X11/xorg.conf.d/99-security.conf'
-    );
+    configure-xorg('scrolling');
+    configure-xorg('security');
+}
+
+multi sub configure-xorg('scrolling' --> Nil)
+{
+    my Str:D $path = 'etc/X11/xorg.conf.d/20-natural-scrolling.conf';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-xorg('security' --> Nil)
+{
+    my Str:D $path = 'etc/X11/xorg.conf.d/99-security.conf';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 method !enable-systemd-services(--> Nil)
