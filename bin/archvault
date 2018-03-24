@@ -194,13 +194,13 @@ multi sub USAGE('disable-cow' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
-      archvault -p=0o700 -u=root -g=root disable-cow dir1 dir2
+      archvault -p=700 -u=root -g=root disable-cow dir1 dir2
 
     Options:
       -g, --group=<groupname>
         named group to own file (defaults to $*GROUP)
       -p, --permissions=<octal>
-        octal file mode bits (defaults to 0o755)
+        octal file mode bits (defaults to 755)
       -u, --user=<username>
         named user to own file (defaults to $*USER)
     EOF
