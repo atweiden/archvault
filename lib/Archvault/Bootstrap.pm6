@@ -50,7 +50,6 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-openssh;
     self!configure-x11;
     self!enable-systemd-services;
-    self!disable-cow;
     self!augment if $augment;
     self!unmount;
 }
@@ -412,8 +411,13 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
         'srv',
         'usr',
         'var',
-        'var-lib-ex',
-        'var-tmp';
+        'var/cache/pacman',
+        'var/lib/ex',
+        'var/lib/postgres',
+        'var/log',
+        'var/opt',
+        'var/spool',
+        'var/tmp';
 
     # create btrfs subvolumes
     chdir('/mnt2');
@@ -433,6 +437,24 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
 }
 
 multi sub mount-btrfs-subvolume(
+    'home',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'home';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,nodatacow,subvol=@$btrfs-dir
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
     'srv',
     Str:D $mount-options,
     VaultName:D $vault-name
@@ -444,14 +466,14 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
 }
 
 multi sub mount-btrfs-subvolume(
-    'var-lib-ex',
+    'var/lib/ex',
     Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
@@ -462,7 +484,7 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodev,noexec,nosuid,subvol=@var-lib-ex
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
@@ -470,7 +492,61 @@ multi sub mount-btrfs-subvolume(
 }
 
 multi sub mount-btrfs-subvolume(
-    'var-tmp',
+    'var/lib/postgres',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/lib/postgres';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,nodatacow,subvol=@$btrfs-dir
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var/log',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/log';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var/spool',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/spool';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var/tmp',
     Str:D $mount-options,
     VaultName:D $vault-name
     --> Nil
@@ -481,7 +557,7 @@ multi sub mount-btrfs-subvolume(
     run(qqw<
         mount
         -t btrfs
-        -o $mount-options,nodev,noexec,nosuid,subvol=@var-tmp
+        -o $mount-options,nodatacow,nodev,noexec,nosuid,subvol=@$btrfs-dir
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
@@ -1173,15 +1249,6 @@ method !enable-systemd-services(--> Nil)
     @service.map(-> $service {
         run(qqw<arch-chroot /mnt systemctl enable $service>);
     });
-}
-
-method !disable-cow(--> Nil)
-{
-    my Str:D @directory = '/mnt/var/log';
-    my UInt:D $permissions = 0o755;
-    my Str:D $user = 'root';
-    my Str:D $group = 'root';
-    Archvault::Utils.disable-cow(|@directory, :$permissions, :$user, :$group);
 }
 
 # interactive console
