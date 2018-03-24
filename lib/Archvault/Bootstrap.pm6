@@ -882,6 +882,7 @@ method !generate-initramfs(--> Nil)
     configure-initramfs('MODULES', $graphics, $processor);
     configure-initramfs('HOOKS', $disk-type);
     configure-initramfs('FILES');
+    configure-initramfs('BINARIES');
     run(qw<arch-chroot /mnt mkinitcpio -p linux>);
 }
 
@@ -939,6 +940,12 @@ multi sub configure-initramfs('HOOKS', DiskType:D $disk-type --> Nil)
 multi sub configure-initramfs('FILES' --> Nil)
 {
     my Str:D $sed-cmd = 's,^FILES.*,FILES=(/etc/modprobe.d/modprobe.conf),';
+    run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
+}
+
+multi sub configure-initramfs('BINARIES' --> Nil)
+{
+    my Str:D $sed-cmd = 's,^BINARIES.*,BINARIES=(/usr/bin/btrfs),';
     run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
 }
 
