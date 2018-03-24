@@ -533,6 +533,7 @@ method !pacstrap-base(--> Nil)
         iproute2
         iw
         kbd
+        lz4
         net-tools
         nftables
         openresolv
@@ -883,6 +884,7 @@ method !generate-initramfs(--> Nil)
     configure-initramfs('HOOKS', $disk-type);
     configure-initramfs('FILES');
     configure-initramfs('BINARIES');
+    configure-initramfs('COMPRESSION');
     run(qw<arch-chroot /mnt mkinitcpio -p linux>);
 }
 
@@ -946,6 +948,12 @@ multi sub configure-initramfs('FILES' --> Nil)
 multi sub configure-initramfs('BINARIES' --> Nil)
 {
     my Str:D $sed-cmd = 's,^BINARIES.*,BINARIES=(/usr/bin/btrfs),';
+    run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
+}
+
+multi sub configure-initramfs('COMPRESSION' --> Nil)
+{
+    my Str:D $sed-cmd = 's,^#\(COMPRESSION="lz4"\),\1,';
     run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
 }
 
