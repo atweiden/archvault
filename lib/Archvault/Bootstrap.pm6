@@ -604,26 +604,14 @@ multi sub mount-btrfs-subvolume(
 
 method !disable-cow(--> Nil)
 {
-    disable-cow('755');
-    disable-cow('1777');
-}
-
-multi sub disable-cow('755' --> Nil)
-{
     my Str:D @directory = qw<
         home
         srv
+        var/lib/ex
+        var/lib/machines
         var/lib/postgres
         var/log
         var/spool
-    >.map({ "/mnt/$_" });
-    Archvault::Utils.disable-cow(|@directory, :recursive);
-}
-
-multi sub disable-cow('1777' --> Nil)
-{
-    my Str:D @directory = qw<
-        var/lib/ex
         var/tmp
     >.map({ "/mnt/$_" });
     Archvault::Utils.disable-cow(|@directory, :recursive);
