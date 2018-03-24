@@ -74,8 +74,10 @@ method !setup(--> Nil)
     my Str:D @dep = qw<
         arch-install-scripts
         btrfs-progs
+        coreutils
         cryptsetup
         dialog
+        e2fsprogs
         expect
         findutils
         gawk

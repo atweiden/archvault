@@ -43,7 +43,9 @@ Name                 | Provides                                           | Incl
 ---                  | ---                                                | ---
 arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`              | Y
 btrfs-progs          | Btrfs setup                                        | Y
+coreutils            | `chmod`, `chown`, `cp`, `rm`                       | Y
 cryptsetup           | FDE with LUKS                                      | Y
+e2fsprogs            | `chattr`                                           | Y
 expect               | interactive command prompt automation              | N
 findutils            | `find`                                             | Y
 gawk                 | `awk`                                              | Y
