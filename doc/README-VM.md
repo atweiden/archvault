@@ -291,12 +291,12 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `sudo pacman -Syy`
   - `sudo pacman -S colordiff git pacmatic ripgrep the_silver_searcher`
   - `sudo pacman -S arch-wiki-docs arch-wiki-lite asp mlocate sdcv tree`
-  - `sudo pacman -S ccrypt moreutils pwgen socat tor torsocks rlwrap`
+  - `sudo pacman -S ccrypt moreutils pwgen rlwrap socat tor torsocks`
 - Get AUR pkgs
   - `git clone https://aur.archlinux.org/clonepkg.git`
   - `cd clonepkg && makepkg -Acsi --noconfirm`
   - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
-  - `clonepkg fzf-git fzf-extras pacnew_scripts pkgcacheclean`
+  - `clonepkg fzf-extras fzf-git pacnew_scripts pkgcacheclean`
   - `clonepkg cower downgrade icdiff pacaur repacman2 subrepo`
 - Get console font
   - `clonepkg tamsyn-console-font`
