@@ -28,7 +28,7 @@ constant $PBKDF2-LENGTH-SALT = 100;
 # -----------------------------------------------------------------------------
 
 method disable-cow(
-    UInt:D :$permissions = 0o755,
+    Str:D :$permissions = '755',
     Str:D :$user = $*USER,
     Str:D :$group = $*GROUP,
     *@directory
@@ -41,7 +41,7 @@ method disable-cow(
 
 sub disable-cow(
     Str:D $directory,
-    UInt:D $permissions,
+    Str:D $permissions,
     Str:D $user,
     Str:D $group
     --> Nil
@@ -53,12 +53,12 @@ sub disable-cow(
     my Str:D $backup-dir = $orig-dir ~ '-old';
     rename($orig-dir, $backup-dir);
     mkdir($orig-dir);
-    chmod($permissions, $orig-dir);
+    run(qqw<chmod $permissions $orig-dir>);
+    run(qqw<chown $user:$group $orig-dir>);
     run(qqw<chattr +C $orig-dir>);
     dir($backup-dir).race.map(-> $file {
-        run(qqw<cp -dpr --no-preserve=ownership $file $orig-dir>)
+        run(qqw<cp -dpr $file $orig-dir>)
     });
-    run(qqw<chown -R $user:$group $orig-dir>);
     run(qqw<rm -rf $backup-dir>);
 }
 
