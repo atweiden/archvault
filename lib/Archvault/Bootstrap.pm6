@@ -762,29 +762,6 @@ multi sub useradd(
 }
 
 multi sub useradd(
-    'dnscrypt',
-    UserName:D $user-name-dnscrypt
-    --> Nil
-)
-{
-    my Str:D $user-home-dnscrypt = '/usr/share/dnscrypt-proxy';
-    my Str:D $user-shell-dnscrypt = '/bin/false';
-
-    say("Creating new DNSCrypt user named $user-name-dnscrypt...");
-    run(qqw<arch-chroot /mnt groupadd $user-name-dnscrypt>);
-    run(qqw<
-        arch-chroot
-        /mnt
-        useradd
-        -M
-        -d $user-home-dnscrypt
-        -g $user-name-dnscrypt
-        -s $user-shell-dnscrypt
-        $user-name-dnscrypt
-    >);
-}
-
-multi sub useradd(
     'ssh',
     UserName:D $user-name-ssh,
     Str:D $user-pass-hash-ssh
@@ -862,9 +839,26 @@ method !configure-dhcpcd(--> Nil)
 method !configure-dnscrypt-proxy(--> Nil)
 {
     my Str:D $user-name-dnscrypt = 'dnscrypt';
-    useradd('dnscrypt', $user-name-dnscrypt);
+    configure-dnscrypt-proxy('systemd-sysusers', $user-name-dnscrypt);
     configure-dnscrypt-proxy('User', $user-name-dnscrypt);
     configure-dnscrypt-proxy('EphemeralKeys');
+}
+
+multi sub configure-dnscrypt-proxy(
+    'systemd-sysusers',
+    UserName:D $user-name-dnscrypt
+)
+{
+    my Str:D $systemd-sysusers = qq:to/EOF/;
+    u $user-name-dnscrypt - "DNSCrypt user" /usr/share/dnscrypt-proxy -
+    EOF
+    spurt('/mnt/usr/lib/sysusers.d/dnscrypt.conf', $systemd-sysusers);
+    run(qw<
+        arch-chroot
+        /mnt
+        systemd-sysusers
+        /usr/lib/sysusers.d/dnscrypt.conf
+    >);
 }
 
 multi sub configure-dnscrypt-proxy(
