@@ -17,7 +17,7 @@ use Archvault::Utils;
 multi sub MAIN(
     'disable-cow',
     Str :g(:$group),
-    UInt :p(:$permissions),
+    Str :p(:$permissions),
     Str :u(:$user),
     *@directory
     --> Nil
