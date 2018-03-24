@@ -90,7 +90,6 @@ multi sub MAIN(
     'new',
     *%opts (
         Bool :augment($),
-        Bool :base-devel($),
         Str :disktype($),
         Str :graphics($),
         Str :grubusername($),
@@ -258,7 +257,6 @@ multi sub USAGE('new' --> Nil)
 
     Options:
       --augment                     drop to Bash console mid-execution
-      --base-devel                  install base-devel packages
       --disktype=<disktype>         hard drive type
       --graphics=<graphics>         graphics card type
       --grubusername=<username>     user name for Grub

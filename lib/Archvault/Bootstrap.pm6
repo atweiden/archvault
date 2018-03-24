@@ -508,7 +508,6 @@ multi sub mount-btrfs-subvolume(
 # bootstrap initial chroot with pacstrap
 method !pacstrap-base(--> Nil)
 {
-    my Bool:D $base-devel = $.config.base-devel;
     my Processor:D $processor = $.config.processor;
     my Bool:D $reflector = $.config.reflector;
 
@@ -517,6 +516,7 @@ method !pacstrap-base(--> Nil)
         acpi
         arch-install-scripts
         base
+        base-devel
         bash-completion
         btrfs-progs
         ca-certificates
@@ -549,7 +549,6 @@ method !pacstrap-base(--> Nil)
         zip
     >;
 
-    push(@pkg, 'base-devel') if $base-devel;
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
     push(@pkg, 'intel-ucode') if $processor eq 'intel';
     push(@pkg, 'reflector') if $reflector;

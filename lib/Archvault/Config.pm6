@@ -119,15 +119,11 @@ has Timezone:D $.timezone =
         ?? self.gen-timezone(%*ENV<ARCHVAULT_TIMEZONE>)
         !! prompt-timezone();
 
-# drop to bash console mid-execution
+# augment
 has Bool:D $.augment =
     ?%*ENV<ARCHVAULT_AUGMENT>;
 
-# install base-devel packages
-has Bool:D $.base-devel =
-    ?%*ENV<ARCHVAULT_BASEDEVEL>;
-
-# use reflector to optimize pacman mirrors
+# reflector
 has Bool:D $.reflector =
     ?%*ENV<ARCHVAULT_REFLECTOR>;
 
@@ -138,7 +134,6 @@ has Bool:D $.reflector =
 
 submethod BUILD(
     Bool :$augment,
-    Bool :$base-devel,
     Str :$disktype,
     Str :$graphics,
     Str :$grubusername,
@@ -165,7 +160,6 @@ submethod BUILD(
 )
 {
     $!augment = $augment if $augment;
-    $!base-devel = $base-devel if $base-devel;
     $!disk-type = self.gen-disk-type($disktype) if $disktype;
     $!graphics = self.gen-graphics($graphics) if $graphics;
     $!host-name = self.gen-host-name($hostname) if $hostname;
@@ -197,7 +191,6 @@ submethod BUILD(
 method new(
     *%opts (
         Bool :augment($),
-        Bool :base-devel($),
         Str :disktype($),
         Str :graphics($),
         Str :grubusername($),
