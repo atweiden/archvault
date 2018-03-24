@@ -144,9 +144,6 @@ method !mkdisk(--> Nil)
 
     # create and mount btrfs volumes
     mkbtrfs($disk-type, $vault-name);
-
-    # create boot partition
-    mkbootpart($partition);
 }
 
 # partition disk with gdisk
@@ -154,7 +151,6 @@ sub sgdisk(Str:D $partition --> Nil)
 {
     # erase existing partition table
     # create 2MB EF02 BIOS boot sector
-    # create 128MB sized partition for /boot
     # create max sized partition for LUKS encrypted volume
     run(qw<
         sgdisk
@@ -163,10 +159,8 @@ sub sgdisk(Str:D $partition --> Nil)
         --mbrtogpt
         --new=1:0:+2M
         --typecode=1:EF02
-        --new=2:0:+128M
+        --new=2:0:0
         --typecode=2:8300
-        --new=3:0:0
-        --typecode=3:8300
     >, $partition);
 }
 
@@ -179,7 +173,7 @@ sub mkvault(
 )
 {
     # target partition for vault
-    my Str:D $partition-vault = $partition ~ '3';
+    my Str:D $partition-vault = $partition ~ '2';
 
     # load kernel modules for cryptsetup
     run(qw<modprobe dm_mod dm-crypt>);
@@ -402,7 +396,7 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
     run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
 
     # set mount options
-    my Str:D $mount-options = 'rw,lazytime,compress=zstd,space_cache';
+    my Str:D $mount-options = 'rw,lazytime,compress=lzo,space_cache';
     $mount-options ~= ',ssd' if $disk-type eq 'SSD';
 
     # mount main btrfs filesystem on open vault
@@ -412,6 +406,7 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
     # btrfs subvolumes, starting with root / ('')
     my Str:D @btrfs-dir =
         '',
+        'boot',
         'home',
         'opt',
         'srv',
@@ -508,20 +503,6 @@ multi sub mount-btrfs-subvolume(
         /dev/mapper/$vault-name
         /mnt/$btrfs-dir
     >);
-}
-
-# create and mount boot partition
-sub mkbootpart(Str:D $partition --> Nil)
-{
-    # target partition for boot
-    my Str:D $partition-boot = $partition ~ '2';
-
-    # create ext2 boot partition
-    run(qqw<mkfs.ext2 $partition-boot>);
-
-    # mount ext2 boot partition in /mnt/boot
-    mkdir('/mnt/boot');
-    run(qqw<mount $partition-boot /mnt/boot>);
 }
 
 # bootstrap initial chroot with pacstrap
@@ -983,10 +964,7 @@ method !install-bootloader(--> Nil)
         $vault-name,
         $graphics
     );
-    configure-bootloader('GRUB_DEFAULT');
-    configure-bootloader('GRUB_SAVEDEFAULT');
     configure-bootloader('GRUB_ENABLE_CRYPTODISK');
-    configure-bootloader('GRUB_DISABLE_SUBMENU');
     configure-bootloader('superusers', $user-name-grub, $user-pass-hash-grub);
     configure-bootloader('unrestricted');
     install-bootloader($partition);
@@ -1000,7 +978,7 @@ multi sub configure-bootloader(
     --> Nil
 )
 {
-    my Str:D $partition-vault = $partition ~ '3';
+    my Str:D $partition-vault = $partition ~ '2';
     my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
     my Str:D $grub-cmdline-linux =
         "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
@@ -1015,30 +993,10 @@ multi sub configure-bootloader(
     shell("sed -i '$sed-cmd' /mnt/etc/default/grub");
 }
 
-multi sub configure-bootloader('GRUB_DEFAULT' --> Nil)
-{
-    my Str:D $sed-cmd = 's,^\(GRUB_DEFAULT\)=.*,\1=saved,';
-    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
-}
-
-multi sub configure-bootloader('GRUB_SAVEDEFAULT' --> Nil)
-{
-    my Str:D $sed-cmd = 's,^#\(GRUB_SAVEDEFAULT\),\1,';
-    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
-}
-
 multi sub configure-bootloader('GRUB_ENABLE_CRYPTODISK' --> Nil)
 {
     my Str:D $sed-cmd = 's,^#\(GRUB_ENABLE_CRYPTODISK\),\1,';
     run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
-}
-
-multi sub configure-bootloader('GRUB_DISABLE_SUBMENU' --> Nil)
-{
-    my Str:D $grub-disable-submenu = q:to/EOF/;
-    GRUB_DISABLE_SUBMENU=y
-    EOF
-    spurt('/mnt/etc/default/grub', "\n" ~ $grub-disable-submenu, :append);
 }
 
 multi sub configure-bootloader(
