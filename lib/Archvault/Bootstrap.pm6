@@ -735,6 +735,7 @@ multi sub useradd(
         network
         optical
         power
+        proc
         scanner
         storage
         users
@@ -1226,7 +1227,7 @@ method !configure-hidepid(--> Nil)
 
     my Str:D $fstab-hidepid = q:to/EOF/;
     # /proc with hidepid (https://wiki.archlinux.org/index.php/Security#hidepid)
-    proc                                      /proc       procfs      hidepid=2,gid=proc 0 0
+    proc                                      /proc       proc        nodev,noexec,nosuid,hidepid=2,gid=proc 0 0
     EOF
     spurt('/mnt/etc/fstab', $fstab-hidepid, :append);
 }
