@@ -52,10 +52,12 @@ gawk                 | `awk`                                              | Y
 glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`                | Y
 grub                 | `grub-mkpasswd-pbkdf2`                             | Y
+haveged              | `haveged`                                          | Y
 kbd                  | keymap data in `/usr/share/kbd/keymaps`            | Y
 kmod                 | `modprobe`                                         | Y
 openssl              | user password salts                                | Y
-pacman               | `makepkg`, `pacman`                                | Y
+pacman               | `makepkg`, `pacman`, `pacman-key`                  | Y
+procps-ng            | `pkill`                                            | Y
 rakudo               | `archvault` Perl6 runtime                          | N
 sed                  | `sed`                                              | Y
 tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab`    | Y

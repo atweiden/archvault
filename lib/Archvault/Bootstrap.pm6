@@ -80,9 +80,13 @@ method !setup(--> Nil)
         gawk
         glibc
         gptfdisk
+        grub
+        haveged
         kbd
         kmod
         openssl
+        pacman
+        procps-ng
         sed
         tzdata
         util-linux
