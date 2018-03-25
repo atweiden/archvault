@@ -682,13 +682,13 @@ method !pacstrap-base(--> Nil)
 method !configure-users(--> Nil)
 {
     my UserName:D $user-name-admin = $.config.user-name-admin;
-    my UserName:D $user-name-ssh = $.config.user-name-ssh;
+    my UserName:D $user-name-sftp = $.config.user-name-sftp;
     my Str:D $user-pass-hash-admin = $.config.user-pass-hash-admin;
     my Str:D $user-pass-hash-root = $.config.user-pass-hash-root;
-    my Str:D $user-pass-hash-ssh = $.config.user-pass-hash-ssh;
+    my Str:D $user-pass-hash-sftp = $.config.user-pass-hash-sftp;
     configure-users('root', $user-pass-hash-root);
     configure-users('admin', $user-name-admin, $user-pass-hash-admin);
-    configure-users('ssh', $user-name-ssh, $user-pass-hash-ssh);
+    configure-users('sftp', $user-name-sftp, $user-pass-hash-sftp);
 }
 
 multi sub configure-users(
@@ -712,13 +712,13 @@ multi sub configure-users(
 }
 
 multi sub configure-users(
-    'ssh',
-    UserName:D $user-name-ssh,
-    Str:D $user-pass-hash-ssh
+    'sftp',
+    UserName:D $user-name-sftp,
+    Str:D $user-pass-hash-sftp
     --> Nil
 )
 {
-    useradd('ssh', $user-name-ssh, $user-pass-hash-ssh);
+    useradd('sftp', $user-name-sftp, $user-pass-hash-sftp);
 }
 
 multi sub useradd(
@@ -762,37 +762,37 @@ multi sub useradd(
 }
 
 multi sub useradd(
-    'ssh',
-    UserName:D $user-name-ssh,
-    Str:D $user-pass-hash-ssh
+    'sftp',
+    UserName:D $user-name-sftp,
+    Str:D $user-pass-hash-sftp
     --> Nil
 )
 {
     # https://wiki.archlinux.org/index.php/SFTP_chroot
-    my Str:D $user-group-ssh = 'sftponly';
-    my Str:D $user-shell-ssh = '/sbin/nologin';
+    my Str:D $user-group-sftp = 'sftponly';
+    my Str:D $user-shell-sftp = '/sbin/nologin';
     my Str:D $auth-dir = '/etc/ssh/authorized_keys';
     my Str:D $jail-dir = '/srv/ssh/jail';
-    my Str:D $home-dir = "$jail-dir/$user-name-ssh";
+    my Str:D $home-dir = "$jail-dir/$user-name-sftp";
     my Str:D @root-dir = $auth-dir, $jail-dir;
 
-    say("Creating new SSH user named $user-name-ssh...");
+    say("Creating new SFTP user named $user-name-sftp...");
     arch-chroot-mkdir(@root-dir, 'root', 'root', 0o755);
-    run(qqw<arch-chroot /mnt groupadd $user-group-ssh>);
-    run(qqw<arch-chroot /mnt groupadd $user-name-ssh>);
+    run(qqw<arch-chroot /mnt groupadd $user-group-sftp>);
+    run(qqw<arch-chroot /mnt groupadd $user-name-sftp>);
     run(qqw<
         arch-chroot
         /mnt
         useradd
         -M
         -d $home-dir
-        -g $user-name-ssh
-        -G $user-group-ssh
-        -p $user-pass-hash-ssh
-        -s $user-shell-ssh
-        $user-name-ssh
+        -g $user-name-sftp
+        -G $user-group-sftp
+        -p $user-pass-hash-sftp
+        -s $user-shell-sftp
+        $user-name-sftp
     >);
-    arch-chroot-mkdir($home-dir, $user-name-ssh, $user-name-ssh, 0o700);
+    arch-chroot-mkdir($home-dir, $user-name-sftp, $user-name-sftp, 0o700);
 }
 
 sub usermod(
@@ -1192,9 +1192,9 @@ method !configure-nftables(--> Nil)
 
 method !configure-openssh(--> Nil)
 {
-    my UserName:D $user-name-ssh = $.config.user-name-ssh;
+    my UserName:D $user-name-sftp = $.config.user-name-sftp;
     configure-openssh('ssh_config');
-    configure-openssh('sshd_config', $user-name-ssh);
+    configure-openssh('sshd_config', $user-name-sftp);
     configure-openssh('hosts.allow');
     configure-openssh('moduli');
 }
@@ -1205,13 +1205,13 @@ multi sub configure-openssh('ssh_config' --> Nil)
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
-multi sub configure-openssh('sshd_config', UserName:D $user-name-ssh --> Nil)
+multi sub configure-openssh('sshd_config', UserName:D $user-name-sftp --> Nil)
 {
     my Str:D $path = 'etc/ssh/sshd_config';
     copy(%?RESOURCES{$path}, "/mnt/$path");
 
-    # restrict allowed connections to $user-name-ssh
-    my Str:D $sed-cmd = "3iAllowUsers $user-name-ssh";
+    # restrict allowed connections to $user-name-sftp
+    my Str:D $sed-cmd = "3iAllowUsers $user-name-sftp";
     shell("sed -i '$sed-cmd' /mnt/$path");
 }
 

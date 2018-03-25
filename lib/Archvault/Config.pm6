@@ -12,64 +12,64 @@ unit class Archvault::Config;
 
 # name for admin user (default: live)
 has UserName:D $.user-name-admin =
-    %*ENV<ARCHVAULT_USERNAME>
-        ?? self.gen-user-name(%*ENV<ARCHVAULT_USERNAME>)
+    %*ENV<ARCHVAULT_ADMIN_NAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_ADMIN_NAME>)
         !! prompt-name(:user, :admin);
 
 # sha512 password hash for admin user
 has Str:D $.user-pass-hash-admin =
-    %*ENV<ARCHVAULT_USERPASSHASH>
-        ?? %*ENV<ARCHVAULT_USERPASSHASH>
-        !! %*ENV<ARCHVAULT_USERPASS>
-            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_USERPASS>)
+    %*ENV<ARCHVAULT_ADMIN_PASS_HASH>
+        ?? %*ENV<ARCHVAULT_ADMIN_PASS_HASH>
+        !! %*ENV<ARCHVAULT_ADMIN_PASS>
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_ADMIN_PASS>)
             !! Archvault::Utils.prompt-pass-hash($!user-name-admin);
 
 # name for grub user (default: grub)
 has UserName:D $.user-name-grub =
-    %*ENV<ARCHVAULT_GRUBUSERNAME>
-        ?? self.gen-user-name(%*ENV<ARCHVAULT_GRUBUSERNAME>)
+    %*ENV<ARCHVAULT_GRUB_NAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_GRUB_NAME>)
         !! prompt-name(:user, :grub);
 
 # pbkdf2 password hash for grub user
 has Str:D $.user-pass-hash-grub =
-    %*ENV<ARCHVAULT_GRUBUSERPASSHASH>
-        ?? %*ENV<ARCHVAULT_GRUBUSERPASSHASH>
-        !! %*ENV<ARCHVAULT_GRUBUSERPASS>
-            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_GRUBUSERPASS>, :grub)
+    %*ENV<ARCHVAULT_GRUB_PASS_HASH>
+        ?? %*ENV<ARCHVAULT_GRUB_PASS_HASH>
+        !! %*ENV<ARCHVAULT_GRUB_PASS>
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_GRUB_PASS>, :grub)
             !! Archvault::Utils.prompt-pass-hash($!user-name-grub, :grub);
 
-# name for ssh user (default: variable)
-has UserName:D $.user-name-ssh =
-    %*ENV<ARCHVAULT_SSHUSERNAME>
-        ?? self.gen-user-name(%*ENV<ARCHVAULT_SSHUSERNAME>)
-        !! prompt-name(:user, :ssh);
+# name for sftp user (default: variable)
+has UserName:D $.user-name-sftp =
+    %*ENV<ARCHVAULT_SFTP_NAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_SFTP_NAME>)
+        !! prompt-name(:user, :sftp);
 
-# sha512 password hash for ssh user
-has Str:D $.user-pass-hash-ssh =
-    %*ENV<ARCHVAULT_SSHUSERPASSHASH>
-        ?? %*ENV<ARCHVAULT_SSHUSERPASSHASH>
-        !! %*ENV<ARCHVAULT_SSHUSERPASS>
-            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_SSHUSERPASS>)
-            !! Archvault::Utils.prompt-pass-hash($!user-name-ssh);
+# sha512 password hash for sftp user
+has Str:D $.user-pass-hash-sftp =
+    %*ENV<ARCHVAULT_SFTP_PASS_HASH>
+        ?? %*ENV<ARCHVAULT_SFTP_PASS_HASH>
+        !! %*ENV<ARCHVAULT_SFTP_PASS>
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_SFTP_PASS>)
+            !! Archvault::Utils.prompt-pass-hash($!user-name-sftp);
 
 # sha512 password hash for root user
 has Str:D $.user-pass-hash-root =
-    %*ENV<ARCHVAULT_ROOTPASSHASH>
-        ?? %*ENV<ARCHVAULT_ROOTPASSHASH>
-        !! %*ENV<ARCHVAULT_ROOTPASS>
-            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_ROOTPASS>)
+    %*ENV<ARCHVAULT_ROOT_PASS_HASH>
+        ?? %*ENV<ARCHVAULT_ROOT_PASS_HASH>
+        !! %*ENV<ARCHVAULT_ROOT_PASS>
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_ROOT_PASS>)
             !! Archvault::Utils.prompt-pass-hash('root');
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
-    %*ENV<ARCHVAULT_VAULTNAME>
-        ?? self.gen-vault-name(%*ENV<ARCHVAULT_VAULTNAME>)
+    %*ENV<ARCHVAULT_VAULT_NAME>
+        ?? self.gen-vault-name(%*ENV<ARCHVAULT_VAULT_NAME>)
         !! prompt-name(:vault);
 
 # password for LUKS encrypted volume
 has VaultPass $.vault-pass =
-    %*ENV<ARCHVAULT_VAULTPASS>
-        ?? self.gen-vault-pass(%*ENV<ARCHVAULT_VAULTPASS>)
+    %*ENV<ARCHVAULT_VAULT_PASS>
+        ?? self.gen-vault-pass(%*ENV<ARCHVAULT_VAULT_PASS>)
         !! Nil;
 
 # name for host (default: vault)
@@ -97,8 +97,8 @@ has Graphics:D $.graphics =
 
 # type of hard drive (default: usb)
 has DiskType:D $.disk-type =
-    %*ENV<ARCHVAULT_DISKTYPE>
-        ?? self.gen-disk-type(%*ENV<ARCHVAULT_DISKTYPE>)
+    %*ENV<ARCHVAULT_DISK_TYPE>
+        ?? self.gen-disk-type(%*ENV<ARCHVAULT_DISK_TYPE>)
         !! prompt-disk-type();
 
 # locale (default: en_US)
@@ -133,34 +133,34 @@ has Bool:D $.reflector =
 # -----------------------------------------------------------------------------
 
 submethod BUILD(
+    Str :$admin-name,
+    Str :$admin-pass,
+    Str :$admin-pass-hash,
     Bool :$augment,
-    Str :$disktype,
+    Str :$disk-type,
     Str :$graphics,
-    Str :$grubusername,
-    Str :$grubuserpass,
-    Str :$grubuserpasshash,
+    Str :$grub-name,
+    Str :$grub-pass,
+    Str :$grub-pass-hash,
     Str :$hostname,
     Str :$keymap,
     Str :$locale,
     Str :$partition,
     Str :$processor,
     Bool :$reflector,
-    Str :$rootpass,
-    Str :$rootpasshash,
-    Str :$sshusername,
-    Str :$sshuserpass,
-    Str :$sshuserpasshash,
+    Str :$root-pass,
+    Str :$root-pass-hash,
+    Str :$sftp-name,
+    Str :$sftp-pass,
+    Str :$sftp-pass-hash,
     Str :$timezone,
-    Str :$username,
-    Str :$userpass,
-    Str :$userpasshash,
-    Str :$vaultname,
-    Str :$vaultpass
+    Str :$vault-name,
+    Str :$vault-pass
     --> Nil
 )
 {
     $!augment = $augment if $augment;
-    $!disk-type = self.gen-disk-type($disktype) if $disktype;
+    $!disk-type = self.gen-disk-type($disk-type) if $disk-type;
     $!graphics = self.gen-graphics($graphics) if $graphics;
     $!host-name = self.gen-host-name($hostname) if $hostname;
     $!keymap = self.gen-keymap($keymap) if $keymap;
@@ -169,50 +169,50 @@ submethod BUILD(
     $!processor = self.gen-processor($processor) if $processor;
     $!reflector = $reflector if $reflector;
     $!timezone = self.gen-timezone($timezone) if $timezone;
-    $!user-name-admin = self.gen-user-name($username) if $username;
-    $!user-name-grub = self.gen-user-name($grubusername) if $grubusername;
-    $!user-name-ssh = self.gen-user-name($sshusername) if $sshusername;
+    $!user-name-admin = self.gen-user-name($admin-name) if $admin-name;
+    $!user-name-grub = self.gen-user-name($grub-name) if $grub-name;
+    $!user-name-sftp = self.gen-user-name($sftp-name) if $sftp-name;
     $!user-pass-hash-admin =
-        Archvault::Utils.gen-pass-hash($userpass) if $userpass;
-    $!user-pass-hash-admin = $userpasshash if $userpasshash;
+        Archvault::Utils.gen-pass-hash($admin-pass) if $admin-pass;
+    $!user-pass-hash-admin = $admin-pass-hash if $admin-pass-hash;
     $!user-pass-hash-grub =
-        Archvault::Utils.gen-pass-hash($grubuserpass, :grub) if $grubuserpass;
-    $!user-pass-hash-grub = $grubuserpasshash if $grubuserpasshash;
+        Archvault::Utils.gen-pass-hash($grub-pass, :grub) if $grub-pass;
+    $!user-pass-hash-grub = $grub-pass-hash if $grub-pass-hash;
     $!user-pass-hash-root =
-        Archvault::Utils.gen-pass-hash($rootpass) if $rootpass;
-    $!user-pass-hash-root = $rootpasshash if $rootpasshash;
-    $!user-pass-hash-ssh =
-        Archvault::Utils.gen-pass-hash($sshuserpass) if $sshuserpass;
-    $!user-pass-hash-ssh = $sshuserpasshash if $sshuserpasshash;
-    $!vault-name = self.gen-vault-name($vaultname) if $vaultname;
-    $!vault-pass = self.gen-vault-pass($vaultpass) if $vaultpass;
+        Archvault::Utils.gen-pass-hash($root-pass) if $root-pass;
+    $!user-pass-hash-root = $root-pass-hash if $root-pass-hash;
+    $!user-pass-hash-sftp =
+        Archvault::Utils.gen-pass-hash($sftp-pass) if $sftp-pass;
+    $!user-pass-hash-sftp = $sftp-pass-hash if $sftp-pass-hash;
+    $!vault-name = self.gen-vault-name($vault-name) if $vault-name;
+    $!vault-pass = self.gen-vault-pass($vault-pass) if $vault-pass;
 }
 
 method new(
     *%opts (
+        Str :admin-name($),
+        Str :admin-pass($),
+        Str :admin-pass-hash($),
         Bool :augment($),
-        Str :disktype($),
+        Str :disk-type($),
         Str :graphics($),
-        Str :grubusername($),
-        Str :grubuserpass($),
-        Str :grubuserpasshash($),
+        Str :grub-name($),
+        Str :grub-pass($),
+        Str :grub-pass-hash($),
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
-        Str :rootpass($),
-        Str :rootpasshash($),
-        Str :sshusername($),
-        Str :sshuserpass($),
-        Str :sshuserpasshash($),
+        Str :root-pass($),
+        Str :root-pass-hash($),
+        Str :sftp-name($),
+        Str :sftp-pass($),
+        Str :sftp-pass-hash($),
         Str :timezone($),
-        Str :username($),
-        Str :userpass($),
-        Str :userpasshash($),
-        Str :vaultname($),
-        Str :vaultpass($)
+        Str :vault-name($),
+        Str :vault-pass($)
     )
     --> Archvault::Config:D
 )
@@ -603,7 +603,7 @@ multi sub prompt-name(
 
 multi sub prompt-name(
     Bool:D :user($)! where *.so,
-    Bool:D :ssh($)! where *.so
+    Bool:D :sftp($)! where *.so
     --> UserName:D
 )
 {
@@ -611,7 +611,7 @@ multi sub prompt-name(
         my UserName:D $response-default = 'variable';
         my Str:D $prompt-text = "Enter username [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
-        Determining name for SSH user...
+        Determining name for SFTP user...
 
         Leave blank if you don't know what this is
         EOF

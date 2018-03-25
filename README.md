@@ -8,24 +8,24 @@ Synopsis
 --------
 
 ```bash
-archvault --username="live"                                   \
-          --userpass="your admin user's password"             \
-          --sshusername="variable"                            \
-          --sshuserpass="your ssh user's password"            \
-          --grubusername="your grub user's name"              \
-          --grubuserpass="your grub user's password"          \
-          --rootpass="your root password"                     \
-          --vaultname="vault"                                 \
-          --vaultpass="your LUKS encrypted volume's password" \
-          --hostname="vault"                                  \
-          --partition="/dev/sdb"                              \
-          --processor="other"                                 \
-          --graphics="intel"                                  \
-          --disktype="usb"                                    \
-          --locale="en_US"                                    \
-          --keymap="us"                                       \
-          --timezone="America/Los_Angeles"                    \
-          --augment                                           \
+archvault --admin-name="live"                                  \
+          --admin-pass="your admin user's password"            \
+          --sftp-name="variable"                               \
+          --sftp-pass="your sftp user's password"              \
+          --grub-name="grub"                                   \
+          --grub-pass="your grub user's password"              \
+          --root-pass="your root password"                     \
+          --vault-name="vault"                                 \
+          --vault-pass="your LUKS encrypted volume's password" \
+          --hostname="vault"                                   \
+          --partition="/dev/sdb"                               \
+          --processor="other"                                  \
+          --graphics="intel"                                   \
+          --disk-type="usb"                                    \
+          --locale="en_US"                                     \
+          --keymap="us"                                        \
+          --timezone="America/Los_Angeles"                     \
+          --augment                                            \
           new
 ```
 
@@ -77,34 +77,34 @@ reflector | optimize pacman mirrors | N
 `dialog` is needed if you do not provide by cmdline flag or environment
 variable values for all configuration options aside from:
 
+- `--admin-name`
+- `--admin-pass`
+- `--admin-pass-hash`
 - `--augment`
-- `--grubusername`
-- `--grubuserpass`
-- `--grubuserpasshash`
+- `--grub-name`
+- `--grub-pass`
+- `--grub-pass-hash`
 - `--hostname`
 - `--reflector`
-- `--rootpass`
-- `--rootpasshash`
-- `--sshusername`
-- `--sshuserpass`
-- `--sshuserpasshash`
-- `--username`
-- `--userpass`
-- `--userpasshash`
-- `--vaultname`
-- `--vaultpass`
+- `--root-pass`
+- `--root-pass-hash`
+- `--sftp-name`
+- `--sftp-pass`
+- `--sftp-pass-hash`
+- `--vault-name`
+- `--vault-pass`
 
 For these options, console input is read with either `cryptsetup` or
 the built-in Perl6 subroutine `prompt()`.
 
 No console input is read for configuration options:
 
+- `--admin-pass-hash`
 - `--augment`
-- `--grubpasshash`
+- `--grub-pass-hash`
 - `--reflector`
-- `--rootpasshash`
-- `--sshuserpasshash`
-- `--userpasshash`
+- `--root-pass-hash`
+- `--sftp-pass-hash`
 
 For user input of all other options, the `dialog` program is used.
 

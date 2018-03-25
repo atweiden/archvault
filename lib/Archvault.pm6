@@ -7,29 +7,29 @@ constant $VERSION = v0.0.1;
 
 method new(
     *%opts (
+        Str :admin-name($),
+        Str :admin-pass($),
+        Str :admin-pass-hash($),
         Bool :augment($),
-        Str :disktype($),
+        Str :disk-type($),
         Str :graphics($),
-        Str :grubusername($),
-        Str :grubuserpass($),
-        Str :grubuserpasshash($),
+        Str :grub-name($),
+        Str :grub-pass($),
+        Str :grub-pass-hash($),
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
-        Str :rootpass($),
-        Str :rootpasshash($),
-        Str :sshusername($),
-        Str :sshuserpass($),
-        Str :sshuserpasshash($),
+        Str :root-pass($),
+        Str :root-pass-hash($),
+        Str :sftp-name($),
+        Str :sftp-pass($),
+        Str :sftp-pass-hash($),
         Str :timezone($),
-        Str :username($),
-        Str :userpass($),
-        Str :userpasshash($),
-        Str :vaultname($),
-        Str :vaultpass($)
+        Str :vault-name($),
+        Str :vault-pass($)
     )
     --> Nil
 )
