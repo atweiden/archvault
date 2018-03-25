@@ -224,8 +224,8 @@ multi sub USAGE('gen-pass-hash' --> Nil)
       archvault [-g|--grub] [-p|--pass=<password>] gen-pass-hash
 
     Options:
-      -g, --grub             generate PBKDF2 password hash for Grub
-      -p, --pass=<password>  plaintext password to generate hash from
+      -g, --grub             Generate PBKDF2 password hash for Grub
+      -p, --pass=<password>  Plaintext password to generate hash from
     EOF
     say($HELP);
 }
@@ -272,32 +272,32 @@ multi sub USAGE('new' --> Nil)
                 new
 
     Options:
-      --admin-name=<username>       user name for admin account
-      --admin-pass=<password>       password for admin account
-      --admin-pass-hash=<passhash>  encrypted password hash for admin account
-      --augment                     drop to Bash console mid-execution
-      --disk-type=<disktype>        hard drive type
-      --graphics=<graphics>         graphics card type
-      --grub-name=<username>        user name for Grub
-      --grub-pass=<password>        password for Grub
-      --grub-pass-hash=<passhash>   password hash for Grub
-      --guest-name=<username>       user name for guest account
-      --guest-pass=<password>       password for guest account
-      --guest-pass-hash=<passhash>  encrypted password hash for guest account
-      --hostname=<hostname>         hostname
-      --keymap=<keymap>             keymap
-      --locale=<locale>             locale
-      --partition=<device>          partition target for install
-      --processor=<processor>       processor type
-      --reflector                   optimize Pacman mirrors
-      --root-pass=<password>        password for root account
-      --root-pass-hash=<passhash>   encrypted password hash for root account
-      --sftp-name=<username>        user name for SFTP account
-      --sftp-pass=<password>        password for SFTP account
-      --sftp-pass-hash=<passhash>   encrypted password hash for SFTP account
-      --timezone=<timezone>         timezone
-      --vault-name=<vaultname>      name for LUKS encrypted volume
-      --vault-pass=<password>       password for LUKS encrypted volume
+      --admin-name=<username>       User name for admin account
+      --admin-pass=<password>       Password for admin account
+      --admin-pass-hash=<passhash>  Encrypted password hash for admin account
+      --augment                     Drop to Bash console mid-execution
+      --disk-type=<disktype>        Hard drive type
+      --graphics=<graphics>         Graphics card type
+      --grub-name=<username>        User name for Grub
+      --grub-pass=<password>        Password for Grub
+      --grub-pass-hash=<passhash>   Password hash for Grub
+      --guest-name=<username>       User name for guest account
+      --guest-pass=<password>       Password for guest account
+      --guest-pass-hash=<passhash>  Encrypted password hash for guest account
+      --hostname=<hostname>         Hostname
+      --keymap=<keymap>             Keymap
+      --locale=<locale>             Locale
+      --partition=<device>          Partition target for install
+      --processor=<processor>       Processor type
+      --reflector                   Optimize Pacman mirrors
+      --root-pass=<password>        Password for root account
+      --root-pass-hash=<passhash>   Encrypted password hash for root account
+      --sftp-name=<username>        User name for SFTP account
+      --sftp-pass=<password>        Password for SFTP account
+      --sftp-pass-hash=<passhash>   Encrypted password hash for SFTP account
+      --timezone=<timezone>         Timezone
+      --vault-name=<vaultname>      Name for LUKS encrypted volume
+      --vault-pass=<password>       Password for LUKS encrypted volume
     EOF
     say($HELP);
 }
