@@ -759,7 +759,7 @@ multi sub useradd(
     my Str:D $user-shell-admin = '/bin/bash';
 
     say("Creating new admin user named $user-name-admin...");
-    run(qqw<arch-chroot /mnt groupadd $user-name-admin>);
+    groupadd($user-name-admin);
     run(qqw<
         arch-chroot
         /mnt
@@ -785,8 +785,7 @@ multi sub useradd(
     my Str:D $user-shell-guest = '/bin/bash';
 
     say("Creating new guest user named $user-name-guest...");
-    run(qqw<arch-chroot /mnt groupadd $user-name-guest>);
-    run(qqw<arch-chroot /mnt groupadd guests>);
+    groupadd($user-name-guest, 'guests');
     run(qqw<
         arch-chroot
         /mnt
@@ -818,8 +817,7 @@ multi sub useradd(
 
     say("Creating new SFTP user named $user-name-sftp...");
     arch-chroot-mkdir(@root-dir, 'root', 'root', 0o755);
-    run(qqw<arch-chroot /mnt groupadd $user-group-sftp>);
-    run(qqw<arch-chroot /mnt groupadd $user-name-sftp>);
+    groupadd($user-name-sftp, $user-group-sftp);
     run(qqw<
         arch-chroot
         /mnt
@@ -843,6 +841,13 @@ sub usermod(
 {
     say('Updating root password...');
     run(qqw<arch-chroot /mnt usermod -p $user-pass-hash-root root>);
+}
+
+sub groupadd(*@group-name --> Nil)
+{
+    @group-name.map(-> $group-name {
+        run(qqw<arch-chroot /mnt groupadd $group-name>);
+    });
 }
 
 sub configure-sudoers(UserName:D $user-name-admin --> Nil)
