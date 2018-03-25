@@ -177,14 +177,10 @@ multi sub USAGE(--> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
-      archvault disable-cow <dir> <dir>...
-      archvault gen-pass-hash
-      archvault help <command>
-      archvault ls <info>
-      archvault new
+      archvault <command>
 
     Commands:
-      disable-cow                 Disable copy-on-write at directory
+      disable-cow                 Disable copy-on-write on directories
       gen-pass-hash               Generate password hash
       help                        Show help for subcommands
       ls                          List keymaps, locales, partitions, timezones
@@ -199,22 +195,26 @@ multi sub USAGE(--> Nil)
 
 multi sub USAGE('disable-cow' --> Nil)
 {
-    constant $HELP = q:to/EOF/.trim;
+    constant $HELP = qq:to/EOF/.trim;
     Usage:
-      archvault -c -p=700 -u=root -g=root disable-cow dir1 dir2
-      archvault -r disable-cow dir1 dir2
+      archvault [--clean]
+                [--permissions=<octal>]
+                [--user=<username>]
+                [--group=<groupname>]
+                disable-cow <directory> [<directory> <directory>..]
+      archvault [-r] disable-cow <directory> [<directory> <directory>..]
 
     Options:
       -c, --clean
         remake directories from clean slate with CoW disabled
-      -g, --group=<groupname>
-        named group to own file (defaults to $*GROUP)
-      -p, --permissions=<octal>
-        octal file mode bits (defaults to 755)
       -r, --recursive
-        recursively disable CoW on directory
+        recursively disable CoW on directories
+      -p, --permissions=<octal>
+        octal file mode bits (defaults to "755")
       -u, --user=<username>
-        named user to own file (defaults to $*USER)
+        named user to own file (defaults to "$*USER")
+      -g, --group=<groupname>
+        named group to own file (defaults to "$*GROUP")
     EOF
     say($HELP);
 }
@@ -285,7 +285,7 @@ multi sub USAGE('new' --> Nil)
       --hostname=<hostname>         hostname
       --keymap=<keymap>             keymap
       --locale=<locale>             locale
-      --partition=<device-path>     partition target for install
+      --partition=<device>          partition target for install
       --processor=<processor>       processor type
       --reflector                   optimize Pacman mirrors
       --root-pass=<password>        password for root account
@@ -294,7 +294,7 @@ multi sub USAGE('new' --> Nil)
       --sftp-pass=<password>        password for SFTP account
       --sftp-pass-hash=<passhash>   encrypted password hash for SFTP account
       --timezone=<timezone>         timezone
-      --vault-name=<vault-name>     name for LUKS encrypted volume
+      --vault-name=<vaultname>      name for LUKS encrypted volume
       --vault-pass=<password>       password for LUKS encrypted volume
     EOF
     say($HELP);
