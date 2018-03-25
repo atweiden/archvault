@@ -308,7 +308,7 @@ multi sub build-cryptsetup-luks-format-cmdline(
         luksFormat $partition-vault
     >.join(' ');
     my Str:D $sleep =
-                'sleep 1';
+                'sleep 0.33';
     my Str:D $expect-are-you-sure-send-yes =
                 'expect "Are you sure*" { send "YES\r" }';
     my Str:D $expect-enter-send-vault-pass =
@@ -367,7 +367,7 @@ multi sub build-cryptsetup-luks-open-cmdline(
     my Str:D $spawn-cryptsetup-luks-open =
                 "spawn cryptsetup luksOpen $partition-vault $vault-name";
     my Str:D $sleep =
-                'sleep 1';
+                'sleep 0.33';
     my Str:D $expect-enter-send-vault-pass =
         sprintf('expect "Enter*" { send "%s\r" }', $vault-pass);
     my Str:D $expect-eof =
