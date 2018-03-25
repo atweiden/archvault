@@ -296,7 +296,7 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `git clone https://aur.archlinux.org/clonepkg.git`
   - `cd clonepkg && makepkg -Acsi --noconfirm`
   - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
-  - `clonepkg fzf-extras fzf-git pacnew_scripts pkgcacheclean`
+  - `clonepkg fzf-extras fzf-git ix pacnew_scripts pkgcacheclean`
   - `clonepkg cower downgrade icdiff pacaur repacman2 subrepo`
 - Get console font
   - `clonepkg tamsyn-console-font`
