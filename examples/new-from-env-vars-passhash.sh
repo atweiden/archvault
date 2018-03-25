@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# admin, grub, root and sftp password: xyzzy
+# admin, grub, guest, root and sftp password: xyzzy
 export PATH="bin:$PATH"
 export PERL6LIB='lib'
 export ARCHVAULT_ADMIN_NAME='live'
 export ARCHVAULT_ADMIN_PASS_HASH='$6$rounds=700000$sleJxKNAgRnG7E8s$Fjg0/vuRz.GgF0FwDE04gP2i6oMq/Y4kodb1RLTbR3SpABVDKGdhCVfLpC5LwCOXDMEU.ylyV40..jrGmI.4N0'
+export ARCHVAULT_GUEST_NAME='guest'
+export ARCHVAULT_GUEST_PASS_HASH='$6$rounds=700000$H0WWMRVAqKMmJVUx$X9NiHaL.cvZ1/nQzUL5fcRP12wvOyrZ/0YV57cFddcTEkVZKbtIBv48EEd4SVu.1D5RWVX43dfTuyudYem0gf0'
 export ARCHVAULT_SFTP_NAME='variable'
 export ARCHVAULT_SFTP_PASS_HASH='$6$rounds=700000$H0WWMRVAqKMmJVUx$X9NiHaL.cvZ1/nQzUL5fcRP12wvOyrZ/0YV57cFddcTEkVZKbtIBv48EEd4SVu.1D5RWVX43dfTuyudYem0gf0'
 export ARCHVAULT_GRUB_NAME='grub'

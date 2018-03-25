@@ -24,19 +24,19 @@ has Str:D $.user-pass-hash-admin =
             ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_ADMIN_PASS>)
             !! Archvault::Utils.prompt-pass-hash($!user-name-admin);
 
-# name for grub user (default: grub)
-has UserName:D $.user-name-grub =
-    %*ENV<ARCHVAULT_GRUB_NAME>
-        ?? self.gen-user-name(%*ENV<ARCHVAULT_GRUB_NAME>)
-        !! prompt-name(:user, :grub);
+# name for guest user (default: guest)
+has UserName:D $.user-name-guest =
+    %*ENV<ARCHVAULT_GUEST_NAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_GUEST_NAME>)
+        !! prompt-name(:user, :guest);
 
-# pbkdf2 password hash for grub user
-has Str:D $.user-pass-hash-grub =
-    %*ENV<ARCHVAULT_GRUB_PASS_HASH>
-        ?? %*ENV<ARCHVAULT_GRUB_PASS_HASH>
-        !! %*ENV<ARCHVAULT_GRUB_PASS>
-            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_GRUB_PASS>, :grub)
-            !! Archvault::Utils.prompt-pass-hash($!user-name-grub, :grub);
+# sha512 password hash for guest user
+has Str:D $.user-pass-hash-guest =
+    %*ENV<ARCHVAULT_GUEST_PASS_HASH>
+        ?? %*ENV<ARCHVAULT_GUEST_PASS_HASH>
+        !! %*ENV<ARCHVAULT_GUEST_PASS>
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_GUEST_PASS>)
+            !! Archvault::Utils.prompt-pass-hash($!user-name-guest);
 
 # name for sftp user (default: variable)
 has UserName:D $.user-name-sftp =
@@ -59,6 +59,20 @@ has Str:D $.user-pass-hash-root =
         !! %*ENV<ARCHVAULT_ROOT_PASS>
             ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_ROOT_PASS>)
             !! Archvault::Utils.prompt-pass-hash('root');
+
+# name for grub user (default: grub)
+has UserName:D $.user-name-grub =
+    %*ENV<ARCHVAULT_GRUB_NAME>
+        ?? self.gen-user-name(%*ENV<ARCHVAULT_GRUB_NAME>)
+        !! prompt-name(:user, :grub);
+
+# pbkdf2 password hash for grub user
+has Str:D $.user-pass-hash-grub =
+    %*ENV<ARCHVAULT_GRUB_PASS_HASH>
+        ?? %*ENV<ARCHVAULT_GRUB_PASS_HASH>
+        !! %*ENV<ARCHVAULT_GRUB_PASS>
+            ?? Archvault::Utils.gen-pass-hash(%*ENV<ARCHVAULT_GRUB_PASS>, :grub)
+            !! Archvault::Utils.prompt-pass-hash($!user-name-grub, :grub);
 
 # name for LUKS encrypted volume (default: vault)
 has VaultName:D $.vault-name =
@@ -142,6 +156,9 @@ submethod BUILD(
     Str :$grub-name,
     Str :$grub-pass,
     Str :$grub-pass-hash,
+    Str :$guest-name,
+    Str :$guest-pass,
+    Str :$guest-pass-hash,
     Str :$hostname,
     Str :$keymap,
     Str :$locale,
@@ -171,6 +188,7 @@ submethod BUILD(
     $!timezone = self.gen-timezone($timezone) if $timezone;
     $!user-name-admin = self.gen-user-name($admin-name) if $admin-name;
     $!user-name-grub = self.gen-user-name($grub-name) if $grub-name;
+    $!user-name-guest = self.gen-user-name($guest-name) if $guest-name;
     $!user-name-sftp = self.gen-user-name($sftp-name) if $sftp-name;
     $!user-pass-hash-admin =
         Archvault::Utils.gen-pass-hash($admin-pass) if $admin-pass;
@@ -178,6 +196,9 @@ submethod BUILD(
     $!user-pass-hash-grub =
         Archvault::Utils.gen-pass-hash($grub-pass, :grub) if $grub-pass;
     $!user-pass-hash-grub = $grub-pass-hash if $grub-pass-hash;
+    $!user-pass-hash-guest =
+        Archvault::Utils.gen-pass-hash($guest-pass) if $guest-pass;
+    $!user-pass-hash-guest = $guest-pass-hash if $guest-pass-hash;
     $!user-pass-hash-root =
         Archvault::Utils.gen-pass-hash($root-pass) if $root-pass;
     $!user-pass-hash-root = $root-pass-hash if $root-pass-hash;
@@ -199,6 +220,9 @@ method new(
         Str :grub-name($),
         Str :grub-pass($),
         Str :grub-pass-hash($),
+        Str :guest-name($),
+        Str :guest-pass($),
+        Str :guest-pass-hash($),
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
@@ -589,6 +613,29 @@ multi sub prompt-name(
         my Str:D $prompt-text = "Enter username [$response-default]: ";
         my Str:D $help-text = q:to/EOF/.trim;
         Determining name for Grub user...
+
+        Leave blank if you don't know what this is
+        EOF
+        tprompt(
+            UserName,
+            $response-default,
+            :$prompt-text,
+            :$help-text
+        );
+    }
+}
+
+multi sub prompt-name(
+    Bool:D :user($)! where *.so,
+    Bool:D :guest($)! where *.so
+    --> UserName:D
+)
+{
+    my UserName:D $user-name = do {
+        my UserName:D $response-default = 'guest';
+        my Str:D $prompt-text = "Enter username [$response-default]: ";
+        my Str:D $help-text = q:to/EOF/.trim;
+        Determining name for guest user...
 
         Leave blank if you don't know what this is
         EOF

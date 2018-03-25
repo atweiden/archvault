@@ -682,12 +682,15 @@ method !pacstrap-base(--> Nil)
 method !configure-users(--> Nil)
 {
     my UserName:D $user-name-admin = $.config.user-name-admin;
+    my UserName:D $user-name-guest = $.config.user-name-guest;
     my UserName:D $user-name-sftp = $.config.user-name-sftp;
     my Str:D $user-pass-hash-admin = $.config.user-pass-hash-admin;
+    my Str:D $user-pass-hash-guest = $.config.user-pass-hash-guest;
     my Str:D $user-pass-hash-root = $.config.user-pass-hash-root;
     my Str:D $user-pass-hash-sftp = $.config.user-pass-hash-sftp;
     configure-users('root', $user-pass-hash-root);
     configure-users('admin', $user-name-admin, $user-pass-hash-admin);
+    configure-users('guest', $user-name-guest, $user-pass-hash-guest);
     configure-users('sftp', $user-name-sftp, $user-pass-hash-sftp);
 }
 
@@ -700,6 +703,16 @@ multi sub configure-users(
 {
     useradd('admin', $user-name-admin, $user-pass-hash-admin);
     configure-sudoers($user-name-admin);
+}
+
+multi sub configure-users(
+    'guest',
+    UserName:D $user-name-guest,
+    Str:D $user-pass-hash-guest
+    --> Nil
+)
+{
+    useradd('guest', $user-name-guest, $user-pass-hash-guest);
 }
 
 multi sub configure-users(
@@ -759,6 +772,33 @@ multi sub useradd(
         $user-name-admin
     >);
     chmod(0o700, "/mnt/home/$user-name-admin");
+}
+
+multi sub useradd(
+    'guest',
+    UserName:D $user-name-guest,
+    Str:D $user-pass-hash-guest
+    --> Nil
+)
+{
+    my Str:D $user-group-guest = 'guests,users';
+    my Str:D $user-shell-guest = '/bin/bash';
+
+    say("Creating new guest user named $user-name-guest...");
+    run(qqw<arch-chroot /mnt groupadd $user-name-guest>);
+    run(qqw<arch-chroot /mnt groupadd guests>);
+    run(qqw<
+        arch-chroot
+        /mnt
+        useradd
+        -m
+        -g $user-name-guest
+        -G $user-group-guest
+        -p $user-pass-hash-guest
+        -s $user-shell-guest
+        $user-name-guest
+    >);
+    chmod(0o700, "/mnt/home/$user-name-guest");
 }
 
 multi sub useradd(

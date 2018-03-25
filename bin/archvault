@@ -102,6 +102,9 @@ multi sub MAIN(
         Str :grub-name($),
         Str :grub-pass($),
         Str :grub-pass-hash($),
+        Str :guest-name($),
+        Str :guest-pass($),
+        Str :guest-pass-hash($),
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
@@ -246,6 +249,8 @@ multi sub USAGE('new' --> Nil)
     Usage:
       archvault --admin-name="live"                                  \
                 --admin-pass="your admin user's password"            \
+                --guest-name="guest"                                 \
+                --guest-pass="your guest user's password"            \
                 --sftp-name="variable"                               \
                 --sftp-pass="your sftp user's password"              \
                 --grub-name="grub"                                   \
@@ -274,6 +279,9 @@ multi sub USAGE('new' --> Nil)
       --grub-name=<username>        user name for Grub
       --grub-pass=<password>        password for Grub
       --grub-pass-hash=<passhash>   password hash for Grub
+      --guest-name=<username>       user name for guest account
+      --guest-pass=<password>       password for guest account
+      --guest-pass-hash=<passhash>  encrypted password hash for guest account
       --hostname=<hostname>         hostname
       --keymap=<keymap>             keymap
       --locale=<locale>             locale

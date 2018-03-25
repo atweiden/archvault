@@ -10,6 +10,8 @@ Synopsis
 ```bash
 archvault --admin-name="live"                                  \
           --admin-pass="your admin user's password"            \
+          --guest-name="guest"                                 \
+          --guest-pass="your guest user's password"            \
           --sftp-name="variable"                               \
           --sftp-pass="your sftp user's password"              \
           --grub-name="grub"                                   \
@@ -84,6 +86,9 @@ variable values for all configuration options aside from:
 - `--grub-name`
 - `--grub-pass`
 - `--grub-pass-hash`
+- `--guest-name`
+- `--guest-pass`
+- `--guest-pass-hash`
 - `--hostname`
 - `--reflector`
 - `--root-pass`
@@ -102,6 +107,7 @@ No console input is read for configuration options:
 - `--admin-pass-hash`
 - `--augment`
 - `--grub-pass-hash`
+- `--guest-pass-hash`
 - `--reflector`
 - `--root-pass-hash`
 - `--sftp-pass-hash`
