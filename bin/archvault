@@ -226,7 +226,7 @@ multi sub USAGE('gen-pass-hash' --> Nil)
       archvault [-g|--grub] [-p|--pass=<password>] gen-pass-hash
 
     Options:
-      -g,--grub
+      -g, --grub
         generate PBKDF2 password hash for Grub
       -p, --pass=<password>
         plaintext password to generate hash from
