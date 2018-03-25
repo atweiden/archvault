@@ -310,7 +310,7 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `git clone https://github.com/atweiden/ttyfiles ~/.ttyfiles`
   - `cd ~/.ttyfiles`
   - `./bootstrap.sh`
-  - `./fetch-gpg-keys.sh`
+  - `./fetch-pgp-keys.sh`
 - Start systemd user services
   - This will only work after a reboot:
     - `userctl start kill-ssh-sessions`

@@ -32,14 +32,13 @@ SigLevel = Optional
 Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 EOF
 
-pacman -Syy git rakudo tmux
+pacman -Syy git rakudo
 ```
 
 **Install Rakudo Perl 6 using rakudobrew**:
 
 ```sh
-pacman -Syy base-devel git tmux --needed
-tmux
+pacman -Syy base-devel git --needed
 git clone https://github.com/tadzik/rakudobrew ~/.rakudobrew
 export PATH="$HOME/.rakudobrew/bin:$PATH"
 rakudobrew build moar 2018.03
@@ -55,24 +54,31 @@ passwd live
 echo "live ALL=(ALL) ALL" >> /etc/sudoers
 ```
 
+Fetch PGP keys for installing AUR packages:
+
+```sh
+su live
+cd
+git clone https://github.com/atweiden/ttyfiles
+cd ttyfiles
+./fetch-pgp-keys.sh
+```
+
 Install AUR packages:
 
 ```sh
-pacman -Syy base-devel git tmux --needed
-su live
-cd
-tmux
+pacman -Syy base-devel git --needed
 git clone https://aur.archlinux.org/dyncall-git.git
 pushd dyncall-git
 makepkg -Acsi
 popd
 git clone https://github.com/atweiden/pkgbuilds --depth 1
 cd pkgbuilds/perl6/moarvm
-makepkg -Acsi --skippgpcheck
+makepkg -Acsi
 cd ../nqp
-makepkg -Acsi --skippgpcheck
+makepkg -Acsi
 cd ../rakudo
-makepkg -Acsi --skippgpcheck
+makepkg -Acsi
 ```
 
 
