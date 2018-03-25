@@ -298,14 +298,14 @@ multi sub build-cryptsetup-luks-format-cmdline(
 )
 {
     my Str:D $spawn-cryptsetup-luks-format = qqw<
-        spawn cryptsetup
-        --cipher aes-xts-plain64
-        --key-size 512
-        --hash sha512
-        --iter-time 5000
-        --use-random
-        --verify-passphrase
-        luksFormat $partition-vault
+                 spawn cryptsetup
+                 --cipher aes-xts-plain64
+                 --key-size 512
+                 --hash sha512
+                 --iter-time 5000
+                 --use-random
+                 --verify-passphrase
+                 luksFormat $partition-vault
     >.join(' ');
     my Str:D $sleep =
                 'sleep 0.33';
