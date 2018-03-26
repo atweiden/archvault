@@ -289,9 +289,9 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `timedatectl status`
 - Get pkgs
   - `sudo pacman -Syy`
-  - `sudo pacman -S colordiff git pacmatic ripgrep the_silver_searcher`
-  - `sudo pacman -S arch-wiki-docs arch-wiki-lite asp mlocate sdcv tree`
-  - `sudo pacman -S ccrypt moreutils pwgen rlwrap socat tor torsocks`
+  - `sudo pacman -S colordiff ripgrep rlwrap sdcv the_silver_searcher tree`
+  - `sudo pacman -S arch-wiki-docs arch-wiki-lite asp git mlocate pacmatic`
+  - `sudo pacman -S ccrypt moreutils pwgen qrencode socat tor torsocks`
 - Get AUR pkgs
   - `git clone https://aur.archlinux.org/clonepkg.git`
   - `cd clonepkg && makepkg -Acsi --noconfirm`
