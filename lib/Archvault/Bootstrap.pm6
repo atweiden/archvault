@@ -884,12 +884,16 @@ method !configure-dhcpcd(--> Nil)
 method !configure-dnscrypt-proxy(--> Nil)
 {
     my Str:D $path = '/mnt/etc/dnscrypt-proxy/dnscrypt-proxy.toml';
-    configure-dnscrypt-proxy('require_dnssec', $path);
-    configure-dnscrypt-proxy('force_tcp', $path);
-    configure-dnscrypt-proxy('cache', $path);
+    configure-dnscrypt-proxy('require_dnssec', :$path);
+    configure-dnscrypt-proxy('force_tcp', :$path);
+    configure-dnscrypt-proxy('cache', :$path);
 }
 
-multi sub configure-dnscrypt-proxy('require_dnssec', Str:D $path --> Nil)
+multi sub configure-dnscrypt-proxy(
+    'require_dnssec',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     # server must support DNS security extensions (DNSSEC)
     my Str:D $sed-cmd =
@@ -901,7 +905,11 @@ multi sub configure-dnscrypt-proxy('require_dnssec', Str:D $path --> Nil)
     shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-dnscrypt-proxy('force_tcp', Str:D $path --> Nil)
+multi sub configure-dnscrypt-proxy(
+    'force_tcp',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     # always use TCP to connect to upstream servers
     my Str:D $sed-cmd =
@@ -913,7 +921,11 @@ multi sub configure-dnscrypt-proxy('force_tcp', Str:D $path --> Nil)
     shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-dnscrypt-proxy('cache', Str:D $path --> Nil)
+multi sub configure-dnscrypt-proxy(
+    'cache',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     # don't enable a DNS cache
     my Str:D $sed-cmd =
@@ -983,27 +995,28 @@ method !set-hwclock(--> Nil)
 
 method !configure-pacman(--> Nil)
 {
-    configure-pacman('CheckSpace');
-    configure-pacman('ILoveCandy');
-    configure-pacman('multilib') if $*KERNEL.bits == 64;
+    my Str:D $path = '/mnt/etc/pacman.conf';
+    configure-pacman('CheckSpace', :$path);
+    configure-pacman('ILoveCandy', :$path);
+    configure-pacman('multilib', :$path) if $*KERNEL.bits == 64;
 }
 
-multi sub configure-pacman('CheckSpace' --> Nil)
+multi sub configure-pacman('CheckSpace', Str:D :$path! where *.so --> Nil)
 {
     my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
-    shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-pacman('ILoveCandy' --> Nil)
+multi sub configure-pacman('ILoveCandy', Str:D :$path! where *.so --> Nil)
 {
     my Str:D $sed-cmd = '/^CheckSpace.*/a ILoveCandy';
-    shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-pacman('multilib' --> Nil)
+multi sub configure-pacman('multilib', Str:D :$path! where *.so --> Nil)
 {
     my Str:D $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
-    shell("sed -i '$sed-cmd' /mnt/etc/pacman.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
 method !configure-modprobe(--> Nil)
@@ -1017,18 +1030,20 @@ method !generate-initramfs(--> Nil)
     my DiskType:D $disk-type = $.config.disk-type;
     my Graphics:D $graphics = $.config.graphics;
     my Processor:D $processor = $.config.processor;
-    configure-initramfs('MODULES', $graphics, $processor);
-    configure-initramfs('HOOKS', $disk-type);
-    configure-initramfs('FILES');
-    configure-initramfs('BINARIES');
-    configure-initramfs('COMPRESSION');
+    my Str:D $path = '/mnt/etc/mkinitcpio.conf';
+    configure-initramfs('MODULES', $graphics, $processor, :$path);
+    configure-initramfs('HOOKS', $disk-type, :$path);
+    configure-initramfs('FILES', :$path);
+    configure-initramfs('BINARIES', :$path);
+    configure-initramfs('COMPRESSION', :$path);
     run(qw<arch-chroot /mnt mkinitcpio -p linux>);
 }
 
 multi sub configure-initramfs(
     'MODULES',
     Graphics:D $graphics,
-    Processor:D $processor
+    Processor:D $processor,
+    Str:D :$path! where *.so
     --> Nil
 )
 {
@@ -1045,10 +1060,15 @@ multi sub configure-initramfs(
         ~ q{,}
         ~ q{MODULES=(} ~ @modules.join(' ') ~ q{)}
         ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-initramfs('HOOKS', DiskType:D $disk-type --> Nil)
+multi sub configure-initramfs(
+    'HOOKS',
+    DiskType:D $disk-type,
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     my Str:D @hooks = qw<
         base
@@ -1073,25 +1093,37 @@ multi sub configure-initramfs('HOOKS', DiskType:D $disk-type --> Nil)
         ~ q{,}
         ~ q{HOOKS=(} ~ @hooks.join(' ') ~ q{)}
         ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/mkinitcpio.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-initramfs('FILES' --> Nil)
+multi sub configure-initramfs(
+    'FILES',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     my Str:D $sed-cmd = 's,^FILES.*,FILES=(/etc/modprobe.d/modprobe.conf),';
-    run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
+    run(qqw<sed -i $sed-cmd $path>);
 }
 
-multi sub configure-initramfs('BINARIES' --> Nil)
+multi sub configure-initramfs(
+    'BINARIES',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     my Str:D $sed-cmd = 's,^BINARIES.*,BINARIES=(/usr/bin/btrfs),';
-    run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
+    run(qqw<sed -i $sed-cmd $path>);
 }
 
-multi sub configure-initramfs('COMPRESSION' --> Nil)
+multi sub configure-initramfs(
+    'COMPRESSION',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     my Str:D $sed-cmd = 's,^#\(COMPRESSION="lz4"\),\1,';
-    run(qqw<sed -i $sed-cmd /mnt/etc/mkinitcpio.conf>);
+    run(qqw<sed -i $sed-cmd $path>);
 }
 
 method !install-bootloader(--> Nil)
@@ -1101,13 +1133,15 @@ method !install-bootloader(--> Nil)
     my UserName:D $user-name-grub = $.config.user-name-grub;
     my Str:D $user-pass-hash-grub = $.config.user-pass-hash-grub;
     my VaultName:D $vault-name = $.config.vault-name;
+    my Str:D $path = '/mnt/etc/default/grub';
     configure-bootloader(
         'GRUB_CMDLINE_LINUX',
         $partition,
         $vault-name,
-        $graphics
+        $graphics,
+        :$path
     );
-    configure-bootloader('GRUB_ENABLE_CRYPTODISK');
+    configure-bootloader('GRUB_ENABLE_CRYPTODISK', :$path);
     configure-bootloader('superusers', $user-name-grub, $user-pass-hash-grub);
     configure-bootloader('unrestricted');
     install-bootloader($partition);
@@ -1117,7 +1151,8 @@ multi sub configure-bootloader(
     'GRUB_CMDLINE_LINUX',
     Str:D $partition,
     VaultName:D $vault-name,
-    Graphics:D $graphics
+    Graphics:D $graphics,
+    Str:D :$path! where *.so
     --> Nil
 )
 {
@@ -1133,13 +1168,17 @@ multi sub configure-bootloader(
         ~ q{,}
         ~ q{\1=\"} ~ $grub-cmdline-linux ~ q{\"}
         ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/default/grub");
+    shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-bootloader('GRUB_ENABLE_CRYPTODISK' --> Nil)
+multi sub configure-bootloader(
+    'GRUB_ENABLE_CRYPTODISK',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     my Str:D $sed-cmd = 's,^#\(GRUB_ENABLE_CRYPTODISK\),\1,';
-    run(qqw<sed -i $sed-cmd /mnt/etc/default/grub>);
+    run(qqw<sed -i $sed-cmd $path>);
 }
 
 multi sub configure-bootloader(
@@ -1194,12 +1233,19 @@ method !configure-sysctl(--> Nil)
     my DiskType:D $disk-type = $.config.disk-type;
     my Str:D $path = 'etc/sysctl.conf';
     copy(%?RESOURCES{$path}, "/mnt/$path");
-    configure-sysctl('vm.vfs_cache_pressure') if $disk-type ~~ /SSD|USB/;
-    configure-sysctl('vm.swappiness') if $disk-type ~~ /SSD|USB/;
+    $path = '/mnt/' ~ $path;
+    configure-sysctl('vm.vfs_cache_pressure', :$path)
+        if $disk-type ~~ /SSD|USB/;
+    configure-sysctl('vm.swappiness', :$path)
+        if $disk-type ~~ /SSD|USB/;
     run(qw<arch-chroot /mnt sysctl --system>);
 }
 
-multi sub configure-sysctl('vm.vfs_cache_pressure' --> Nil)
+multi sub configure-sysctl(
+    'vm.vfs_cache_pressure',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     my Str:D $sed-cmd =
           q{s,}
@@ -1207,10 +1253,14 @@ multi sub configure-sysctl('vm.vfs_cache_pressure' --> Nil)
         ~ q{,}
         ~ q{\1 = 50}
         ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-sysctl('vm.swappiness' --> Nil)
+multi sub configure-sysctl(
+    'vm.swappiness',
+    Str:D :$path! where *.so
+    --> Nil
+)
 {
     my Str:D $sed-cmd =
           q{s,}
@@ -1218,7 +1268,7 @@ multi sub configure-sysctl('vm.swappiness' --> Nil)
         ~ q{,}
         ~ q{\1 = 1}
         ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/sysctl.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
 method !configure-nftables(--> Nil)
