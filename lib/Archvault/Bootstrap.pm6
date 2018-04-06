@@ -883,54 +883,46 @@ method !configure-dhcpcd(--> Nil)
 
 method !configure-dnscrypt-proxy(--> Nil)
 {
-    my Str:D $user-name-dnscrypt = 'dnscrypt';
-    configure-dnscrypt-proxy('systemd-sysusers', $user-name-dnscrypt);
-    configure-dnscrypt-proxy('User', $user-name-dnscrypt);
-    configure-dnscrypt-proxy('EphemeralKeys');
+    my Str:D $path = '/mnt/etc/dnscrypt-proxy/dnscrypt-proxy.toml';
+    configure-dnscrypt-proxy('require_dnssec', $path);
+    configure-dnscrypt-proxy('force_tcp', $path);
+    configure-dnscrypt-proxy('cache', $path);
 }
 
-multi sub configure-dnscrypt-proxy(
-    'systemd-sysusers',
-    UserName:D $user-name-dnscrypt
-)
+multi sub configure-dnscrypt-proxy('require_dnssec', Str:D $path --> Nil)
 {
-    my Str:D $systemd-sysusers = qq:to/EOF/;
-    u $user-name-dnscrypt - "DNSCrypt user" /usr/share/dnscrypt-proxy -
-    EOF
-    my Str:D $path = 'usr/lib/sysusers.d/dnscrypt.conf';
-    spurt("/mnt/$path", $systemd-sysusers);
-    run(qqw<
-        arch-chroot
-        /mnt
-        systemd-sysusers
-        /$path
-    >);
-}
-
-multi sub configure-dnscrypt-proxy(
-    'User',
-    UserName:D $user-name-dnscrypt
-    --> Nil
-)
-{
+    # server must support DNS security extensions (DNSSEC)
     my Str:D $sed-cmd =
           q{s,}
-        ~ q{^# User.*}
+        ~ q{^\(require_dnssec\).*}
         ~ q{,}
-        ~ qq{User $user-name-dnscrypt}
+        ~ q{\1 = true}
         ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
+    shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-dnscrypt-proxy('EphemeralKeys' --> Nil)
+multi sub configure-dnscrypt-proxy('force_tcp', Str:D $path --> Nil)
 {
+    # always use TCP to connect to upstream servers
     my Str:D $sed-cmd =
           q{s,}
-        ~ q{EphemeralKeys off}
+        ~ q{^\(force_tcp\).*}
         ~ q{,}
-        ~ q{EphemeralKeys on}
+        ~ q{\1 = true}
         ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/dnscrypt-proxy.conf");
+    shell("sed -i '$sed-cmd' $path");
+}
+
+multi sub configure-dnscrypt-proxy('cache', Str:D $path --> Nil)
+{
+    # don't enable a DNS cache
+    my Str:D $sed-cmd =
+          q{s,}
+        ~ q{^\(cache\)\s.*}
+        ~ q{,}
+        ~ q{\1 = false}
+        ~ q{,};
+    shell("sed -i '$sed-cmd' $path");
 }
 
 method !set-nameservers(--> Nil)
