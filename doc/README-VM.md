@@ -320,3 +320,22 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `sudo cp ~/.ssh/id_ed25519.pub /etc/ssh/authorized_keys/variable`
   - `sudo systemctl start sshd`
   - `sftp variable@127.0.0.1`
+
+## Booting Archvault From Grub Rescue Shell
+
+If upon booting the Archvault system, you initially enter the wrong
+vault password, Grub will drop you into a rescue shell. [Here][here]
+is how to recover the system from the Grub rescue shell without rebooting:
+
+```
+grub rescue> ls
+(hd0) (hd0,gpt2) (hd0,gpt1) (proc)
+grub rescue> cryptomount hd0,gpt2
+Attempting to decrypt master key...
+Enter passphrase for hd0,gpt2 (88caa067d343402aabd6b107ab08125a):
+Slot 0 opened
+grub rescue> insmod normal
+grub rescue> normal
+```
+
+[here]: https://unix.stackexchange.com/questions/318745/grub2-encryption-reprompt/321825#321825
