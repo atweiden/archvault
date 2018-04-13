@@ -886,6 +886,8 @@ method !configure-dnscrypt-proxy(--> Nil)
     my Str:D $path = '/mnt/etc/dnscrypt-proxy/dnscrypt-proxy.toml';
     configure-dnscrypt-proxy('require_dnssec', :$path);
     configure-dnscrypt-proxy('force_tcp', :$path);
+    configure-dnscrypt-proxy('dnscrypt_ephemeral_keys', :$path);
+    configure-dnscrypt-proxy('tls_disable_session_tickets', :$path);
     configure-dnscrypt-proxy('cache', :$path);
 }
 
@@ -922,12 +924,44 @@ multi sub configure-dnscrypt-proxy(
 }
 
 multi sub configure-dnscrypt-proxy(
+    'dnscrypt_ephemeral_keys',
+    Str:D :$path! where *.so
+    --> Nil
+)
+{
+    # create new, unique key for each DNS query
+    my Str:D $sed-cmd =
+          q{s,}
+        ~ q{^#\s\(dnscrypt_ephemeral_keys\).*}
+        ~ q{,}
+        ~ q{\1 = true}
+        ~ q{,};
+    shell("sed -i '$sed-cmd' $path");
+}
+
+multi sub configure-dnscrypt-proxy(
+    'tls_disable_session_tickets',
+    Str:D :$path! where *.so
+    --> Nil
+)
+{
+    # disable TLS session tickets
+    my Str:D $sed-cmd =
+          q{s,}
+        ~ q{^#\s\(tls_disable_session_tickets\).*}
+        ~ q{,}
+        ~ q{\1 = true}
+        ~ q{,};
+    shell("sed -i '$sed-cmd' $path");
+}
+
+multi sub configure-dnscrypt-proxy(
     'cache',
     Str:D :$path! where *.so
     --> Nil
 )
 {
-    # don't enable a DNS cache
+    # disable DNS cache
     my Str:D $sed-cmd =
           q{s,}
         ~ q{^\(cache\)\s.*}
