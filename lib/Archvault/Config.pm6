@@ -323,7 +323,7 @@ multi sub dprompt(
     # menu (T $tag)
     @menu,
     # default response
-    T :$default-item! where *.defined,
+    T :$default-item! where .defined,
     # menu title
     Str:D :$title!,
     # question posed to user
@@ -374,7 +374,7 @@ multi sub dprompt(
     # menu (T $tag => Str $item)
     %menu,
     # default response
-    T :$default-item! where *.defined,
+    T :$default-item! where .defined,
     # menu title
     Str:D :$title!,
     # question posed to user
@@ -422,7 +422,7 @@ sub tprompt(
     # type of response expected
     ::T,
     # default response
-    T $response-default where *.defined,
+    T $response-default where .defined,
     # question posed to user
     Str:D :$prompt-text!,
     # optional help text to display before prompt
@@ -477,7 +477,7 @@ multi sub is-confirmed(Str:D $confirmation where /:i n[o]?/ --> Bool:D)
 }
 
 # was response empty?
-multi sub is-confirmed(Str:D $confirmation where *.chars == 0 --> Bool:D)
+multi sub is-confirmed(Str:D $confirmation where .chars == 0 --> Bool:D)
 {
     my Bool:D $is-confirmed = False;
 }
@@ -560,7 +560,7 @@ sub prompt-locale(--> Locale:D)
     }
 }
 
-multi sub prompt-name(Bool:D :host($)! where *.so --> HostName:D)
+multi sub prompt-name(Bool:D :host($)! where .so --> HostName:D)
 {
     my HostName:D $host-name = do {
         my HostName:D $response-default = 'vault';
@@ -580,8 +580,8 @@ multi sub prompt-name(Bool:D :host($)! where *.so --> HostName:D)
 }
 
 multi sub prompt-name(
-    Bool:D :user($)! where *.so,
-    Bool:D :admin($)! where *.so
+    Bool:D :user($)! where .so,
+    Bool:D :admin($)! where .so
     --> UserName:D
 )
 {
@@ -603,8 +603,8 @@ multi sub prompt-name(
 }
 
 multi sub prompt-name(
-    Bool:D :user($)! where *.so,
-    Bool:D :grub($)! where *.so
+    Bool:D :user($)! where .so,
+    Bool:D :grub($)! where .so
     --> UserName:D
 )
 {
@@ -626,8 +626,8 @@ multi sub prompt-name(
 }
 
 multi sub prompt-name(
-    Bool:D :user($)! where *.so,
-    Bool:D :guest($)! where *.so
+    Bool:D :user($)! where .so,
+    Bool:D :guest($)! where .so
     --> UserName:D
 )
 {
@@ -649,8 +649,8 @@ multi sub prompt-name(
 }
 
 multi sub prompt-name(
-    Bool:D :user($)! where *.so,
-    Bool:D :sftp($)! where *.so
+    Bool:D :user($)! where .so,
+    Bool:D :sftp($)! where .so
     --> UserName:D
 )
 {
@@ -671,7 +671,7 @@ multi sub prompt-name(
     }
 }
 
-multi sub prompt-name(Bool:D :vault($)! where *.so --> VaultName:D)
+multi sub prompt-name(Bool:D :vault($)! where .so --> VaultName:D)
 {
     my VaultName:D $vault-name = do {
         my VaultName:D $response-default = 'vault';

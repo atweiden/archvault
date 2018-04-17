@@ -160,7 +160,7 @@ multi sub MAIN('ls', 'timezones' --> Nil)
 # version
 # -----------------------------------------------------------------------------
 
-multi sub MAIN(Bool:D :version($)! where *.so --> Nil)
+multi sub MAIN(Bool:D :version($)! where .so --> Nil)
 {
     printf("v%s\n", $Archvault::VERSION);
     exit(0);

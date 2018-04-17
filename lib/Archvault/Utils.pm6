@@ -45,7 +45,7 @@ method disable-cow(
 
 multi sub disable-cow(
     Str:D $directory,
-    Bool:D :clean($)! where *.so,
+    Bool:D :clean($)! where .so,
     # ignored, recursive is implied with :clean
     Bool :recursive($),
     Str:D :$permissions = '755',
@@ -72,7 +72,7 @@ multi sub disable-cow(
 multi sub disable-cow(
     Str:D $directory,
     Bool :clean($),
-    Bool:D :recursive($)! where *.so,
+    Bool:D :recursive($)! where .so,
     Str :permissions($),
     Str :user($),
     Str :group($)
@@ -112,7 +112,7 @@ method gen-pass-hash(Str:D $pass, Bool :$grub --> Str:D)
 }
 
 # generate pbkdf2 password hash from plaintext password
-multi sub gen-pass-hash(Str:D $grub-pass, Bool:D :grub($)! where *.so --> Str:D)
+multi sub gen-pass-hash(Str:D $grub-pass, Bool:D :grub($)! where .so --> Str:D)
 {
     my &gen-pass-hash = gen-pass-hash-closure(:grub);
     my Str:D $grub-pass-hash = &gen-pass-hash($grub-pass);
@@ -133,7 +133,7 @@ method prompt-pass-hash(Str $user-name?, Bool :$grub --> Str:D)
 # generate pbkdf2 password hash from interactive user input
 multi sub prompt-pass-hash(
     Str $user-name?,
-    Bool:D :grub($)! where *.so
+    Bool:D :grub($)! where .so
     --> Str:D
 )
 {
@@ -168,7 +168,7 @@ multi sub prompt-pass-hash(
     my Str:D $user-pass-hash = loop-prompt-pass-hash(&gen-pass-hash, |%h);
 }
 
-multi sub gen-pass-hash-closure(Bool:D :grub($)! where *.so --> Sub:D)
+multi sub gen-pass-hash-closure(Bool:D :grub($)! where .so --> Sub:D)
 {
     my &gen-pass-hash = sub (Str:D $grub-pass --> Str:D)
     {

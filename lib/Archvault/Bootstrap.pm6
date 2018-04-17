@@ -186,9 +186,9 @@ sub mkvault(
 
 # LUKS encrypted volume password was given
 multi sub mkvault-cryptsetup(
-    Str:D :$partition-vault where *.so,
-    VaultName:D :$vault-name where *.so,
-    VaultPass:D :$vault-pass where *.so
+    Str:D :$partition-vault where .so,
+    VaultName:D :$vault-name where .so,
+    VaultPass:D :$vault-pass where .so
     --> Nil
 )
 {
@@ -216,8 +216,8 @@ multi sub mkvault-cryptsetup(
 
 # LUKS encrypted volume password not given
 multi sub mkvault-cryptsetup(
-    Str:D :$partition-vault where *.so,
-    VaultName:D :$vault-name where *.so,
+    Str:D :$partition-vault where .so,
+    VaultName:D :$vault-name where .so,
     VaultPass :vault-pass($)
     --> Nil
 )
@@ -249,8 +249,8 @@ multi sub mkvault-cryptsetup(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Str:D $partition-vault where *.so,
-    Bool:D :interactive($) where *.so
+    Str:D $partition-vault where .so,
+    Bool:D :interactive($) where .so
     --> Str:D
 )
 {
@@ -291,9 +291,9 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-format-cmdline(
-    Str:D $partition-vault where *.so,
-    VaultPass:D $vault-pass where *.so,
-    Bool:D :non-interactive($) where *.so
+    Str:D $partition-vault where .so,
+    VaultPass:D $vault-pass where .so,
+    Bool:D :non-interactive($) where .so
     --> Str:D
 )
 {
@@ -346,9 +346,9 @@ multi sub build-cryptsetup-luks-format-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Str:D $partition-vault where *.so,
-    VaultName:D $vault-name where *.so,
-    Bool:D :interactive($) where *.so
+    Str:D $partition-vault where .so,
+    VaultName:D $vault-name where .so,
+    Bool:D :interactive($) where .so
     --> Str:D
 )
 {
@@ -357,10 +357,10 @@ multi sub build-cryptsetup-luks-open-cmdline(
 }
 
 multi sub build-cryptsetup-luks-open-cmdline(
-    Str:D $partition-vault where *.so,
-    VaultName:D $vault-name where *.so,
-    VaultPass:D $vault-pass where *.so,
-    Bool:D :non-interactive($) where *.so
+    Str:D $partition-vault where .so,
+    VaultName:D $vault-name where .so,
+    VaultPass:D $vault-pass where .so,
+    Bool:D :non-interactive($) where .so
     --> Str:D
 )
 {
@@ -893,7 +893,7 @@ method !configure-dnscrypt-proxy(--> Nil)
 
 multi sub configure-dnscrypt-proxy(
     'require_dnssec',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -909,7 +909,7 @@ multi sub configure-dnscrypt-proxy(
 
 multi sub configure-dnscrypt-proxy(
     'force_tcp',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -925,7 +925,7 @@ multi sub configure-dnscrypt-proxy(
 
 multi sub configure-dnscrypt-proxy(
     'dnscrypt_ephemeral_keys',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -941,7 +941,7 @@ multi sub configure-dnscrypt-proxy(
 
 multi sub configure-dnscrypt-proxy(
     'tls_disable_session_tickets',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -957,7 +957,7 @@ multi sub configure-dnscrypt-proxy(
 
 multi sub configure-dnscrypt-proxy(
     'cache',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1035,19 +1035,19 @@ method !configure-pacman(--> Nil)
     configure-pacman('multilib', :$path) if $*KERNEL.bits == 64;
 }
 
-multi sub configure-pacman('CheckSpace', Str:D :$path! where *.so --> Nil)
+multi sub configure-pacman('CheckSpace', Str:D :$path! where .so --> Nil)
 {
     my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
     shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-pacman('ILoveCandy', Str:D :$path! where *.so --> Nil)
+multi sub configure-pacman('ILoveCandy', Str:D :$path! where .so --> Nil)
 {
     my Str:D $sed-cmd = '/^CheckSpace.*/a ILoveCandy';
     shell("sed -i '$sed-cmd' $path");
 }
 
-multi sub configure-pacman('multilib', Str:D :$path! where *.so --> Nil)
+multi sub configure-pacman('multilib', Str:D :$path! where .so --> Nil)
 {
     my Str:D $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
     shell("sed -i '$sed-cmd' $path");
@@ -1077,7 +1077,7 @@ multi sub configure-initramfs(
     'MODULES',
     Graphics:D $graphics,
     Processor:D $processor,
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1100,7 +1100,7 @@ multi sub configure-initramfs(
 multi sub configure-initramfs(
     'HOOKS',
     DiskType:D $disk-type,
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1132,7 +1132,7 @@ multi sub configure-initramfs(
 
 multi sub configure-initramfs(
     'FILES',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1142,7 +1142,7 @@ multi sub configure-initramfs(
 
 multi sub configure-initramfs(
     'BINARIES',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1152,7 +1152,7 @@ multi sub configure-initramfs(
 
 multi sub configure-initramfs(
     'COMPRESSION',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1186,7 +1186,7 @@ multi sub configure-bootloader(
     Str:D $partition,
     VaultName:D $vault-name,
     Graphics:D $graphics,
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1207,7 +1207,7 @@ multi sub configure-bootloader(
 
 multi sub configure-bootloader(
     'GRUB_ENABLE_CRYPTODISK',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1277,7 +1277,7 @@ method !configure-sysctl(--> Nil)
 
 multi sub configure-sysctl(
     'vm.vfs_cache_pressure',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1292,7 +1292,7 @@ multi sub configure-sysctl(
 
 multi sub configure-sysctl(
     'vm.swappiness',
-    Str:D :$path! where *.so
+    Str:D :$path! where .so
     --> Nil
 )
 {
@@ -1503,8 +1503,8 @@ multi sub arch-chroot-mkdir(
 }
 
 sub loop-cmdline-proc(
-    Str:D $message where *.so,
-    Str:D $cmdline where *.so
+    Str:D $message where .so,
+    Str:D $cmdline where .so
     --> Nil
 )
 {
