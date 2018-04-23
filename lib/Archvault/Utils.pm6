@@ -245,7 +245,7 @@ sub gen-pass-salt(--> Str:D)
     my Str:D $scheme = gen-scheme-id($CRYPT-SCHEME);
     my Str:D $rounds = ~$CRYPT-ROUNDS;
     my Str:D $rand =
-        qx<openssl rand -base64 16>.trim.subst(/<[+=]>/, :g, '').substr(0, 16);
+        qx<openssl rand -base64 16>.trim.subst(/<[+=]>/, '', :g).substr(0, 16);
     my Str:D $salt = sprintf('$%s$rounds=%s$%s$', $scheme, $rounds, $rand);
 }
 
