@@ -970,7 +970,7 @@ method !install-bootloader(--> Nil)
     install-bootloader($partition);
 }
 
-multi sub configure-bootloader(
+sub configure-bootloader(
     'superusers',
     UserName:D $user-name-grub,
     Str:D $user-pass-hash-grub
