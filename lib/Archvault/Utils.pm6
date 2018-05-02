@@ -340,11 +340,15 @@ method ls-timezones(--> Array[Timezone:D])
 {
     # equivalent to `timedatectl list-timezones --no-pager`
     # see: src/basic/time-util.c in systemd source code
-    my Timezone:D @timezones =
-        |qx<
-            sed -n '/^#/!p' /usr/share/zoneinfo/zone.tab | awk '{print $3}'
-        >.trim.split("\n").sort,
-        'UTC';
+    my Str:D $zoneinfo-file = '/usr/share/zoneinfo/zone.tab';
+    my Str:D @zoneinfo =
+        $zoneinfo-file
+        .IO.lines
+        .grep(/^\w.*/)
+        .race
+        .map({ .split(/\h+/)[2] })
+        .sort;
+    my Timezone:D @timezones = |@zoneinfo, 'UTC';
 }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:

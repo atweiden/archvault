@@ -87,7 +87,6 @@ method !setup(--> Nil)
         openssl
         pacman
         procps-ng
-        sed
         tzdata
         util-linux
     >;
@@ -176,7 +175,7 @@ sub mkvault(
 )
 {
     # target partition for vault
-    my Str:D $partition-vault = $partition ~ '2';
+    my Str:D $partition-vault = sprintf(Q{%s2}, $partition);
 
     # load kernel modules for cryptsetup
     run(qw<modprobe dm_mod dm-crypt>);
@@ -883,92 +882,7 @@ method !configure-dhcpcd(--> Nil)
 
 method !configure-dnscrypt-proxy(--> Nil)
 {
-    my Str:D $path = '/mnt/etc/dnscrypt-proxy/dnscrypt-proxy.toml';
-    configure-dnscrypt-proxy('require_dnssec', :$path);
-    configure-dnscrypt-proxy('force_tcp', :$path);
-    configure-dnscrypt-proxy('dnscrypt_ephemeral_keys', :$path);
-    configure-dnscrypt-proxy('tls_disable_session_tickets', :$path);
-    configure-dnscrypt-proxy('cache', :$path);
-}
-
-multi sub configure-dnscrypt-proxy(
-    'require_dnssec',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    # server must support DNS security extensions (DNSSEC)
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^\(require_dnssec\).*}
-        ~ q{,}
-        ~ q{\1 = true}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-dnscrypt-proxy(
-    'force_tcp',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    # always use TCP to connect to upstream servers
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^\(force_tcp\).*}
-        ~ q{,}
-        ~ q{\1 = true}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-dnscrypt-proxy(
-    'dnscrypt_ephemeral_keys',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    # create new, unique key for each DNS query
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^#\s\(dnscrypt_ephemeral_keys\).*}
-        ~ q{,}
-        ~ q{\1 = true}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-dnscrypt-proxy(
-    'tls_disable_session_tickets',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    # disable TLS session tickets
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^#\s\(tls_disable_session_tickets\).*}
-        ~ q{,}
-        ~ q{\1 = true}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-dnscrypt-proxy(
-    'cache',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    # disable DNS cache
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^\(cache\)\s.*}
-        ~ q{,}
-        ~ q{\1 = false}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
+    replace('dnscrypt-proxy.toml');
 }
 
 method !set-nameservers(--> Nil)
@@ -982,15 +896,11 @@ method !set-locale(--> Nil)
     my Locale:D $locale = $.config.locale;
     my Str:D $locale-fallback = $locale.substr(0, 2);
 
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ qq{^#\\($locale\\.UTF-8 UTF-8\\)}
-        ~ q{,}
-        ~ q{\1}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' /mnt/etc/locale.gen");
+    # customize /etc/locale.gen
+    replace('locale.gen', $locale);
     run(qw<arch-chroot /mnt locale-gen>);
 
+    # customize /etc/locale.conf
     my Str:D $locale-conf = qq:to/EOF/;
     LANG=$locale.UTF-8
     LANGUAGE=$locale:$locale-fallback
@@ -1029,28 +939,7 @@ method !set-hwclock(--> Nil)
 
 method !configure-pacman(--> Nil)
 {
-    my Str:D $path = '/mnt/etc/pacman.conf';
-    configure-pacman('CheckSpace', :$path);
-    configure-pacman('ILoveCandy', :$path);
-    configure-pacman('multilib', :$path) if $*KERNEL.bits == 64;
-}
-
-multi sub configure-pacman('CheckSpace', Str:D :$path! where .so --> Nil)
-{
-    my Str:D $sed-cmd = 's/^#\h*\(CheckSpace\|Color\|TotalDownload\)$/\1/';
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-pacman('ILoveCandy', Str:D :$path! where .so --> Nil)
-{
-    my Str:D $sed-cmd = '/^CheckSpace.*/a ILoveCandy';
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-pacman('multilib', Str:D :$path! where .so --> Nil)
-{
-    my Str:D $sed-cmd = '/^#\h*\[multilib]/,/^\h*$/s/^#//';
-    shell("sed -i '$sed-cmd' $path");
+    replace('pacman.conf');
 }
 
 method !configure-modprobe(--> Nil)
@@ -1064,100 +953,8 @@ method !generate-initramfs(--> Nil)
     my DiskType:D $disk-type = $.config.disk-type;
     my Graphics:D $graphics = $.config.graphics;
     my Processor:D $processor = $.config.processor;
-    my Str:D $path = '/mnt/etc/mkinitcpio.conf';
-    configure-initramfs('MODULES', $graphics, $processor, :$path);
-    configure-initramfs('HOOKS', $disk-type, :$path);
-    configure-initramfs('FILES', :$path);
-    configure-initramfs('BINARIES', :$path);
-    configure-initramfs('COMPRESSION', :$path);
+    replace('mkinitcpio.conf', $disk-type, $graphics, $processor);
     run(qw<arch-chroot /mnt mkinitcpio -p linux>);
-}
-
-multi sub configure-initramfs(
-    'MODULES',
-    Graphics:D $graphics,
-    Processor:D $processor,
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D @modules;
-    push(@modules, $processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c');
-    push(@modules, 'i915') if $graphics eq 'INTEL';
-    push(@modules, 'nouveau') if $graphics eq 'NVIDIA';
-    push(@modules, 'radeon') if $graphics eq 'RADEON';
-    # for systemd-swap lz4
-    push(@modules, |qw<lz4 lz4_compress>);
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^MODULES.*}
-        ~ q{,}
-        ~ q{MODULES=(} ~ @modules.join(' ') ~ q{)}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-initramfs(
-    'HOOKS',
-    DiskType:D $disk-type,
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D @hooks = qw<
-        base
-        udev
-        autodetect
-        modconf
-        keyboard
-        keymap
-        encrypt
-        btrfs
-        filesystems
-        fsck
-        shutdown
-        usr
-    >;
-    $disk-type eq 'USB'
-        ?? @hooks.splice(2, 0, 'block')
-        !! @hooks.splice(4, 0, 'block');
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^HOOKS.*}
-        ~ q{,}
-        ~ q{HOOKS=(} ~ @hooks.join(' ') ~ q{)}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-initramfs(
-    'FILES',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D $sed-cmd = 's,^FILES.*,FILES=(/etc/modprobe.d/modprobe.conf),';
-    run(qqw<sed -i $sed-cmd $path>);
-}
-
-multi sub configure-initramfs(
-    'BINARIES',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D $sed-cmd = 's,^BINARIES.*,BINARIES=(/usr/bin/btrfs),';
-    run(qqw<sed -i $sed-cmd $path>);
-}
-
-multi sub configure-initramfs(
-    'COMPRESSION',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D $sed-cmd = 's,^#\(COMPRESSION="lz4"\),\1,';
-    run(qqw<sed -i $sed-cmd $path>);
 }
 
 method !install-bootloader(--> Nil)
@@ -1167,52 +964,10 @@ method !install-bootloader(--> Nil)
     my UserName:D $user-name-grub = $.config.user-name-grub;
     my Str:D $user-pass-hash-grub = $.config.user-pass-hash-grub;
     my VaultName:D $vault-name = $.config.vault-name;
-    my Str:D $path = '/mnt/etc/default/grub';
-    configure-bootloader(
-        'GRUB_CMDLINE_LINUX',
-        $partition,
-        $vault-name,
-        $graphics,
-        :$path
-    );
-    configure-bootloader('GRUB_ENABLE_CRYPTODISK', :$path);
+    replace('grub', $graphics, $partition, $vault-name);
+    replace('10_linux');
     configure-bootloader('superusers', $user-name-grub, $user-pass-hash-grub);
-    configure-bootloader('unrestricted');
     install-bootloader($partition);
-}
-
-multi sub configure-bootloader(
-    'GRUB_CMDLINE_LINUX',
-    Str:D $partition,
-    VaultName:D $vault-name,
-    Graphics:D $graphics,
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D $partition-vault = $partition ~ '2';
-    my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
-    my Str:D $grub-cmdline-linux =
-        "cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name"
-            ~ ' rootflags=subvol=@';
-    $grub-cmdline-linux ~= ' radeon.dpm=1' if $graphics eq 'RADEON';
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^\(GRUB_CMDLINE_LINUX\)=.*}
-        ~ q{,}
-        ~ q{\1=\"} ~ $grub-cmdline-linux ~ q{\"}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-bootloader(
-    'GRUB_ENABLE_CRYPTODISK',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D $sed-cmd = 's,^#\(GRUB_ENABLE_CRYPTODISK\),\1,';
-    run(qqw<sed -i $sed-cmd $path>);
 }
 
 multi sub configure-bootloader(
@@ -1227,15 +982,6 @@ multi sub configure-bootloader(
     password_pbkdf2 $user-name-grub $user-pass-hash-grub
     EOF
     spurt('/mnt/etc/grub.d/40_custom', $grub-superusers, :append);
-}
-
-multi sub configure-bootloader(
-    'unrestricted'
-    --> Nil
-)
-{
-    my Str:D $sed-cmd = 's/\${CLASS}\s/--unrestricted ${CLASS} /';
-    shell("sed -i '$sed-cmd' /mnt/etc/grub.d/10_linux");
 }
 
 sub install-bootloader(Str:D $partition --> Nil)
@@ -1267,42 +1013,8 @@ method !configure-sysctl(--> Nil)
     my DiskType:D $disk-type = $.config.disk-type;
     my Str:D $path = 'etc/sysctl.conf';
     copy(%?RESOURCES{$path}, "/mnt/$path");
-    $path = '/mnt/' ~ $path;
-    configure-sysctl('vm.vfs_cache_pressure', :$path)
-        if $disk-type ~~ /SSD|USB/;
-    configure-sysctl('vm.swappiness', :$path)
-        if $disk-type ~~ /SSD|USB/;
+    replace('sysctl.conf', $disk-type);
     run(qw<arch-chroot /mnt sysctl --system>);
-}
-
-multi sub configure-sysctl(
-    'vm.vfs_cache_pressure',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^#\(vm.vfs_cache_pressure\).*}
-        ~ q{,}
-        ~ q{\1 = 50}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
-}
-
-multi sub configure-sysctl(
-    'vm.swappiness',
-    Str:D :$path! where .so
-    --> Nil
-)
-{
-    my Str:D $sed-cmd =
-          q{s,}
-        ~ q{^#\(vm.swappiness\).*}
-        ~ q{,}
-        ~ q{\1 = 1}
-        ~ q{,};
-    shell("sed -i '$sed-cmd' $path");
 }
 
 method !configure-nftables(--> Nil)
@@ -1330,10 +1042,8 @@ multi sub configure-openssh('sshd_config', UserName:D $user-name-sftp --> Nil)
 {
     my Str:D $path = 'etc/ssh/sshd_config';
     copy(%?RESOURCES{$path}, "/mnt/$path");
-
     # restrict allowed connections to $user-name-sftp
-    my Str:D $sed-cmd = "3iAllowUsers $user-name-sftp";
-    shell("sed -i '$sed-cmd' /mnt/$path");
+    replace('sshd_config', $user-name-sftp);
 }
 
 multi sub configure-openssh('hosts.allow' --> Nil)
@@ -1478,6 +1188,8 @@ method !unmount(--> Nil)
 # helper functions
 # -----------------------------------------------------------------------------
 
+# sub arch-chroot-mkdir {{{
+
 multi sub arch-chroot-mkdir(
     Str:D @dir,
     Str:D $user,
@@ -1502,6 +1214,9 @@ multi sub arch-chroot-mkdir(
     run(qqw<arch-chroot /mnt chown $user:$group $dir>);
 }
 
+# end sub arch-chroot-mkdir }}}
+# sub loop-cmdline-proc {{{
+
 sub loop-cmdline-proc(
     Str:D $message where .so,
     Str:D $cmdline where .so
@@ -1515,5 +1230,470 @@ sub loop-cmdline-proc(
         last if $proc.exitcode == 0;
     }
 }
+
+# end sub loop-cmdline-proc }}}
+# sub replace {{{
+
+# --- dnscrypt-proxy.toml {{{
+
+multi sub replace(
+    'dnscrypt-proxy.toml'
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/dnscrypt-proxy/dnscrypt-proxy.toml';
+    my Str:D @replace =
+        $file.IO.lines
+        # server must support DNS security extensions (DNSSEC)
+        ==> replace('dnscrypt-proxy.toml', 'require_dnssec')
+        # always use TCP to connect to upstream servers
+        ==> replace('dnscrypt-proxy.toml', 'force_tcp')
+        # create new, unique key for each DNS query
+        ==> replace('dnscrypt-proxy.toml', 'dnscrypt_ephemeral_keys')
+        # disable TLS session tickets
+        ==> replace('dnscrypt-proxy.toml', 'tls_disable_session_tickets')
+        # disable DNS cache
+        ==> replace('dnscrypt-proxy.toml', 'cache');
+    my Str:D $replace = @replace.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
+    Str:D $subject where 'require_dnssec',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = true}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
+    Str:D $subject where 'force_tcp',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = true}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
+    Str:D $subject where 'dnscrypt_ephemeral_keys',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^'#'\h*$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = true}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
+    Str:D $subject where 'tls_disable_session_tickets',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^'#'\h*$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = true}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
+    Str:D $subject where 'cache',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = false}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+# --- end dnscrypt-proxy.toml }}}
+# --- locale.gen {{{
+
+multi sub replace(
+    'locale.gen',
+    Locale:D $locale
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/locale.gen';
+    my Str:D @line = $file.IO.lines;
+    my Str:D $locale-full = sprintf(Q{%s.UTF-8 UTF-8}, $locale);
+    my UInt:D $index = @line.first(/^'#'$locale-full/, :k);
+    @line[$index] = $locale-full;
+    my Str:D $replace = @line.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+# --- end locale.gen }}}
+# --- pacman.conf {{{
+
+multi sub replace(
+    'pacman.conf'
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/pacman.conf';
+    my Str:D @replace =
+        $file.IO.lines
+        # uncomment Color
+        ==> replace('pacman.conf', 'Color')
+        # uncomment TotalDownload
+        ==> replace('pacman.conf', 'TotalDownload')
+        # put ILoveCandy on the line below CheckSpace
+        ==> replace('pacman.conf', 'ILoveCandy');
+    @replace =
+        @replace
+        # uncomment multilib section on 64-bit machines
+        ==> replace('pacman.conf', 'multilib') if $*KERNEL.bits == 64;
+    my Str:D $replace = @replace.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+multi sub replace(
+    'pacman.conf',
+    Str:D $subject where 'Color',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^'#'\h*$subject/, :k);
+    @line[$index] = $subject;
+    @line;
+}
+
+multi sub replace(
+    'pacman.conf',
+    Str:D $subject where 'TotalDownload',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^'#'\h*$subject/, :k);
+    @line[$index] = $subject;
+    @line;
+}
+
+multi sub replace(
+    'pacman.conf',
+    Str:D $subject where 'ILoveCandy',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^CheckSpace/, :k);
+    @line.splice($index + 1, 0, $subject);
+    @line;
+}
+
+multi sub replace(
+    'pacman.conf',
+    Str:D $subject where 'multilib',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # uncomment lines starting with C<[multilib]> up to but excluding blank line
+    my UInt:D @index = @line.grep({ /^'#'\h*'['$subject']'/ ff^ /^\h*$/ }, :k);
+    @index.race.map(-> UInt:D $index { @line[$index] .= subst(/^'#'/, '') });
+    @line;
+}
+
+# --- end pacman.conf }}}
+# --- mkinitcpio.conf {{{
+
+multi sub replace(
+    'mkinitcpio.conf',
+    DiskType:D $disk-type,
+    Graphics:D $graphics,
+    Processor:D $processor
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/mkinitcpio.conf';
+    my Str:D @replace =
+        $file.IO.lines
+        ==> replace('mkinitcpio.conf', 'MODULES', $graphics, $processor)
+        ==> replace('mkinitcpio.conf', 'HOOKS', $disk-type)
+        ==> replace('mkinitcpio.conf', 'FILES')
+        ==> replace('mkinitcpio.conf', 'BINARIES')
+        ==> replace('mkinitcpio.conf', 'COMPRESSION');
+    my Str:D $replace = @replace.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+multi sub replace(
+    'mkinitcpio.conf',
+    Str:D $subject where 'MODULES',
+    Graphics:D $graphics,
+    Processor:D $processor,
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # prepare modules
+    my Str:D @modules;
+    push(@modules, $processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c');
+    push(@modules, 'i915') if $graphics eq 'INTEL';
+    push(@modules, 'nouveau') if $graphics eq 'NVIDIA';
+    push(@modules, 'radeon') if $graphics eq 'RADEON';
+    # for systemd-swap lz4
+    push(@modules, |qw<lz4 lz4_compress>);
+    # replace modules
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s=(%s)}, $subject, @modules.join(' '));
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'mkinitcpio.conf',
+    Str:D $subject where 'HOOKS',
+    DiskType:D $disk-type,
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # prepare hooks
+    my Str:D @hooks = qw<
+        base
+        udev
+        autodetect
+        modconf
+        keyboard
+        keymap
+        encrypt
+        btrfs
+        filesystems
+        fsck
+        shutdown
+        usr
+    >;
+    $disk-type eq 'USB'
+        ?? @hooks.splice(2, 0, 'block')
+        !! @hooks.splice(4, 0, 'block');
+    # replace hooks
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s=(%s)}, $subject, @hooks.join(' '));
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'mkinitcpio.conf',
+    Str:D $subject where 'FILES',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # prepare files
+    my Str:D @files = '/etc/modprobe.d/modprobe.conf';
+    # replace files
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s=(%s)}, $subject, @files.join(' '));
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'mkinitcpio.conf',
+    Str:D $subject where 'BINARIES',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # prepare binaries
+    my Str:D @binaries = '/usr/bin/btrfs';
+    # replace binaries
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s=(%s)}, $subject, @binaries.join(' '));
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'mkinitcpio.conf',
+    Str:D $subject where 'COMPRESSION',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my Str:D $algorithm = 'lz4';
+    my Str:D $compression = sprintf(Q{%s="%s"}, $subject, $algorithm);
+    my UInt:D $index = @line.first(/^'#'$compression/, :k);
+    @line[$index] = $compression;
+    @line;
+}
+
+# --- end mkinitcpio.conf }}}
+# --- grub {{{
+
+multi sub replace(
+    'grub',
+    *@opts (
+        Graphics:D $graphics,
+        Str:D $partition,
+        VaultName:D $vault-name
+    )
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/default/grub';
+    my Str:D @replace =
+        $file.IO.lines
+        ==> replace('grub', 'GRUB_CMDLINE_LINUX', |@opts)
+        ==> replace('grub', 'GRUB_ENABLE_CRYPTODISK');
+    my Str:D $replace = @replace.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+multi sub replace(
+    'grub',
+    Str:D $subject where 'GRUB_CMDLINE_LINUX',
+    Graphics:D $graphics,
+    Str:D $partition,
+    VaultName:D $vault-name,
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # prepare GRUB_CMDLINE_LINUX
+    my Str:D $partition-vault = sprintf(Q{%s2}, $partition);
+    my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
+    my Str:D $grub-cmdline-linux =
+        sprintf(
+            Q{cryptdevice=/dev/disk/by-uuid/%s:%s rootflags=subvol=@},
+            $vault-uuid,
+            $vault-name
+        );
+    $grub-cmdline-linux ~= ' radeon.dpm=1' if $graphics eq 'RADEON';
+    # replace GRUB_CMDLINE_LINUX
+    my UInt:D $index = @line.first(/^$subject'='/, :k);
+    my Str:D $replace = sprintf(Q{%s="%s"}, $subject, $grub-cmdline-linux);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'grub',
+    Str:D $subject where 'GRUB_ENABLE_CRYPTODISK',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^'#'$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s=y}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+# --- end grub }}}
+# --- 10_linux {{{
+
+multi sub replace(
+    '10_linux'
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/grub.d/10_linux';
+    my Str:D @line = $file.IO.lines;
+    my Regex:D $regex = /'${CLASS}'\h/;
+    my UInt:D @index = @line.grep($regex, :k);
+    @index.race.map(-> UInt:D $index {
+        @line[$index] .= subst($regex, '--unrestricted ${CLASS} ')
+    });
+    my Str:D $replace = @line.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+# --- end 10_linux }}}
+# --- sysctl.conf {{{
+
+multi sub replace(
+    'sysctl.conf',
+    DiskType:D $disk-type where /SSD|USB/
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/sysctl.conf';
+    my Str:D @replace =
+        $file.IO.lines
+        ==> replace('sysctl.conf', 'vm.vfs_cache_pressure')
+        ==> replace('sysctl.conf', 'vm.swappiness');
+    my Str:D $replace = @replace.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+multi sub replace(
+    'sysctl.conf',
+    DiskType:D $disk-type
+    --> Nil
+)
+{*}
+
+multi sub replace(
+    'sysctl.conf',
+    Str:D $subject where 'vm.vfs_cache_pressure',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^'#'$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = 50}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'sysctl.conf',
+    Str:D $subject where 'vm.swappiness',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^'#'$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = 1}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+# --- end sysctl.conf }}}
+# --- sshd_config {{{
+
+multi sub replace(
+    'sshd_config',
+    UserName:D $user-name-sftp
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/ssh/sshd_config';
+    my Str:D @line = $file.IO.lines;
+    my UInt:D $index = @line.first(/^AddressFamily/, :k);
+    # put AllowUsers on the line below AddressFamily
+    my Str:D $allow-users = sprintf(Q{AllowUsers %s}, $user-name-sftp);
+    @line.splice($index + 1, 0, $allow-users);
+    my Str:D $replace = @line.join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+# --- end sshd_config }}}
+
+# end sub replace }}}
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0 nowrap:

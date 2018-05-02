@@ -61,7 +61,6 @@ openssl              | user password salts                                | Y
 pacman               | `makepkg`, `pacman`, `pacman-key`                  | Y
 procps-ng            | `pkill`                                            | Y
 rakudo               | `archvault` Perl6 runtime                          | N
-sed                  | `sed`                                              | Y
 tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab`    | Y
 util-linux           | `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`      | Y
 
