@@ -1317,7 +1317,7 @@ multi sub replace(
     --> Array[Str:D]
 )
 {
-    my UInt:D $index = @line.first(/^$subject/, :k);
+    my UInt:D $index = @line.first(/^$subject\h/, :k);
     my Str:D $replace = sprintf(Q{%s = false}, $subject);
     @line[$index] = $replace;
     @line;
