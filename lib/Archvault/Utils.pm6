@@ -310,7 +310,7 @@ method ls-keymaps(--> Array[Keymap:D])
     my Keymap:D @keymaps = ls-keymaps();
 }
 
-multi sub ls-keymaps(--> Array[Str:D])
+sub ls-keymaps(--> Array[Str:D])
 {
     my Str:D @keymap =
         ls-keymap-tarballs()
