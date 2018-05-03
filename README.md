@@ -50,7 +50,6 @@ cryptsetup           | FDE with LUKS                                      | Y
 e2fsprogs            | `chattr`                                           | Y
 expect               | interactive command prompt automation              | N
 findutils            | `find`                                             | Y
-gawk                 | `awk`                                              | Y
 glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`                | Y
 grub                 | `grub-mkpasswd-pbkdf2`                             | Y

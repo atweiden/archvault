@@ -77,7 +77,6 @@ method !setup(--> Nil)
         e2fsprogs
         expect
         findutils
-        gawk
         glibc
         gptfdisk
         grub
@@ -1056,7 +1055,7 @@ multi sub configure-openssh('hosts.allow' --> Nil)
 multi sub configure-openssh('moduli' --> Nil)
 {
     # filter weak ssh moduli
-    shell(q{awk -i inplace '$5 > 2000' /mnt/etc/ssh/moduli});
+    replace('moduli');
 }
 
 method !configure-systemd(--> Nil)
@@ -1693,6 +1692,23 @@ multi sub replace(
 }
 
 # --- end sshd_config }}}
+# --- moduli {{{
+
+multi sub replace(
+    'moduli'
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/ssh/moduli';
+    my Str:D $replace =
+        $file.IO.lines
+        .grep(/^\w/)
+        .grep({ .split(/\h+/)[4] > 2000 })
+        .join("\n");
+    spurt($file, $replace ~ "\n");
+}
+
+# --- end moduli }}}
 
 # end sub replace }}}
 
