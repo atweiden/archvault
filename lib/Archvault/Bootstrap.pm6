@@ -76,7 +76,6 @@ method !setup(--> Nil)
         dialog
         e2fsprogs
         expect
-        findutils
         glibc
         gptfdisk
         grub

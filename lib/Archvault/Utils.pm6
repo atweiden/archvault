@@ -307,24 +307,57 @@ method ls-keymaps(--> Array[Keymap:D])
 {
     # equivalent to `localectl list-keymaps --no-pager`
     # see: src/basic/def.h in systemd source code
-    my Keymap:D @keymaps = qx<
-        find /usr/share/kbd/keymaps -type f \
-               \( ! -name "*compose*" \)    \
-            -a \( ! -name "*.doc*"    \)    \
-            -a \( ! -name "*.html*"   \)    \
-            -a \( ! -name "*.inc*"    \)    \
-            -a \( ! -name "*.latin1*" \)    \
-            -a \( ! -name "*.m4*"     \)    \
-            -printf '%f\n'
-    >.trim.split("\n").hyper.map({ .subst(/'.map.gz'$/, '') }).sort;
+    my Keymap:D @keymaps = ls-keymaps();
+}
+
+multi sub ls-keymaps(--> Array[Str:D])
+{
+    my Str:D @keymap =
+        ls-keymap-tarballs()
+        .race
+        .map({ .split('/').tail.split('.').first })
+        .sort;
+}
+
+multi sub ls-keymap-tarballs(--> Array[Str:D])
+{
+    my Str:D $keymaps-dir = '/usr/share/kbd/keymaps';
+    my Str:D @tarball =
+        ls-keymap-tarballs(
+            Array[Str:D].new(dir($keymaps-dir).race.map({ .Str }))
+        )
+        .grep(/'.map.gz'$/);
+}
+
+multi sub ls-keymap-tarballs(Str:D @path --> Array[Str:D])
+{
+    my Str:D @tarball =
+        @path
+        .race
+        .map({ .Str })
+        .map(-> Str:D $path { ls-keymap-tarballs($path) })
+        .flat;
+}
+
+multi sub ls-keymap-tarballs(Str:D $path where .IO.d.so --> Array[Str:D])
+{
+    my Str:D @tarball =
+        ls-keymap-tarballs(
+            Array[Str:D].new(dir($path).race.map({ .Str }))
+        ).flat;
+}
+
+multi sub ls-keymap-tarballs(Str:D $path where .IO.f.so --> Array[Str:D])
+{
+    my Str:D @tarball = $path;
 }
 
 # list locales
 method ls-locales(--> Array[Locale:D])
 {
-    my Locale:D @locales = qx<
-        find /usr/share/i18n/locales -type f -printf '%f\n'
-    >.trim.split("\n").sort;
+    my Str:D $locale-dir = '/usr/share/i18n/locales';
+    my Keymap:D @locale =
+        dir($locale-dir).race.map({ .Str }).map({ .split('/').tail }).sort;
 }
 
 # list block devices (partitions)
