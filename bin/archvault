@@ -180,15 +180,17 @@ multi sub USAGE(--> Nil)
       archvault <command>
 
     Commands:
-      disable-cow    Disable copy-on-write on directories
-      gen-pass-hash  Generate password hash
-      help           Show help for subcommands
-      ls             List keymaps, locales, partitions, timezones
-      new            Bootstrap Arch system with FDE
+      disable-cow          Disable copy-on-write on directories
+      gen-pass-hash        Generate password hash
+      help                 Show help for subcommands
+      ls                   List keymaps, locales, partitions, timezones
+      new                  Bootstrap Arch system with FDE
 
     Options:
-      -h, --help     Print this help message
-      --version      Print version and exit
+      -h, --help
+        Print this help message
+      --version
+        Print version and exit
     EOF
     say($HELP);
 }
@@ -205,14 +207,19 @@ multi sub USAGE('disable-cow' --> Nil)
       archvault [-r] disable-cow <directory> [<directory> <directory>..]
 
     Options:
-      -c, --clean                Remake directories with CoW disabled
-      -r, --recursive            Recursively disable CoW on directories
-      -p, --permissions=<octal>  Octal file mode bits (defaults to "755")
-      -u, --user=<username>      Named user to own file (defaults to "$*USER")
-      -g, --group=<groupname>    Named group to own file (defaults to "$*GROUP")
+      -c, --clean
+        Remake directories with CoW disabled
+      -r, --recursive
+        Recursively disable CoW on directories
+      -p, --permissions=<octal>
+        Octal file mode bits (defaults to "755")
+      -u, --user=<username>
+        Named user to own file (defaults to "$*USER")
+      -g, --group=<groupname>
+        Named group to own file (defaults to "$*GROUP")
 
     Positionals:
-      <directory>                Path to directory
+      <directory>        Path to directory
     EOF
     say($HELP);
 }
@@ -224,8 +231,10 @@ multi sub USAGE('gen-pass-hash' --> Nil)
       archvault [-g|--grub] [-p|--pass=<password>] gen-pass-hash
 
     Options:
-      -g, --grub             Generate PBKDF2 password hash for Grub
-      -p, --pass=<password>  Plaintext password to generate hash from
+      -g, --grub
+        Generate PBKDF2 password hash for Grub
+      -p, --pass=<password>
+        Plaintext password to generate hash from
     EOF
     say($HELP);
 }
@@ -234,13 +243,13 @@ multi sub USAGE('ls' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
-      archvault ls <keymaps|locales|partitions|timezones>
+      archvault ls <positional>
 
     Positionals
-      keymaps     List available keyboard table descriptions
-      locales     List available sets of language/cultural rules
-      partitions  List available device paths
-      timezones   List available geographic regions
+      keymaps           List available keyboard table descriptions
+      locales           List available sets of language/cultural rules
+      partitions        List available device paths
+      timezones         List available geographic regions
     EOF
     say($HELP);
 }
@@ -249,55 +258,72 @@ multi sub USAGE('new' --> Nil)
 {
     constant $HELP = q:to/EOF/.trim;
     Usage:
-      archvault [--admin-name=<username>]
-                [--admin-pass=<password>]
-                [--guest-name=<username>]
-                [--guest-pass=<password>]
-                [--sftp-name=<username>]
-                [--sftp-pass=<password>]
-                [--grub-name=<username>]
-                [--grub-pass=<password>]
+      archvault [--admin-name=<username>] [--admin-pass=<password>]
+                [--guest-name=<username>] [--guest-pass=<password>]
+                [--sftp-name=<username>] [--sftp-pass=<password>]
+                [--grub-name=<username>] [--grub-pass=<password>]
                 [--root-pass=<password>]
-                [--vault-name=<vaultname>]
-                [--vault-pass=<password>]
-                [--hostname=<hostname>]
-                [--partition=<device>]
-                [--processor=<processor>]
-                [--graphics=<graphics>]
-                [--disk-type=<disktype>]
-                [--locale=<locale>]
-                [--keymap=<keymap>]
-                [--timezone=<timezone>]
+                [--vault-name=<vaultname>] [--vault-pass=<password>]
+                [--hostname=<hostname>] [--partition=<device>]
+                [--processor=<processor>] [--graphics=<graphics>]
+                [--disk-type=<disktype>] [--locale=<locale>]
+                [--keymap=<keymap>] [--timezone=<timezone>]
                 [--augment]
                 new
 
     Options:
-      --admin-name=<username>       User name for admin account
-      --admin-pass=<password>       Password for admin account
-      --admin-pass-hash=<passhash>  Encrypted password hash for admin account
-      --augment                     Drop to Bash console mid-execution
-      --disk-type=<disktype>        Hard drive type
-      --graphics=<graphics>         Graphics card type
-      --grub-name=<username>        User name for Grub
-      --grub-pass=<password>        Password for Grub
-      --grub-pass-hash=<passhash>   Password hash for Grub
-      --guest-name=<username>       User name for guest account
-      --guest-pass=<password>       Password for guest account
-      --guest-pass-hash=<passhash>  Encrypted password hash for guest account
-      --hostname=<hostname>         Hostname
-      --keymap=<keymap>             Keymap
-      --locale=<locale>             Locale
-      --partition=<device>          Partition target for install
-      --processor=<processor>       Processor type
-      --reflector                   Optimize Pacman mirrors
-      --root-pass=<password>        Password for root account
-      --root-pass-hash=<passhash>   Encrypted password hash for root account
-      --sftp-name=<username>        User name for SFTP account
-      --sftp-pass=<password>        Password for SFTP account
-      --sftp-pass-hash=<passhash>   Encrypted password hash for SFTP account
-      --timezone=<timezone>         Timezone
-      --vault-name=<vaultname>      Name for LUKS encrypted volume
-      --vault-pass=<password>       Password for LUKS encrypted volume
+      --admin-name=<username>
+        User name for admin account
+      --admin-pass=<password>
+        Password for admin account
+      --admin-pass-hash=<passhash>
+        Encrypted password hash for admin account
+      --augment
+        Drop to Bash console mid-execution
+      --disk-type=<disktype>
+        Hard drive type
+      --graphics=<graphics>
+        Graphics card type
+      --grub-name=<username>
+        User name for Grub
+      --grub-pass=<password>
+        Password for Grub
+      --grub-pass-hash=<passhash>
+        Password hash for Grub
+      --guest-name=<username>
+        User name for guest account
+      --guest-pass=<password>
+        Password for guest account
+      --guest-pass-hash=<passhash>
+        Encrypted password hash for guest account
+      --hostname=<hostname>
+        Hostname
+      --keymap=<keymap>
+        Keymap
+      --locale=<locale>
+        Locale
+      --partition=<device>
+        Partition target for install
+      --processor=<processor>
+        Processor type
+      --reflector
+        Optimize Pacman mirrors
+      --root-pass=<password>
+        Password for root account
+      --root-pass-hash=<passhash>
+        Encrypted password hash for root account
+      --sftp-name=<username>
+        User name for SFTP account
+      --sftp-pass=<password>
+        Password for SFTP account
+      --sftp-pass-hash=<passhash>
+        Encrypted password hash for SFTP account
+      --timezone=<timezone>
+        Timezone
+      --vault-name=<vaultname>
+        Name for LUKS encrypted volume
+      --vault-pass=<password>
+        Password for LUKS encrypted volume
     EOF
     say($HELP);
 }
