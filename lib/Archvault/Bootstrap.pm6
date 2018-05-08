@@ -19,9 +19,11 @@ has Archvault::Config:D $.config is required;
 method bootstrap(::?CLASS:D: --> Nil)
 {
     my Bool:D $augment = $.config.augment;
-
     # verify root permissions
     $*USER == 0 or die('root privileges required');
+    # ensure pressing Ctrl-C works
+    signal(SIGINT).tap({ exit(130) });
+
     self!setup;
     self!mkdisk;
     self!disable-cow;
