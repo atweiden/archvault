@@ -21,7 +21,6 @@
         "Crypt::Libcrypt"      : "lib/Crypt/Libcrypt.pm6"
     },
     "resources" : [
-        "etc/X11/xorg.conf.d/20-natural-scrolling.conf",
         "etc/X11/xorg.conf.d/99-security.conf",
         "etc/hosts.allow",
         "etc/modprobe.d/modprobe.conf",

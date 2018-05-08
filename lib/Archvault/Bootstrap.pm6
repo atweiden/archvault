@@ -1137,20 +1137,9 @@ multi sub configure-securetty('shell-timeout' --> Nil)
 
 method !configure-xorg(--> Nil)
 {
-    mkdir('/mnt/etc/X11/xorg.conf.d');
-    configure-xorg('scrolling');
-    configure-xorg('security');
-}
-
-multi sub configure-xorg('scrolling' --> Nil)
-{
-    my Str:D $path = 'etc/X11/xorg.conf.d/20-natural-scrolling.conf';
-    copy(%?RESOURCES{$path}, "/mnt/$path");
-}
-
-multi sub configure-xorg('security' --> Nil)
-{
-    my Str:D $path = 'etc/X11/xorg.conf.d/99-security.conf';
+    my Str:D $base-path = 'etc/X11/xorg.conf.d';
+    my Str:D $path = "$base-path/99-security.conf";
+    mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
