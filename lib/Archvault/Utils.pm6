@@ -356,7 +356,7 @@ multi sub ls-keymap-tarballs(Str:D $path where .IO.f.so --> Array[Str:D])
 method ls-locales(--> Array[Locale:D])
 {
     my Str:D $locale-dir = '/usr/share/i18n/locales';
-    my Keymap:D @locale =
+    my Locale:D @locale =
         dir($locale-dir).race.map({ .Str }).map({ .split('/').tail }).sort;
 }
 
