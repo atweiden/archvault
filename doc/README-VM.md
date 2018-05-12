@@ -297,7 +297,7 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
   - `cd clonepkg && makepkg -Acsi --noconfirm`
   - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
   - `clonepkg fzf-extras fzf-git ix pacnew_scripts pkgcacheclean`
-  - `clonepkg downgrade icdiff pakku quixand repacman2 subrepo`
+  - `clonepkg downgrade icdiff quixand repacman2 subrepo yay`
 - Get console font
   - `clonepkg tamsyn-console-font`
   - `setfont Tamsyn10x20r`
