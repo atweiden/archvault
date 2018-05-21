@@ -1011,7 +1011,7 @@ sub install-bootloader(Str:D $partition --> Nil)
 method !configure-sysctl(--> Nil)
 {
     my DiskType:D $disk-type = $.config.disk-type;
-    my Str:D $path = 'etc/sysctl.conf';
+    my Str:D $path = 'etc/sysctl.d/99-sysctl.conf';
     copy(%?RESOURCES{$path}, "/mnt/$path");
     replace('sysctl.conf', $disk-type);
     run(qw<arch-chroot /mnt sysctl --system>);
