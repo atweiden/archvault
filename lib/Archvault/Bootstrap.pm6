@@ -29,6 +29,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!disable-cow;
     self!pacstrap-base;
     self!configure-users;
+    self!configure-sudoers;
     self!genfstab;
     self!set-hostname;
     self!configure-dhcpcd;
@@ -701,7 +702,7 @@ multi sub configure-users(
 )
 {
     useradd('admin', $user-name-admin, $user-pass-hash-admin);
-    configure-sudoers($user-name-admin);
+    mksudo($user-name-admin);
 }
 
 multi sub configure-users(
@@ -849,7 +850,7 @@ sub groupadd(*@group-name --> Nil)
     });
 }
 
-sub configure-sudoers(UserName:D $user-name-admin --> Nil)
+sub mksudo(UserName:D $user-name-admin --> Nil)
 {
     say("Giving sudo privileges to admin user $user-name-admin...");
     my Str:D $sudoers = qq:to/EOF/;
@@ -858,6 +859,11 @@ sub configure-sudoers(UserName:D $user-name-admin --> Nil)
     $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/shutdown
     EOF
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
+}
+
+method !configure-sudoers(--> Nil)
+{
+    replace('sudoers');
 }
 
 method !genfstab(--> Nil)
@@ -1237,6 +1243,36 @@ sub loop-cmdline-proc(
 # end sub loop-cmdline-proc }}}
 # sub replace {{{
 
+# --- sudoers {{{
+
+multi sub replace(
+    'sudoers'
+    --> Nil
+)
+{
+    my Str:D $file = '/mnt/etc/sudoers';
+    my Str:D $slurp = slurp($file);
+    my Str:D $defaults = q:to/EOF/;
+    # reset environment by default
+    Defaults env_reset
+
+    # set default editor to rvim, do not allow visudo to use $EDITOR/$VISUAL
+    Defaults editor=/usr/bin/rvim, !env_editor
+
+    # force password entry with every sudo
+    Defaults timestamp_timeout=0
+
+    # only allow sudo when the user is logged in to a real tty
+    Defaults requiretty
+
+    # wrap logfile lines at 72 characters
+    Defaults loglinelen=72
+    EOF
+    my Str:D $replace = join("\n", $defaults, $slurp);
+    spurt($file, $replace);
+}
+
+# --- end sudoers }}}
 # --- dnscrypt-proxy.toml {{{
 
 multi sub replace(
