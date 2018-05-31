@@ -654,6 +654,7 @@ method !pacstrap-base(--> Nil)
         nftables
         openresolv
         openssh
+        pacman-contrib
         rsync
         systemd-swap
         tmux
