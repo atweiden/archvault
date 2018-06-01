@@ -425,13 +425,13 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
 
     # create btrfs subvolumes
     chdir('/mnt2');
-    @btrfs-dir.map(-> $btrfs-dir {
+    @btrfs-dir.map(-> Str:D $btrfs-dir {
         run(qqw<btrfs subvolume create @$btrfs-dir>);
     });
     chdir('/');
 
     # mount btrfs subvolumes
-    @btrfs-dir.map(-> $btrfs-dir {
+    @btrfs-dir.map(-> Str:D $btrfs-dir {
         mount-btrfs-subvolume($btrfs-dir, $mount-options, $vault-name);
     });
 
@@ -617,7 +617,7 @@ method !disable-cow(--> Nil)
         var/log
         var/spool
         var/tmp
-    >.map({ "/mnt/$_" });
+    >.map(-> Str:D $directory { sprintf(Q{/mnt/%s}, $directory) });
     Archvault::Utils.disable-cow(|@directory, :recursive);
 }
 
@@ -846,7 +846,7 @@ sub usermod(
 
 sub groupadd(*@group-name --> Nil)
 {
-    @group-name.map(-> $group-name {
+    @group-name.map(-> Str:D $group-name {
         run(qqw<arch-chroot /mnt groupadd $group-name>);
     });
 }
@@ -1174,7 +1174,7 @@ method !enable-systemd-services(--> Nil)
         nftables
         systemd-swap
     >;
-    @service.map(-> $service {
+    @service.map(-> Str:D $service {
         run(qqw<arch-chroot /mnt systemctl enable $service>);
     });
 }
@@ -1209,7 +1209,9 @@ multi sub arch-chroot-mkdir(
     --> Nil
 )
 {
-    @dir.map({ arch-chroot-mkdir($_, $user, $group, $permissions) });
+    @dir.map(-> Str:D $dir {
+        arch-chroot-mkdir($dir, $user, $group, $permissions)
+    });
 }
 
 multi sub arch-chroot-mkdir(

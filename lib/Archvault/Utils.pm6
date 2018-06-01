@@ -40,7 +40,7 @@ method disable-cow(
 )
 {
     # https://wiki.archlinux.org/index.php/Btrfs#Disabling_CoW
-    @directory.map({ disable-cow($_, |%opt) });
+    @directory.map(-> Str:D $directory { disable-cow($directory, |%opt) });
 }
 
 multi sub disable-cow(
@@ -63,7 +63,7 @@ multi sub disable-cow(
     run(qqw<chmod $permissions $orig-dir>);
     run(qqw<chown $user:$group $orig-dir>);
     run(qqw<chattr -R +C $orig-dir>);
-    dir($backup-dir).map(-> $file {
+    dir($backup-dir).map(-> IO::Path:D $file {
         run(qqw<cp -dpr $file $orig-dir>)
     });
     run(qqw<rm -rf $backup-dir>);
