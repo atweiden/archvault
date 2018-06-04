@@ -26,7 +26,7 @@ vim /etc/pacman.d/mirrorlist
 
 ```sh
 # add private repo until official rakudo package in community
-cat <<'EOF' >> /etc/pacman.conf
+cat >> /etc/pacman.conf <<'EOF'
 [rakudo]
 SigLevel = Optional
 Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
@@ -41,7 +41,7 @@ pacman -Syy git rakudo
 pacman -Syy base-devel git --needed
 git clone https://github.com/tadzik/rakudobrew ~/.rakudobrew
 export PATH="$HOME/.rakudobrew/bin:$PATH"
-rakudobrew build moar 2018.03
+rakudobrew build moar 2018.05
 ```
 
 **Install Rakudo Perl 6 from official release tarballs**:
@@ -68,17 +68,11 @@ Install AUR packages:
 
 ```sh
 pacman -Syy base-devel git --needed
-git clone https://aur.archlinux.org/dyncall-git.git
-pushd dyncall-git
-makepkg -Acsi
-popd
 git clone https://github.com/atweiden/pkgbuilds --depth 1
-cd pkgbuilds/perl6/moarvm
-makepkg -Acsi
-cd ../nqp
-makepkg -Acsi
-cd ../rakudo
-makepkg -Acsi
+cd pkgbuilds
+pushd moarvm && makepkg -Acsi && popd
+pushd nqp && makepkg -Acsi && popd
+pushd rakudo && makepkg -Acsi && popd
 ```
 
 
