@@ -1147,6 +1147,7 @@ multi sub configure-securetty('shell-timeout' --> Nil)
 method !configure-xorg(--> Nil)
 {
     configure-xorg('Xwrapper.config');
+    configure-xorg('10-synaptics.conf');
     configure-xorg('99-security.conf');
 }
 
@@ -1154,6 +1155,14 @@ multi sub configure-xorg('Xwrapper.config' --> Nil)
 {
     my Str:D $base-path = 'etc/X11';
     my Str:D $path = "$base-path/Xwrapper.config";
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-xorg('10-synaptics.conf' --> Nil)
+{
+    my Str:D $base-path = 'etc/X11/xorg.conf.d';
+    my Str:D $path = "$base-path/10-synaptics.conf";
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
