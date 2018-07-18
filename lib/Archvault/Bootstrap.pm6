@@ -1058,7 +1058,7 @@ method !configure-sysctl(--> Nil)
     my DiskType:D $disk-type = $.config.disk-type;
     my Str:D $path = 'etc/sysctl.d/99-sysctl.conf';
     copy(%?RESOURCES{$path}, "/mnt/$path");
-    replace('sysctl.conf', $disk-type);
+    replace('99-sysctl.conf', $disk-type);
     run(qw<arch-chroot /mnt sysctl --system>);
 }
 
@@ -1712,32 +1712,32 @@ multi sub replace(
 }
 
 # --- end 10_linux }}}
-# --- sysctl.conf {{{
+# --- 99-sysctl.conf {{{
 
 multi sub replace(
-    'sysctl.conf',
+    '99-sysctl.conf',
     DiskType:D $disk-type where /SSD|USB/
     --> Nil
 )
 {
-    my Str:D $file = '/mnt/etc/sysctl.conf';
+    my Str:D $file = '/mnt/etc/sysctl.d/99-sysctl.conf'
     my Str:D @replace =
         $file.IO.lines
-        ==> replace('sysctl.conf', 'vm.vfs_cache_pressure')
-        ==> replace('sysctl.conf', 'vm.swappiness');
+        ==> replace('99-sysctl.conf', 'vm.vfs_cache_pressure')
+        ==> replace('99-sysctl.conf', 'vm.swappiness');
     my Str:D $replace = @replace.join("\n");
     spurt($file, $replace ~ "\n");
 }
 
 multi sub replace(
-    'sysctl.conf',
+    '99-sysctl.conf',
     DiskType:D $disk-type
     --> Nil
 )
 {*}
 
 multi sub replace(
-    'sysctl.conf',
+    '99-sysctl.conf',
     Str:D $subject where 'vm.vfs_cache_pressure',
     Str:D @line
     --> Array[Str:D]
@@ -1750,7 +1750,7 @@ multi sub replace(
 }
 
 multi sub replace(
-    'sysctl.conf',
+    '99-sysctl.conf',
     Str:D $subject where 'vm.swappiness',
     Str:D @line
     --> Array[Str:D]
@@ -1762,7 +1762,7 @@ multi sub replace(
     @line;
 }
 
-# --- end sysctl.conf }}}
+# --- end 99-sysctl.conf }}}
 # --- sshd_config {{{
 
 multi sub replace(
