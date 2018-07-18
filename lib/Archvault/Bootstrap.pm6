@@ -1720,7 +1720,7 @@ multi sub replace(
     --> Nil
 )
 {
-    my Str:D $file = '/mnt/etc/sysctl.d/99-sysctl.conf'
+    my Str:D $file = '/mnt/etc/sysctl.d/99-sysctl.conf';
     my Str:D @replace =
         $file.IO.lines
         ==> replace('99-sysctl.conf', 'vm.vfs_cache_pressure')
