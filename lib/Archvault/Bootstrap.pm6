@@ -417,6 +417,8 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
         'var',
         'var-cache-pacman',
         'var-lib-ex',
+        'var-lib-machines',
+        'var-lib-portables',
         'var-lib-postgres',
         'var-log',
         'var-opt',
@@ -493,6 +495,44 @@ multi sub mount-btrfs-subvolume(
         /mnt/$btrfs-dir
     >);
     run(qqw<chmod 1777 /mnt/$btrfs-dir>);
+}
+
+multi sub mount-btrfs-subvolume(
+    'var-lib-machines',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/lib/machines';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,subvol=@var-lib-machines
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+    chmod(0o700, "/mnt/$btrfs-dir");
+}
+
+multi sub mount-btrfs-subvolume(
+    'var-lib-portables',
+    Str:D $mount-options,
+    VaultName:D $vault-name
+    --> Nil
+)
+{
+    my Str:D $btrfs-dir = 'var/lib/portables';
+    mkdir("/mnt/$btrfs-dir");
+    run(qqw<
+        mount
+        -t btrfs
+        -o $mount-options,subvol=@var-lib-portables
+        /dev/mapper/$vault-name
+        /mnt/$btrfs-dir
+    >);
+    chmod(0o700, "/mnt/$btrfs-dir");
 }
 
 multi sub mount-btrfs-subvolume(
@@ -605,14 +645,12 @@ multi sub mount-btrfs-subvolume(
 
 method !disable-cow(--> Nil)
 {
-    my Str:D $var-lib-machines = '/mnt/var/lib/machines';
-    mkdir($var-lib-machines);
-    chmod(0o700, $var-lib-machines);
     my Str:D @directory = qw<
         home
         srv
         var/lib/ex
         var/lib/machines
+        var/lib/portables
         var/lib/postgres
         var/log
         var/spool
