@@ -108,7 +108,7 @@ multi sub disable-cow(
 
 method gen-pass-hash(Str:D $pass, Bool :$grub --> Str:D)
 {
-    gen-pass-hash($pass, :$grub);
+    my Str:D $pass-hash = gen-pass-hash($pass, :$grub);
 }
 
 # generate pbkdf2 password hash from plaintext password
@@ -127,7 +127,7 @@ multi sub gen-pass-hash(Str:D $user-pass, Bool :grub($) --> Str:D)
 
 method prompt-pass-hash(Str $user-name?, Bool :$grub --> Str:D)
 {
-    prompt-pass-hash($user-name, :$grub);
+    my Str:D $pass-hash = prompt-pass-hash($user-name, :$grub);
 }
 
 # generate pbkdf2 password hash from interactive user input
