@@ -25,13 +25,13 @@ multi sub MAIN(
     --> Nil
 )
 {
-    my %opt;
-    %opt<clean> = $clean if $clean;
-    %opt<group> = $group if $group;
-    %opt<permissions> = $permissions if $permissions;
-    %opt<recursive> = $recursive if $recursive;
-    %opt<user> = $user if $user;
-    Archvault::Utils.disable-cow(@directory, |%opt);
+    my %opts;
+    %opts<clean> = $clean if $clean;
+    %opts<group> = $group if $group;
+    %opts<permissions> = $permissions if $permissions;
+    %opts<recursive> = $recursive if $recursive;
+    %opts<user> = $user if $user;
+    Archvault::Utils.disable-cow(@directory, |%opts);
 }
 
 
