@@ -1109,12 +1109,13 @@ multi sub install-bootloader(
         grub-install
         --target=x86_64-efi
         --efi-directory=/boot/efi
+        --removable
     >, $partition);
 
     # fix virtualbox uefi
     my Str:D $nsh = q:to/EOF/;
     fs0:
-    \EFI\arch\grubx64.efi
+    \EFI\BOOT\BOOTX64.EFI
     EOF
     spurt('/mnt/boot/efi/startup.nsh', $nsh, :append);
 }
