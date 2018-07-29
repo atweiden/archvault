@@ -77,7 +77,9 @@ method !setup(--> Nil)
         coreutils
         cryptsetup
         dialog
+        dosfstools
         e2fsprogs
+        efibootmgr
         expect
         glibc
         gptfdisk
@@ -142,11 +144,17 @@ method !mkdisk(--> Nil)
     # partition disk
     sgdisk($partition);
 
+    # create uefi partition
+    mkefi($partition);
+
     # create vault
     mkvault($partition, $vault-name, :$vault-pass);
 
     # create and mount btrfs volumes
     mkbtrfs($disk-type, $vault-name);
+
+    # mount efi boot
+    mount-efi($partition);
 }
 
 # partition disk with gdisk
@@ -154,6 +162,7 @@ sub sgdisk(Str:D $partition --> Nil)
 {
     # erase existing partition table
     # create 2MB EF02 BIOS boot sector
+    # create 100MB EF00 EFI system partition
     # create max sized partition for LUKS encrypted volume
     run(qw<
         sgdisk
@@ -162,9 +171,18 @@ sub sgdisk(Str:D $partition --> Nil)
         --mbrtogpt
         --new=1:0:+2M
         --typecode=1:EF02
-        --new=2:0:0
-        --typecode=2:8300
+        --new=2:0:+100M
+        --typecode=2:EF00
+        --new=3:0:0
+        --typecode=3:8300
     >, $partition);
+}
+
+sub mkefi(Str:D $partition --> Nil)
+{
+    # target partition for uefi
+    my Str:D $partition-efi = sprintf(Q{%s2}, $partition);
+    run(qqw<mkfs.vfat -F 32 $partition-efi>);
 }
 
 # create vault with cryptsetup
@@ -176,7 +194,7 @@ sub mkvault(
 )
 {
     # target partition for vault
-    my Str:D $partition-vault = sprintf(Q{%s2}, $partition);
+    my Str:D $partition-vault = sprintf(Q{%s3}, $partition);
 
     # load kernel modules for cryptsetup
     run(qw<modprobe dm_mod dm-crypt>);
@@ -643,6 +661,15 @@ multi sub mount-btrfs-subvolume(
     >);
 }
 
+sub mount-efi(Str:D $partition --> Nil)
+{
+    # target partition for uefi
+    my Str:D $partition-efi = sprintf(Q{%s2}, $partition);
+    my Str:D $efi-dir = '/mnt/boot/efi';
+    mkdir($efi-dir);
+    run(qqw<mount $partition-efi $efi-dir>);
+}
+
 method !disable-cow(--> Nil)
 {
     my Str:D @directory = qw<
@@ -677,11 +704,13 @@ method !pacstrap-base(--> Nil)
         dhclient
         dialog
         dnscrypt-proxy
+        dosfstools
         ed
+        efibootmgr
         ethtool
         expect
         gptfdisk
-        grub-bios
+        grub
         haveged
         ifplugd
         iproute2
@@ -1029,15 +1058,13 @@ sub configure-bootloader(
     spurt('/mnt/etc/grub.d/40_custom', $grub-superusers, :append);
 }
 
-sub install-bootloader(Str:D $partition --> Nil)
+multi sub install-bootloader(
+    Str:D $partition
+    --> Nil
+)
 {
-    run(qw<
-        arch-chroot
-        /mnt
-        grub-install
-        --target=i386-pc
-        --recheck
-    >, $partition);
+    install-bootloader(:legacy, $partition);
+    install-bootloader(:uefi, $partition);
     run(qw<
         arch-chroot
         /mnt
@@ -1051,6 +1078,45 @@ sub install-bootloader(Str:D $partition --> Nil)
         grub-mkconfig
         -o /boot/grub/grub.cfg
     >);
+}
+
+multi sub install-bootloader(
+    Str:D $partition,
+    Bool:D :legacy($)! where .so
+    --> Nil
+)
+{
+    # legacy bios
+    run(qw<
+        arch-chroot
+        /mnt
+        grub-install
+        --target=i386-pc
+        --recheck
+    >, $partition);
+}
+
+multi sub install-bootloader(
+    Str:D $partition,
+    Bool:D :uefi($)! where .so
+    --> Nil
+)
+{
+    # uefi
+    run(qw<
+        arch-chroot
+        /mnt
+        grub-install
+        --target=x86_64-efi
+        --efi-directory=/boot/efi
+    >, $partition);
+
+    # fix virtualbox uefi
+    my Str:D $nsh = q:to/EOF/;
+    fs0:
+    \EFI\arch\grubx64.efi
+    EOF
+    spurt('/mnt/boot/efi/startup.nsh', $nsh, :append);
 }
 
 method !configure-sysctl(--> Nil)
@@ -1663,7 +1729,7 @@ multi sub replace(
 )
 {
     # prepare GRUB_CMDLINE_LINUX
-    my Str:D $partition-vault = sprintf(Q{%s2}, $partition);
+    my Str:D $partition-vault = sprintf(Q{%s3}, $partition);
     my Str:D $vault-uuid = qqx<blkid -s UUID -o value $partition-vault>.trim;
     my Str:D $grub-cmdline-linux =
         sprintf(

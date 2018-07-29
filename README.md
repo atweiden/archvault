@@ -47,7 +47,9 @@ arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`              | Y
 btrfs-progs          | Btrfs setup                                        | Y
 coreutils            | `chmod`, `chown`, `cp`, `rm`                       | Y
 cryptsetup           | FDE with LUKS                                      | Y
+dosfstools           | create VFAT filesystem with `mkfs.vfat`            | Y
 e2fsprogs            | `chattr`                                           | Y
+efibootmgr           | UEFI support                                       | Y
 expect               | interactive command prompt automation              | N
 glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`                | Y

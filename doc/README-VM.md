@@ -43,6 +43,11 @@
   - Audio
     - Uncheck Enable Audio
   - Click OK
+- Enable UEFI (optional)
+  - With *arch64* selected in VirtualBox Manager, click *Settings*
+    - System
+      - Check Enable EFI (special OSes only)
+    - Click OK
 - With *arch64* selected in VirtualBox Manager, click *Start*
 
 ### Bootstrap Archvault
@@ -179,7 +184,7 @@ Host vbox-arch64
 - Select File->New
 - Drag and drop the official Arch Linux ISO into window from MacOS Finder
 - Select Linux->Other Linux 4.x or later kernel 64-bit
-- Select Legacy BIOS
+- Select Legacy BIOS or UEFI
 - Select Customize Settings
   - Processors and Memory
     - 1 processor core
@@ -237,7 +242,8 @@ The rest of the instructions are the same as with VirtualBox.
 
 **On guest machine**:
 
-- Press <kbd>Tab</kbd> when you see the boot loader screen
+- Press <kbd>Tab</kbd> when you see the boot loader screen, or
+  <kbd>e</kbd> for UEFI machines
   - Append `copytoram=y copytoram_size=7G cow_spacesize=7G` to the
     kernel line
   - Press <kbd>Enter</kbd>
@@ -327,12 +333,27 @@ If upon booting the Archvault system, you initially enter the wrong
 vault password, Grub will drop you into a rescue shell. [Here][here]
 is how to recover the system from the Grub rescue shell without rebooting:
 
+**legacy BIOS systems**
+
 ```
 grub rescue> ls
-(hd0) (hd0,gpt2) (hd0,gpt1) (proc)
-grub rescue> cryptomount hd0,gpt2
+(hd0) (hd0,gpt3) (hd0,gpt2) (hd0,gpt1) (proc)
+grub rescue> cryptomount hd0,gpt3
 Attempting to decrypt master key...
-Enter passphrase for hd0,gpt2 (88caa067d343402aabd6b107ab08125a):
+Enter passphrase for hd0,gpt3 (88caa067d343402aabd6b107ab08125a):
+Slot 0 opened
+grub rescue> insmod normal
+grub rescue> normal
+```
+
+**UEFI systems**
+
+```
+grub rescue> ls
+(proc) (hd0) (hd1) (hd1,gpt3) (hd1,gpt2) (hd1,gpt1)
+grub rescue> cryptomount hd1,gpt3
+Attempting to decrypt master key...
+Enter passphrase for hd1,gpt3 (88caa067d343402aabd6b107ab08125a):
 Slot 0 opened
 grub rescue> insmod normal
 grub rescue> normal
