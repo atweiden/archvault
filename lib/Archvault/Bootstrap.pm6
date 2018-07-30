@@ -701,6 +701,7 @@ method !pacstrap-base(--> Nil)
         bash-completion
         btrfs-progs
         ca-certificates
+        crda
         dhclient
         dialog
         dnscrypt-proxy
@@ -728,6 +729,7 @@ method !pacstrap-base(--> Nil)
         unzip
         vim
         wget
+        wireless-regdb
         wireless_tools
         wpa_actiond
         wpa_supplicant
