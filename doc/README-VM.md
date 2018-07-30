@@ -333,7 +333,7 @@ If upon booting the Archvault system, you initially enter the wrong
 vault password, Grub will drop you into a rescue shell. [Here][here]
 is how to recover the system from the Grub rescue shell without rebooting:
 
-**legacy BIOS systems**
+**Most systems**
 
 ```
 grub rescue> ls
@@ -346,7 +346,7 @@ grub rescue> insmod normal
 grub rescue> normal
 ```
 
-**UEFI systems**
+**VirtualBox UEFI systems**
 
 ```
 grub rescue> ls
