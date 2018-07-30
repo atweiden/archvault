@@ -1283,7 +1283,7 @@ multi sub configure-xorg('99-security.conf' --> Nil)
 method !enable-systemd-services(--> Nil)
 {
     my Str:D @service = qw<
-        dnscrypt-proxy
+        dnscrypt-proxy.service
         haveged
         nftables
         systemd-swap

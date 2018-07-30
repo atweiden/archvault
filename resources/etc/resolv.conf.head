@@ -1,6 +1,6 @@
 # DNSCrypt
-options edns0
 nameserver 127.0.0.1
+options edns0 single-request-reopen
 
 # OpenDNS nameservers
 nameserver 208.67.222.222
