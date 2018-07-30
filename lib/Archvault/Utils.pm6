@@ -170,6 +170,9 @@ multi sub prompt-pass-hash(
 
 multi sub gen-pass-hash-closure(Bool:D :grub($)! where .so --> Sub:D)
 {
+    # we require expect for scripting C<grub-mkpasswd-pbkdf2>
+    '/usr/bin/expect'.IO.x.so
+        or install-expect();
     my &gen-pass-hash = sub (Str:D $grub-pass --> Str:D)
     {
         my Str:D $grub-mkpasswd-pbkdf2-cmdline =
@@ -382,6 +385,37 @@ method ls-timezones(--> Array[Timezone:D])
         .map({ .split(/\h+/)[2] })
         .sort;
     my Timezone:D @timezones = |@zoneinfo, 'UTC';
+}
+
+
+# -----------------------------------------------------------------------------
+# utils
+# -----------------------------------------------------------------------------
+
+method loop-cmdline-proc(
+    Str:D $message where .so,
+    Str:D $cmdline where .so
+    --> Nil
+)
+{
+    loop
+    {
+        say($message);
+        my Proc:D $proc = shell($cmdline);
+        last if $proc.exitcode == 0;
+    }
+}
+
+sub install-expect(--> Nil)
+{
+    # C<pacman -S> requires root privileges
+    $*USER == 0
+        or die('Sorry, missing pkg expect. Please install: pacman -S expect');
+    my Str:D $pacman-expect-cmdline = 'pacman -Sy --needed --noconfirm expect';
+    Archvault::Utils.loop-cmdline-proc(
+        'Installing expect...',
+        $pacman-expect-cmdline
+    );
 }
 
 # vim: set filetype=perl6 foldmethod=marker foldlevel=0:

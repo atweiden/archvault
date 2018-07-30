@@ -96,7 +96,7 @@ method !setup(--> Nil)
 
     my Str:D $pacman-dep-cmdline =
         sprintf('pacman -Sy --needed --noconfirm %s', @dep.join(' '));
-    loop-cmdline-proc(
+    Archvault::Utils.loop-cmdline-proc(
         'Installing dependencies...',
         $pacman-dep-cmdline
     );
@@ -112,7 +112,7 @@ sub reflector(--> Nil)
 {
     my Str:D $pacman-reflector-cmdline =
         'pacman -Sy --needed --noconfirm reflector';
-    loop-cmdline-proc(
+    Archvault::Utils.loop-cmdline-proc(
         'Installing reflector...',
         $pacman-reflector-cmdline
     );
@@ -127,7 +127,7 @@ sub reflector(--> Nil)
         --number 7
         --save /etc/pacman.d/mirrorlist
     >.join(' ');
-    loop-cmdline-proc(
+    Archvault::Utils.loop-cmdline-proc(
         'Running reflector to optimize pacman mirrors',
         $reflector-cmdline
     );
@@ -254,13 +254,13 @@ multi sub mkvault-cryptsetup(
         );
 
     # create LUKS encrypted volume, prompt user for vault password
-    loop-cmdline-proc(
+    Archvault::Utils.loop-cmdline-proc(
         'Creating LUKS vault...',
         $cryptsetup-luks-format-cmdline
     );
 
     # open LUKS encrypted volume, prompt user for vault password
-    loop-cmdline-proc(
+    Archvault::Utils.loop-cmdline-proc(
         'Opening LUKS vault...',
         $cryptsetup-luks-open-cmdline
     );
@@ -740,7 +740,7 @@ method !pacstrap-base(--> Nil)
 
     # download and install packages with pacman in chroot
     my Str:D $pacstrap-cmdline = sprintf('pacstrap /mnt %s', @pkg.join(' '));
-    loop-cmdline-proc(
+    Archvault::Utils.loop-cmdline-proc(
         'Running pacstrap...',
         $pacstrap-cmdline
     );
@@ -1341,23 +1341,6 @@ multi sub arch-chroot-mkdir(
 }
 
 # end sub arch-chroot-mkdir }}}
-# sub loop-cmdline-proc {{{
-
-sub loop-cmdline-proc(
-    Str:D $message where .so,
-    Str:D $cmdline where .so
-    --> Nil
-)
-{
-    loop
-    {
-        say($message);
-        my Proc:D $proc = shell($cmdline);
-        last if $proc.exitcode == 0;
-    }
-}
-
-# end sub loop-cmdline-proc }}}
 # sub replace {{{
 
 # --- sudoers {{{
