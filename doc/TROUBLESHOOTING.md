@@ -8,9 +8,30 @@ out of date. This is fairly easy to fix manually:
 
 **`Keymap` type is out of date**
 
+```
+Type check failed in assignment to @keymap; expected Archvault::Types::Keymap:D but got Str ("amiga-de")
+```
+
+The solution is to edit the `%keymaps` constant in
+`lib/Archvault/Types.pm6` to include `amiga-de`.
+
 **`Locale` type is out of date**
 
+```
+Type check failed in assignment to @locale; expected Archvault::Types::Locale:D but got Str ("aa_DJ")
+```
+
+The solution is to edit the `%locales` constant in
+`lib/Archvault/Types.pm6` to include `aa_DJ`.
+
 **`Timezone` type is out of date**
+
+```
+Type check failed in assignment to @timezones; expected Archvault::Types::Locale:D but got Str ("Africa/Abidjan")
+```
+
+The solution is to edit the `@timezones` constant in
+`lib/Archvault/Types.pm6` to include `Africa/Abidjan`.
 
 ## Archvault Wireless Errors
 
