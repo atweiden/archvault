@@ -53,10 +53,13 @@ wireless capabilities and SSH support. Configures unprivileged SFTP-only
 user enforced with OpenSSH `ChrootDirectory` and `internal-sftp` in
 `/etc/ssh/sshd_config`.
 
-Customizes root, admin, guest, and sftp user password.
+Customizes root, admin, guest, and sftp user password. Ten
+minute shell timeout, your current shell or user
+session will end after ten minutes of inactivity (see:
+[resources/etc/profile.d/shell-timeout.sh](resources/etc/profile.d/shell-timeout.sh)).
 
 Nicely configures dnscrypt-proxy. Activates systemd service files for
-dnscrypt-proxy and nftables. Custom `sysctl.conf`.
+dnscrypt-proxy, nftables and systemd-swap. Custom `sysctl.conf`.
 
 Use `archvault --augment new` to drop to Bash console before closing
 LUKS encrypted vault and unmounting.
