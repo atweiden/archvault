@@ -27,7 +27,7 @@ The solution is to edit the `%locales` constant in
 **`Timezone` type is out of date**
 
 ```
-Type check failed in assignment to @timezones; expected Archvault::Types::Locale:D but got Str ("Africa/Abidjan")
+Type check failed in assignment to @timezones; expected Archvault::Types::Timezone:D but got Str ("Africa/Abidjan")
 ```
 
 The solution is to edit the `@timezones` constant in
