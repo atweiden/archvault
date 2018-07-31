@@ -43,9 +43,9 @@ easiest way to find out if this is true is to buy a high gain USB adapter
 from [SimpleWiFi][SimpleWiFi], and see if it works. If it does, you know
 the factory wireless card is at fault.
 
-If the USB adapter fails, however, it often means something lower
-level has gone awry. Reboot with `acpi=off` appended to your kernel
-command line:
+If the USB adapter fails, however, it often means something lower level
+has gone awry. Reboot with [acpi=off][acpi=off] [appended][appended]
+to your kernel command line:
 
 ```
 # in vim, append acpi=off to GRUB_CMDLINE_LINUX
@@ -54,9 +54,27 @@ vim /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
+You may only have to boot with `acpi=off` once to get wifi
+working. Disabling the [GPE.L6F][GPE.L6F] function also seems to help:
+
+```
+echo "disable" > /sys/firmware/acpi/interrupts/gpe6F
+```
+
 After this, if your wifi still fails to connect, it could indicate a
 problem with your dhcpcd config. Alternatively, there could be an issue
 with your router.
+
+## Assorted Errors
+
+Modern computers often have problems running Linux smoothly. Be sure to
+scour the web for resources like these:
+
+- https://wiki.archlinux.org/index.php/Laptop/Lenovo
+- https://github.com/mikolajb/skylake-on-linux
+- https://gist.github.com/StefanoBelli/0aab46b858a797c4eedb90e8799dffa2
+
+Maybe try looking for BIOS updates.
 
 ## Booting Archvault From Grub Rescue Shell
 
@@ -196,6 +214,9 @@ Re-maximize the *main split* vertically:
 - <kbd>Ctrl-w</kbd> <kbd>_</kbd>
 
 
+[acpi=off]: https://askubuntu.com/questions/139157/booting-ubuntu-with-acpi-off-grub-parameter
+[appended]: https://askubuntu.com/questions/127989/no-acpi-support-for-my-pc-what-can-i-do
+[GPE.L6F]: http://jhshi.me/2015/11/14/acpi-error-method-parseexecution-failed-_gpe_l6f/index.html#.W19wDdhKjdQ
 [Grub]: https://www.reddit.com/r/archlinux/comments/6ahvnk/grub_decryption_really_slow/dhew32m/
 [here]: https://unix.stackexchange.com/questions/318745/grub2-encryption-reprompt/321825#321825
 [SimpleWiFi]: https://www.simplewifi.com/collections/usb-adapters/products/usb-adapter
