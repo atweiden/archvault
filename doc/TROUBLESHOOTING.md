@@ -35,10 +35,28 @@ The solution is to edit the `@timezones` constant in
 
 ## Archvault Wireless Errors
 
-If Archvault fails to connect to a wireless access point, it's a sure sign
-of trouble to come. Rather than trying to make your machine's factory
-wireless card work, do yourself a favor and buy a high gain USB adapter
-from [SimpleWiFi][SimpleWiFi].
+If Archvault fails to connect to a wireless access point, it could
+mean anything.
+
+In some cases, the problem is your system's factory wireless card. The
+easiest way to find out if this is true is to buy a high gain USB adapter
+from [SimpleWiFi][SimpleWiFi], and see if it works. If it does, you know
+the factory wireless card is at fault.
+
+If the USB adapter fails, however, it often means something lower
+level has gone awry. Reboot with `acpi=off` appended to your kernel
+command line:
+
+```
+# in vim, append acpi=off to GRUB_CMDLINE_LINUX
+vim /etc/default/grub
+# regenerate grub config
+grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+After this, if your wifi still fails to connect, it could indicate a
+problem with your dhcpcd config. Alternatively, there could be an issue
+with your router.
 
 ## Booting Archvault From Grub Rescue Shell
 
