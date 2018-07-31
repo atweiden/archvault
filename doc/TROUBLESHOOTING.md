@@ -61,9 +61,11 @@ working. Disabling the [GPE.L6F][GPE.L6F] function also seems to help:
 echo "disable" > /sys/firmware/acpi/interrupts/gpe6F
 ```
 
-After this, if your wifi still fails to connect, it could indicate a
-problem with your dhcpcd config. Alternatively, there could be an issue
-with your router.
+If your wifi is still not working yet, try updating your BIOS.
+
+After trying everything else, if your wifi still fails to connect,
+it could indicate a problem with your dhcpcd config. Alternatively,
+there could be an issue with your wireless router.
 
 ## Assorted Errors
 
@@ -188,6 +190,12 @@ Create a vertical split within the *main split*:
 :vsp
 ```
 
+Open a terminal:
+
+```vim
+:terminal
+```
+
 Maximize the *main split* vertically and horizontally:
 
 - <kbd>Ctrl-w</kbd> <kbd>_</kbd>
@@ -202,16 +210,6 @@ Center the *main split*:
 Navigate back to the *main split*:
 
 - <kbd>Ctrl-w</kbd> <kbd>h</kbd>
-
-Open a terminal:
-
-```vim
-:terminal
-```
-
-Re-maximize the *main split* vertically:
-
-- <kbd>Ctrl-w</kbd> <kbd>_</kbd>
 
 
 [acpi=off]: https://askubuntu.com/questions/139157/booting-ubuntu-with-acpi-off-grub-parameter
