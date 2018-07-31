@@ -86,6 +86,31 @@ export ARCHVAULT_ADMIN_PASS="your admin user's password"
 archvault new
 ```
 
+Archvault recognizes the following environment variables:
+
+```sh
+ARCHVAULT_ADMIN_NAME="live"
+ARCHVAULT_ADMIN_PASS="your admin user's password"
+ARCHVAULT_GUEST_NAME="guest"
+ARCHVAULT_GUEST_PASS="your guest user's password"
+ARCHVAULT_SFTP_NAME="variable"
+ARCHVAULT_SFTP_PASS="your sftp user's password"
+ARCHVAULT_GRUB_NAME="grub"
+ARCHVAULT_GRUB_PASS="your grub user's password"
+ARCHVAULT_ROOT_PASS="your root password"
+ARCHVAULT_VAULT_NAME="vault"
+ARCHVAULT_VAULT_PASS="your LUKS encrypted volume's password"
+ARCHVAULT_HOSTNAME="vault"
+ARCHVAULT_PARTITION="/dev/sdb"
+ARCHVAULT_PROCESSOR="other"
+ARCHVAULT_GRAPHICS="intel"
+ARCHVAULT_DISK_TYPE="usb"
+ARCHVAULT_LOCALE="en_US"
+ARCHVAULT_KEYMAP="us"
+ARCHVAULT_TIMEZONE="America/Los_Angeles"
+ARCHVAULT_AUGMENT=1
+```
+
 **Supply options via cmdline flags**:
 
 ```sh
