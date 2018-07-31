@@ -4,10 +4,88 @@ Archvault
 Bootstrap Arch with FDE
 
 
+Description
+-----------
+
+Bootstraps new Arch Linux system with the official `pacstrap` utility,
+resulting in whole system Btrfs on LUKS, including encrypted `/boot`.
+
+Does not create a swap partition, uses
+[zswap](https://www.kernel.org/doc/Documentation/vm/zswap.txt) via
+[systemd-swap](https://github.com/Nefelim4ag/systemd-swap) instead.
+
+Custom password-protected Grub command line.
+
+Comes with support for both legacy BIOS and UEFI bootloaders, with GPT
+partitioning. `/dev/sdX1` is the BIOS boot sector, `/dev/sdX2` is the
+EFI system partition, `/dev/sdX3` is the root Btrfs filesystem on LUKS.
+
+Creates the following Btrfs subvolumes:
+
+Subvolume name       | Mounting point
+---                  | ---
+`@`                  | `/`
+`@boot`              | `/boot`
+`@home`              | `/home`
+`@opt`               | `/opt`
+`@srv`               | `/srv`
+`@usr`               | `/usr`
+`@var`               | `/var`
+`@var-cache-pacman`  | `/var/cache/pacman`
+`@var-lib-ex`        | `/var/lib/ex`
+`@var-lib-machines`  | `/var/lib/machines`
+`@var-lib-portables` | `/var/lib/portables`
+`@var-lib-postgres`  | `/var/lib/postgres`
+`@var-log`           | `/var/log`
+`@var-opt`           | `/var/opt`
+`@var-spool`         | `/var/spool`
+`@var-tmp`           | `/var/tmp`
+
+Disables Btrfs CoW on `/home`, `/srv`, `/var/lib/ex`, `/var/lib/machines`,
+`/var/lib/portables`, `/var/lib/postgres`, `/var/log`, `/var/spool` and
+`/var/tmp`.
+
+Mounts directories `/srv`, `/tmp`, `/var/lib/ex`, `/var/log`, `/var/spool`
+and `/var/tmp` with options `nodev,noexec,nosuid`.
+
+Only installs packages necessary for booting to Linux tty with full
+wireless capabilities and SSH support. Configures unprivileged SFTP-only
+user enforced with OpenSSH `ChrootDirectory` and `internal-sftp` in
+`/etc/ssh/sshd_config`.
+
+Customizes root, admin, guest, and sftp user password.
+
+Nicely configures dnscrypt-proxy. Activates systemd service files for
+dnscrypt-proxy and nftables. Custom `sysctl.conf`.
+
+Use `archvault --augment new` to drop to Bash console before closing
+LUKS encrypted vault and unmounting.
+
+
 Synopsis
 --------
 
-```bash
+### `archvault new`
+
+Bootstrap Archvault.
+
+**Supply options interactively (recommended)**:
+
+```sh
+archvault new
+```
+
+**Supply options via environment variables**:
+
+```sh
+export ARCHVAULT_ADMIN_NAME="live"
+export ARCHVAULT_ADMIN_PASS="your admin user's password"
+archvault new
+```
+
+**Supply options via cmdline flags**:
+
+```sh
 archvault --admin-name="live"                                  \
           --admin-pass="your admin user's password"            \
           --guest-name="guest"                                 \
@@ -31,6 +109,65 @@ archvault --admin-name="live"                                  \
           new
 ```
 
+### `archvault gen-pass-hash`
+
+Generate a password hash suitable for creating Linux user accounts or
+password-protecting the Grub command line.
+
+```sh
+archvault gen-pass-hash
+Enter new password:
+Retype new password:
+$6$rounds=700000$sleJxKNAgRnG7E8s$Fjg0/vuRz.GgF0FwDE04gP2i6oMq/Y4kodb1RLTbR3SpABVDKGdhCVfLpC5LwCOXDMEU.ylyV40..jrGmI.4N0
+
+archvault \
+  --admin-name='live'                                                                                                                          \
+  --admin-pass-hash='$6$rounds=700000$sleJxKNAgRnG7E8s$Fjg0/vuRz.GgF0FwDE04gP2i6oMq/Y4kodb1RLTbR3SpABVDKGdhCVfLpC5LwCOXDMEU.ylyV40..jrGmI.4N0' \
+  new
+```
+
+### `archvault ls`
+
+List system information including keymaps, locales, timezones, and
+partitions.
+
+It's recommended to run `archvault ls <keymaps|locales|timezones>`
+before running `archvault new` to ensure Archvault types
+`Keymap`, `Locale`, `Timezone` are working properly (see:
+[doc/TROUBLESHOOTING.md](doc/TROUBLESHOOTING.md#archvault-type-errors)).
+
+**List keymaps**:
+
+```sh
+archvault ls keymaps
+```
+
+**List locales**:
+
+```sh
+archvault ls locales
+```
+
+**List partitions**:
+
+```sh
+archvault ls partitions
+```
+
+**List timezones**:
+
+```sh
+archvault ls timezones
+```
+
+### `archvault disable-cow`
+
+Disable the Copy-on-Write attribute for Btrfs directories.
+
+```sh
+archvault -r disable-cow dest/
+```
+
 
 Installation
 ------------
@@ -44,17 +181,17 @@ Dependencies
 Name                 | Provides                                           | Included in Arch ISO¹?
 ---                  | ---                                                | ---
 arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`              | Y
-btrfs-progs          | Btrfs setup                                        | Y
+btrfs-progs          | Btrfs support                                      | Y
 coreutils            | `chmod`, `chown`, `cp`, `rm`                       | Y
 cryptsetup           | FDE with LUKS                                      | Y
-dosfstools           | create VFAT filesystem with `mkfs.vfat`            | Y
+dosfstools           | create VFAT filesystem for UEFI with `mkfs.vfat`   | Y
 e2fsprogs            | `chattr`                                           | Y
 efibootmgr           | UEFI support                                       | Y
 expect               | interactive command prompt automation              | N
 glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`                | Y
-grub                 | `grub-mkpasswd-pbkdf2`                             | Y
-haveged              | `haveged`                                          | Y
+grub                 | FDE on `/boot`, `grub-mkpasswd-pbkdf2`             | Y
+haveged              | entropy for `pacman-key`                           | Y
 kbd                  | keymap data in `/usr/share/kbd/keymaps`, `setfont` | Y
 kmod                 | `modprobe`                                         | Y
 openssl              | user password salts                                | Y
@@ -126,3 +263,5 @@ Licensing
 
 This is free and unencumbered public domain software. For more
 information, see http://unlicense.org/ or the accompanying UNLICENSE file.
+
+<!-- vim: set filetype=markdown foldmethod=marker foldlevel=0 nowrap: -->
