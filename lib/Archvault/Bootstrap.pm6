@@ -1286,7 +1286,6 @@ method !enable-systemd-services(--> Nil)
 {
     my Str:D @service = qw<
         dnscrypt-proxy.service
-        haveged
         nftables
         systemd-swap
     >;
