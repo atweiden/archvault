@@ -212,6 +212,10 @@ Navigate back to the *main split*:
 
 - <kbd>Ctrl-w</kbd> <kbd>h</kbd>
 
+Use <kbd>Ctrl-w</kbd> <kbd><</kbd>, <kbd>Ctrl-w</kbd> <kbd>></kbd>,
+<kbd>Ctrl-w</kbd> <kbd>+</kbd>, <kbd>Ctrl-w</kbd> <kbd>-</kbd> to modify
+split borders to your liking.
+
 
 [acpi=off]: https://askubuntu.com/questions/139157/booting-ubuntu-with-acpi-off-grub-parameter
 [appended]: https://askubuntu.com/questions/127989/no-acpi-support-for-my-pc-what-can-i-do
