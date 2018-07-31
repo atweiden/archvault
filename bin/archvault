@@ -16,10 +16,10 @@ use Archvault::Utils;
 
 multi sub MAIN(
     'disable-cow',
-    Str :c(:$clean),
+    Bool :c(:$clean),
     Str :g(:$group),
     Str :p(:$permissions),
-    Str :r(:$recursive),
+    Bool :r(:$recursive),
     Str :u(:$user),
     *@directory
     --> Nil
