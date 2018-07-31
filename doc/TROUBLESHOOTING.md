@@ -13,7 +13,7 @@ Type check failed in assignment to @keymap; expected Archvault::Types::Keymap:D 
 ```
 
 The solution is to edit the `%keymaps` constant in
-`lib/Archvault/Types.pm6` to include `amiga-de`.
+[lib/Archvault/Types.pm6][lib/Archvault/Types.pm6] to include `amiga-de`.
 
 **`Locale` type is out of date**
 
@@ -22,7 +22,7 @@ Type check failed in assignment to @locale; expected Archvault::Types::Locale:D 
 ```
 
 The solution is to edit the `%locales` constant in
-`lib/Archvault/Types.pm6` to include `aa_DJ`.
+[lib/Archvault/Types.pm6][lib/Archvault/Types.pm6] to include `aa_DJ`.
 
 **`Timezone` type is out of date**
 
@@ -31,7 +31,8 @@ Type check failed in assignment to @timezones; expected Archvault::Types::Locale
 ```
 
 The solution is to edit the `@timezones` constant in
-`lib/Archvault/Types.pm6` to include `Africa/Abidjan`.
+[lib/Archvault/Types.pm6][lib/Archvault/Types.pm6] to include
+`Africa/Abidjan`.
 
 ## Archvault Wireless Errors
 
@@ -217,4 +218,5 @@ Navigate back to the *main split*:
 [GPE.L6F]: http://jhshi.me/2015/11/14/acpi-error-method-parseexecution-failed-_gpe_l6f/index.html#.W19wDdhKjdQ
 [Grub]: https://www.reddit.com/r/archlinux/comments/6ahvnk/grub_decryption_really_slow/dhew32m/
 [here]: https://unix.stackexchange.com/questions/318745/grub2-encryption-reprompt/321825#321825
+[lib/Archvault/Types.pm6]: ../lib/Archvault/Types.pm6
 [SimpleWiFi]: https://www.simplewifi.com/collections/usb-adapters/products/usb-adapter
