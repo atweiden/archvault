@@ -1190,6 +1190,7 @@ method !configure-systemd(--> Nil)
     configure-systemd('limits');
     configure-systemd('mounts');
     configure-systemd('sleep');
+    configure-systemd('swap');
     configure-systemd('tmpfiles');
     configure-systemd('udev');
 }
@@ -1213,6 +1214,14 @@ multi sub configure-systemd('mounts' --> Nil)
 multi sub configure-systemd('sleep' --> Nil)
 {
     my Str:D $path = 'etc/systemd/sleep.conf';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-systemd('swap' --> Nil)
+{
+    my Str:D $base-path = 'etc/systemd/swap.conf.d/';
+    my Str:D $path = "$base-path/zram.conf";
+    mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
