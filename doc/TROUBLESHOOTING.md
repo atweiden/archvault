@@ -125,7 +125,7 @@ the system:
 ```sh
 cryptsetup luksOpen /dev/sda3 vault
 # see: https://github.com/atweiden/scripts/blob/master/mnt-btrfs.sh
-curl -o mnt-btrfs.sh http://ix.io/1iMQ
+curl -o mnt-btrfs.sh http://ix.io/1iUP
 chmod +x mnt-btrfs.sh
 ./mnt-btrfs.sh
 arch-chroot /mnt pacman -Syu
