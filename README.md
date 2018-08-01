@@ -65,8 +65,9 @@ cause catastrophic data loss and system instability.
 
 ### Filesystem
 
-`/dev/sdX1` is the BIOS boot sector, `/dev/sdX2` is the EFI system
-partition, `/dev/sdX3` is the root Btrfs filesystem on LUKS.
+`/dev/sdX1` is the BIOS boot sector (size: 2MB), `/dev/sdX2` is the EFI
+system partition (size: 100MB), `/dev/sdX3` is the root Btrfs filesystem
+on LUKS (size: remainder).
 
 Archvault creates the following Btrfs subvolumes:
 
