@@ -24,7 +24,9 @@ cause catastrophic data loss and system instability.
 
 - whole system Btrfs on LUKS, including encrypted `/boot`
 - [GPT][GPT] partitioning
-- no swap partition, uses [zram][zram] via [systemd-swap][systemd-swap]
+- no swap partition, uses [zram][zram]
+  via [systemd-swap][systemd-swap] (see:
+  [resources/etc/systemd/swap.conf.d/zram.conf](resources/etc/systemd/swap.conf.d/zram.conf))
 - [GRUB][GRUB] bootloader with both legacy BIOS and UEFI support
 - custom GRUB command line username and password
 - custom root, admin, guest, and SFTP user account passwords
