@@ -33,8 +33,8 @@ cause catastrophic data loss and system instability.
   - SFTP-only user enforced with OpenSSH
     `ChrootDirectory` and `ForceCommand internal-sftp` (see:
     [resources/etc/ssh/sshd_config](resources/etc/ssh/sshd_config))
-  - limits incoming `sshd` connections to SFTP-only user on localhost
-    (see: [resources/etc/hosts.allow](resources/etc/hosts.allow))
+  - limits incoming `sshd` connections to SFTP-only user on LAN (see:
+    [resources/etc/hosts.allow](resources/etc/hosts.allow))
 - uses [nftables][nftables] instead of iptables
 - configures kernel parameters with [Sysctl][Sysctl] (see:
   [resources/etc/sysctl.d/99-sysctl.conf](resources/etc/sysctl.d/99-sysctl.conf))
