@@ -23,7 +23,6 @@ cause catastrophic data loss and system instability.
 ### Features
 
 - whole system Btrfs on LUKS, including encrypted `/boot`
-- [systemd][systemd] init
 - [GPT][GPT] partitioning
 - no swap partition, uses [zswap][zswap] via [systemd-swap][systemd-swap]
 - [GRUB][GRUB] bootloader with both legacy BIOS and UEFI support
@@ -344,7 +343,6 @@ information, see http://unlicense.org/ or the accompanying UNLICENSE file.
 [installation guide]: https://wiki.archlinux.org/index.php/Installation_guide
 [nftables]: https://wiki.archlinux.org/index.php/nftables
 [Sysctl]: https://wiki.archlinux.org/index.php/Sysctl
-[systemd]: https://wiki.archlinux.org/index.php/Systemd
 [systemd-swap]: https://github.com/Nefelim4ag/systemd-swap
 [zswap]: https://www.kernel.org/doc/Documentation/vm/zswap.txt
 
