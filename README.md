@@ -68,7 +68,8 @@ cause catastrophic data loss and system instability.
 system partition (size: 100MB), `/dev/sdX3` is the root Btrfs filesystem
 on LUKS (size: remainder).
 
-Archvault creates the following Btrfs subvolumes:
+Archvault creates the following Btrfs subvolumes with a [flat layout][flat
+layout]:
 
 Subvolume name       | Mounting point
 ---                  | ---
@@ -338,6 +339,7 @@ information, see http://unlicense.org/ or the accompanying UNLICENSE file.
 [denies console login as root]: https://wiki.archlinux.org/index.php/Security#Denying_console_login_as_root
 [disables Btrfs CoW]: https://wiki.archlinux.org/index.php/Btrfs#Disabling_CoW
 [dnscrypt-proxy]: https://wiki.archlinux.org/index.php/DNSCrypt
+[flat layout]: https://btrfs.wiki.kernel.org/index.php/SysadminGuide#Layout
 [GPT]: https://wiki.archlinux.org/index.php/Partitioning#GUID_Partition_Table
 [GRUB]: https://wiki.archlinux.org/index.php/GRUB
 [hides process information]: https://wiki.archlinux.org/index.php/Security#hidepid
