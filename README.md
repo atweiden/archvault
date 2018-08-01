@@ -54,7 +54,7 @@ cause catastrophic data loss and system instability.
 - [hides process information][hides process information] from all other
   users besides admin
 - [denies console login as root][denies console login as root]
-- uses BFQ I/O scheduler for SSDs, mq-deadline for HDDs (see:
+- uses mq-deadline I/O scheduler for SSDs, BFQ for HDDs (see:
   [resources/etc/udev/rules.d/60-io-schedulers.rules](resources/etc/udev/rules.d/60-io-schedulers.rules))
 - disables hibernate, sleep, suspend (see:
   [resources/etc/systemd/sleep.conf](resources/etc/systemd/sleep.conf))
