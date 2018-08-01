@@ -50,8 +50,8 @@ and `/var/tmp` with options `nodev,noexec,nosuid`.
 
 Only installs packages necessary for booting to Linux tty with full
 wireless capabilities and SSH support. Configures unprivileged SFTP-only
-user enforced with OpenSSH `ChrootDirectory` and `internal-sftp` in
-`/etc/ssh/sshd_config`.
+user enforced with OpenSSH `ChrootDirectory` and `internal-sftp` (see:
+[resources/etc/ssh/sshd_config](resources/etc/ssh/sshd_config))
 
 Customizes root, admin, guest, and sftp user password. Ten
 minute shell timeout, your current shell or user
