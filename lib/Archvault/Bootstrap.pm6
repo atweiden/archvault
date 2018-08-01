@@ -32,6 +32,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-sudoers;
     self!genfstab;
     self!set-hostname;
+    self!configure-hosts;
     self!configure-dhcpcd;
     self!configure-dnscrypt-proxy;
     self!set-nameservers;
@@ -945,6 +946,17 @@ method !set-hostname(--> Nil)
 {
     my HostName:D $host-name = $.config.host-name;
     spurt('/mnt/etc/hostname', $host-name ~ "\n");
+}
+
+method !configure-hosts(--> Nil)
+{
+    my HostName:D $host-name = $.config.host-name;
+    my Str:D $path = 'etc/hosts';
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+    my Str:D $hosts = qq:to/EOF/;
+    127.0.1.1        $host-name.localdomain        $host-name
+    EOF
+    spurt("/mnt/$path", $hosts, :append);
 }
 
 method !configure-dhcpcd(--> Nil)
