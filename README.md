@@ -7,20 +7,68 @@ Bootstrap Arch with FDE
 Description
 -----------
 
-Bootstraps new Arch Linux system with the official `pacstrap` utility,
-resulting in whole system Btrfs on LUKS, including encrypted `/boot`.
+### Overview
 
-Does not create a swap partition, uses
-[zswap](https://www.kernel.org/doc/Documentation/vm/zswap.txt) via
-[systemd-swap](https://github.com/Nefelim4ag/systemd-swap) instead.
+Archvault bootstraps Arch with whole system Btrfs on LUKS
+using the official [installation guide][installation guide] and
+[arch-install-scripts][arch-install-scripts].
 
-Custom password-protected Grub command line.
+Archvault works on Arch only. It assumes you are comfortable working
+on the cmdline, and that you have no need for booting other operating
+systems on the target partition.
 
-Comes with support for both legacy BIOS and UEFI bootloaders, with GPT
-partitioning. `/dev/sdX1` is the BIOS boot sector, `/dev/sdX2` is the
-EFI system partition, `/dev/sdX3` is the root Btrfs filesystem on LUKS.
+WARNING: failure to give appropriate values during Archvault setup could
+cause catastrophic data loss and system instability.
 
-Creates the following Btrfs subvolumes:
+### Features
+
+- whole system Btrfs on LUKS, including encrypted `/boot`
+- [systemd][systemd] init
+- [GPT][GPT] partitioning
+- no swap partition, uses [zswap][zswap] via [systemd-swap][systemd-swap]
+- [GRUB][GRUB] bootloader with both legacy BIOS and UEFI support
+- custom GRUB command line username and password
+- custom root, admin, guest, and SFTP user account passwords
+- configures SSH
+  - SFTP-only user enforced with OpenSSH
+    `ChrootDirectory` and `ForceCommand internal-sftp` (see:
+    [resources/etc/ssh/sshd_config](resources/etc/ssh/sshd_config))
+  - limits incoming `sshd` connections to SFTP-only user on localhost
+    (see: [resources/etc/hosts.allow](resources/etc/hosts.allow))
+- uses [nftables][nftables] instead of iptables
+- configures kernel parameters with [Sysctl][Sysctl] (see:
+  [resources/etc/sysctl.d/99-sysctl.conf](resources/etc/sysctl.d/99-sysctl.conf))
+- blacklists kernel modules for floppy drives, beeping speakers, Intel
+  ME, firewire, bluetooth and thunderbolt (see:
+  [resources/etc/modprobe.d/modprobe.conf](resources/etc/modprobe.d/modprobe.conf))
+- configures [dnscrypt-proxy][dnscrypt-proxy]
+  - server must support DNS security extensions (DNSSEC)
+  - always use TCP to connect to upstream servers
+  - create new, unique key for each DNS query
+  - disable TLS session tickets
+  - disable DNS cache
+- forces password entry with every `sudo`
+  - passwordless `sudo reboot` and `sudo shutdown`
+- ten minute shell timeout, your current shell or user
+  session will end after ten minutes of inactivity (see:
+  [resources/etc/profile.d/shell-timeout.sh](resources/etc/profile.d/shell-timeout.sh))
+- [hides process information][hides process information] from all other
+  users besides admin
+- [denies console login as root][denies console login as root]
+- uses BFQ I/O scheduler for SSDs, mq-deadline for HDDs (see:
+  [resources/etc/udev/rules.d/60-io-schedulers.rules](resources/etc/udev/rules.d/60-io-schedulers.rules))
+- disables hibernate, sleep, suspend (see:
+  [resources/etc/systemd/sleep.conf](resources/etc/systemd/sleep.conf))
+- enables systemd service for dnscrypt-proxy, nftables and systemd-swap
+- configures xorg, but does not install any xorg packages (see:
+  [resources/etc/X11](resources/etc/X11))
+
+### Filesystem
+
+`/dev/sdX1` is the BIOS boot sector, `/dev/sdX2` is the EFI system
+partition, `/dev/sdX3` is the root Btrfs filesystem on LUKS.
+
+Archvault creates the following Btrfs subvolumes:
 
 Subvolume name       | Mounting point
 ---                  | ---
@@ -41,28 +89,12 @@ Subvolume name       | Mounting point
 `@var-spool`         | `/var/spool`
 `@var-tmp`           | `/var/tmp`
 
-Disables Btrfs CoW on `/home`, `/srv`, `/var/lib/ex`, `/var/lib/machines`,
-`/var/lib/portables`, `/var/lib/postgres`, `/var/log`, `/var/spool` and
-`/var/tmp`.
+Archvault disables Btrfs CoW on `/home`, `/srv`, `/var/lib/ex`,
+`/var/lib/machines`, `/var/lib/portables`, `/var/lib/postgres`,
+`/var/log`, `/var/spool` and `/var/tmp`.
 
-Mounts directories `/srv`, `/tmp`, `/var/lib/ex`, `/var/log`, `/var/spool`
-and `/var/tmp` with options `nodev,noexec,nosuid`.
-
-Only installs packages necessary for booting to Linux tty with full
-wireless capabilities and SSH support. Configures unprivileged SFTP-only
-user enforced with OpenSSH `ChrootDirectory` and `internal-sftp` (see:
-[resources/etc/ssh/sshd_config](resources/etc/ssh/sshd_config))
-
-Customizes root, admin, guest, and sftp user password. Ten
-minute shell timeout, your current shell or user
-session will end after ten minutes of inactivity (see:
-[resources/etc/profile.d/shell-timeout.sh](resources/etc/profile.d/shell-timeout.sh)).
-
-Nicely configures dnscrypt-proxy. Activates systemd service files for
-dnscrypt-proxy, nftables and systemd-swap. Custom `sysctl.conf`.
-
-Use `archvault --augment new` to drop to Bash console before closing
-LUKS encrypted vault and unmounting.
+Archvault mounts directories `/srv`, `/tmp`, `/var/lib/ex`, `/var/log`,
+`/var/spool` and `/var/tmp` with options `nodev,noexec,nosuid`.
 
 
 Synopsis
@@ -91,13 +123,18 @@ Archvault recognizes the following environment variables:
 ```sh
 ARCHVAULT_ADMIN_NAME="live"
 ARCHVAULT_ADMIN_PASS="your admin user's password"
+ARCHVAULT_ADMIN_PASS_HASH='$6$rounds=700000$sleJxKNAgRnG7E8s$Fjg0/vuRz.GgF0FwDE04gP2i6oMq/Y4kodb1RLTbR3SpABVDKGdhCVfLpC5LwCOXDMEU.ylyV40..jrGmI.4N0'
 ARCHVAULT_GUEST_NAME="guest"
 ARCHVAULT_GUEST_PASS="your guest user's password"
+ARCHVAULT_GUEST_PASS_HASH='$6$rounds=700000$H0WWMRVAqKMmJVUx$X9NiHaL.cvZ1/nQzUL5fcRP12wvOyrZ/0YV57cFddcTEkVZKbtIBv48EEd4SVu.1D5RWVX43dfTuyudYem0gf0'
 ARCHVAULT_SFTP_NAME="variable"
 ARCHVAULT_SFTP_PASS="your sftp user's password"
+ARCHVAULT_SFTP_PASS_HASH='$6$rounds=700000$H0WWMRVAqKMmJVUx$X9NiHaL.cvZ1/nQzUL5fcRP12wvOyrZ/0YV57cFddcTEkVZKbtIBv48EEd4SVu.1D5RWVX43dfTuyudYem0gf0'
 ARCHVAULT_GRUB_NAME="grub"
 ARCHVAULT_GRUB_PASS="your grub user's password"
+ARCHVAULT_GRUB_PASS_HASH='grub.pbkdf2.sha512.25000.4A7BC4FE022FA7E7D32B0B132B4AA5A61A63C8076FF6A8AF38C718FF334772E499F45D186C9EECF3622E7BA24B02C24F283261AE2D18163D54FD2CAF7FF3F7B7610F85AAB2BB7BAF806EF381B73730D5032E9CF75548C8BA1813B62121DC29A75E677ED6.5C1B9525BDE9F79A90221DC423AA66D1108731C8F2F5B0A9DC74279562242F05A8CCA4522706A2A74308B272EC05D0ACC1DCDA7263B09BF2F4C006623B3CEC842AC061B6D73B09A0067B23E9BF8560F053F940D5061F413C23C9F4544FDFC3F9BD026FB7'
 ARCHVAULT_ROOT_PASS="your root password"
+ARCHVAULT_ROOT_PASS_HASH='$6$rounds=700000$xDn3UJKNvfOxJ1Ds$YEaaBAvQQgVdtV7jFfVnwmh57Do1awMh8vTBtI1higrZMAXUisX2XKuYbdTcxgQMleWZvK3zkSJQ4F3Jyd5Ln1'
 ARCHVAULT_VAULT_NAME="vault"
 ARCHVAULT_VAULT_PASS="your LUKS encrypted volume's password"
 ARCHVAULT_HOSTNAME="vault"
@@ -140,7 +177,7 @@ archvault --admin-name="live"                                  \
 ### `archvault gen-pass-hash`
 
 Generate a password hash suitable for creating Linux user accounts or
-password-protecting the Grub command line.
+password-protecting the GRUB command line.
 
 ```sh
 archvault gen-pass-hash
@@ -291,5 +328,19 @@ Licensing
 
 This is free and unencumbered public domain software. For more
 information, see http://unlicense.org/ or the accompanying UNLICENSE file.
+
+
+[arch-install-scripts]: https://git.archlinux.org/arch-install-scripts.git
+[denies console login as root]: https://wiki.archlinux.org/index.php/Security#Denying_console_login_as_root
+[dnscrypt-proxy]: https://wiki.archlinux.org/index.php/DNSCrypt
+[GPT]: https://wiki.archlinux.org/index.php/Partitioning#GUID_Partition_Table
+[GRUB]: https://wiki.archlinux.org/index.php/GRUB
+[hides process information]: https://wiki.archlinux.org/index.php/Security#hidepid
+[installation guide]: https://wiki.archlinux.org/index.php/Installation_guide
+[nftables]: https://wiki.archlinux.org/index.php/nftables
+[Sysctl]: https://wiki.archlinux.org/index.php/Sysctl
+[systemd]: https://wiki.archlinux.org/index.php/Systemd
+[systemd-swap]: https://github.com/Nefelim4ag/systemd-swap
+[zswap]: https://www.kernel.org/doc/Documentation/vm/zswap.txt
 
 <!-- vim: set filetype=markdown foldmethod=marker foldlevel=0 nowrap: -->
