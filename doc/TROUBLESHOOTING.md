@@ -36,6 +36,8 @@ The solution is to edit the `@timezones` constant in
 
 ## Archvault Wireless Errors
 
+### Failure to Connect to Wireless Access Point
+
 If Archvault fails to connect to a wireless access point, it could
 mean anything.
 
@@ -45,8 +47,21 @@ from [SimpleWiFi][SimpleWiFi], and see if it works. If it does, you know
 the factory wireless card is at fault.
 
 If the USB adapter fails, however, it often means something lower level
-has gone awry. Reboot with [acpi=off][acpi=off] [appended][appended]
-to your kernel command line:
+has gone awry.
+
+The first thing you should try is disabling the [GPE.L6F][GPE.L6F]
+function:
+
+```
+echo "disable" > /sys/firmware/acpi/interrupts/gpe6F
+```
+
+This seems to help with certain Intel Skylake and Kaby Lake processors,
+and does not require a reboot.
+
+If disabling the `GPE.L6F` function fails, reboot with
+[acpi=off][acpi=off] or [similar][similar] appended to your kernel
+command line:
 
 ```
 # in vim, append acpi=off to GRUB_CMDLINE_LINUX
@@ -55,18 +70,22 @@ vim /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-You may only have to boot with `acpi=off` once to get wifi
-working. Disabling the [GPE.L6F][GPE.L6F] function also seems to help:
+You may only have to boot with `acpi=off` once to get wifi working.
 
-```
-echo "disable" > /sys/firmware/acpi/interrupts/gpe6F
-```
+If after this, your wifi is still not working yet, try updating your
+machine's BIOS.
 
-If your wifi is still not working yet, try updating your BIOS.
-
-After trying everything else, if your wifi still fails to connect,
-it could indicate a problem with your dhcpcd config. Alternatively,
+After trying everything else, if your wifi still fails to connect, it
+could indicate a problem with your [dhcpcd][dhcpcd] config. Alternatively,
 there could be an issue with your wireless router.
+
+### Failure to Find Wireless Access Point
+
+If your machine fails to find a wireless access point, you may need to
+strengthen your wireless signal with a wireless repeater or high gain
+adapter. See also: "[Respecting the regulatory domain][Respecting the
+regulatory domain]".
+
 
 ## Assorted Errors
 
@@ -218,9 +237,11 @@ split borders to your liking.
 
 
 [acpi=off]: https://askubuntu.com/questions/139157/booting-ubuntu-with-acpi-off-grub-parameter
-[appended]: https://askubuntu.com/questions/127989/no-acpi-support-for-my-pc-what-can-i-do
+[dhcpcd]: https://wiki.archlinux.org/index.php/Dhcpcd
 [GPE.L6F]: http://jhshi.me/2015/11/14/acpi-error-method-parseexecution-failed-_gpe_l6f/index.html#.W19wDdhKjdQ
 [Grub]: https://www.reddit.com/r/archlinux/comments/6ahvnk/grub_decryption_really_slow/dhew32m/
 [here]: https://unix.stackexchange.com/questions/318745/grub2-encryption-reprompt/321825#321825
 [lib/Archvault/Types.pm6]: ../lib/Archvault/Types.pm6
+[Respecting the regulatory domain]: https://wiki.archlinux.org/index.php/Wireless_network_configuration#Respecting_the_regulatory_domain
+[similar]: https://askubuntu.com/questions/127989/no-acpi-support-for-my-pc-what-can-i-do
 [SimpleWiFi]: https://www.simplewifi.com/collections/usb-adapters/products/usb-adapter
