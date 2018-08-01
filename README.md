@@ -89,9 +89,9 @@ Subvolume name       | Mounting point
 `@var-spool`         | `/var/spool`
 `@var-tmp`           | `/var/tmp`
 
-Archvault disables Btrfs CoW on `/home`, `/srv`, `/var/lib/ex`,
-`/var/lib/machines`, `/var/lib/portables`, `/var/lib/postgres`,
-`/var/log`, `/var/spool` and `/var/tmp`.
+Archvault [disables Btrfs CoW][disables Btrfs CoW] on `/home`,
+`/srv`, `/var/lib/ex`, `/var/lib/machines`, `/var/lib/portables`,
+`/var/lib/postgres`, `/var/log`, `/var/spool` and `/var/tmp`.
 
 Archvault mounts directories `/srv`, `/tmp`, `/var/lib/ex`, `/var/log`,
 `/var/spool` and `/var/tmp` with options `nodev,noexec,nosuid`.
@@ -336,6 +336,7 @@ information, see http://unlicense.org/ or the accompanying UNLICENSE file.
 
 [arch-install-scripts]: https://git.archlinux.org/arch-install-scripts.git
 [denies console login as root]: https://wiki.archlinux.org/index.php/Security#Denying_console_login_as_root
+[disables Btrfs CoW]: https://wiki.archlinux.org/index.php/Btrfs#Disabling_CoW
 [dnscrypt-proxy]: https://wiki.archlinux.org/index.php/DNSCrypt
 [GPT]: https://wiki.archlinux.org/index.php/Partitioning#GUID_Partition_Table
 [GRUB]: https://wiki.archlinux.org/index.php/GRUB
