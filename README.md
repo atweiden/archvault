@@ -68,7 +68,7 @@ cause catastrophic data loss and system instability.
 - disables hibernate, sleep, suspend (see:
   [resources/etc/systemd/sleep.conf](resources/etc/systemd/sleep.conf))
 - enables systemd service for dnscrypt-proxy, nftables and systemd-swap
-- configures xorg, but does not install any xorg packages (see:
+- configures [Xorg][Xorg], but does not install any Xorg packages (see:
   [resources/etc/X11](resources/etc/X11))
 
 ### Filesystem
@@ -357,6 +357,7 @@ information, see http://unlicense.org/ or the accompanying UNLICENSE file.
 [SSH]: https://wiki.archlinux.org/index.php/Secure_Shell
 [Sysctl]: https://wiki.archlinux.org/index.php/Sysctl
 [systemd-swap]: https://github.com/Nefelim4ag/systemd-swap
+[Xorg]: https://wiki.archlinux.org/index.php/Xorg
 [zram]: https://www.kernel.org/doc/Documentation/blockdev/zram.txt
 
 <!-- vim: set filetype=markdown foldmethod=marker foldlevel=0 nowrap: -->
