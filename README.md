@@ -37,7 +37,7 @@ cause catastrophic data loss and system instability.
 - [GRUB][GRUB] bootloader with both legacy BIOS and UEFI support
 - custom GRUB command line username and password
 - custom root, admin, guest, and SFTP user account passwords
-- configures SSH
+- configures [SSH][SSH]
   - SFTP-only user enforced with OpenSSH
     `ChrootDirectory` and `ForceCommand internal-sftp` (see:
     [resources/etc/ssh/sshd_config](resources/etc/ssh/sshd_config))
@@ -354,6 +354,7 @@ information, see http://unlicense.org/ or the accompanying UNLICENSE file.
 [hides process information]: https://wiki.archlinux.org/index.php/Security#hidepid
 [installation guide]: https://wiki.archlinux.org/index.php/Installation_guide
 [nftables]: https://wiki.archlinux.org/index.php/nftables
+[SSH]: https://wiki.archlinux.org/index.php/Secure_Shell
 [Sysctl]: https://wiki.archlinux.org/index.php/Sysctl
 [systemd-swap]: https://github.com/Nefelim4ag/systemd-swap
 [zram]: https://www.kernel.org/doc/Documentation/blockdev/zram.txt
