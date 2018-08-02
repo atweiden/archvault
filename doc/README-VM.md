@@ -265,12 +265,18 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
 
 - Sync pacman mirrors
   - `pacman -Syy`
-- Install Git and Rakudo Perl 6
-  - `pacman -S git rakudo`
-- Clone Archvault sources
-  - `git clone https://github.com/atweiden/archvault --depth 1`
+- Install Rakudo Perl 6
+  - `pacman -S rakudo`
+- Fetch Archvault sources
+  - with Curl:
+    - `curl -L -o '#1-#2.#3' https://github.com/atweiden/{archvault}/archive/{master}.{tar.gz}`
+    - `tar xvzf archvault-master.tar.gz`
+    - `cd archvault-master`
+  - with Git:
+    - `pacman -S git`
+    - `git clone https://github.com/atweiden/archvault`
+    - `cd archvault`
 - Run Archvault
-  - `cd archvault`
   - `export PERL6LIB=lib`
   - `bin/archvault --help`
   - `bin/archvault new`
