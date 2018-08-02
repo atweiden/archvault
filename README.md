@@ -20,9 +20,9 @@ Archvault bootstraps Arch with whole system Btrfs on LUKS
 using the official [installation guide][installation guide] and
 [arch-install-scripts][arch-install-scripts].
 
-Archvault works on Arch with Intel or AMD CPU. It assumes you are
-comfortable working on the cmdline, and that you have no need for booting
-any other operating systems on the target partition.
+Archvault works on Arch with Intel or AMD x86_64 CPU. It assumes you
+are comfortable working on the cmdline, and that you have no need for
+booting any other operating systems on the target partition.
 
 WARNING: failure to give appropriate values during Archvault setup could
 cause catastrophic data loss and system instability.
