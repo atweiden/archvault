@@ -199,7 +199,7 @@ $6$rounds=700000$sleJxKNAgRnG7E8s$Fjg0/vuRz.GgF0FwDE04gP2i6oMq/Y4kodb1RLTbR3SpAB
 An example of using the generated hash with Archvault:
 
 ```sh
-archvault \
+archvault                                                                                                                                      \
   --admin-name='live'                                                                                                                          \
   --admin-pass-hash='$6$rounds=700000$sleJxKNAgRnG7E8s$Fjg0/vuRz.GgF0FwDE04gP2i6oMq/Y4kodb1RLTbR3SpABVDKGdhCVfLpC5LwCOXDMEU.ylyV40..jrGmI.4N0' \
   new
