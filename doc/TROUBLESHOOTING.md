@@ -149,6 +149,8 @@ chmod +x mnt-btrfs.sh
 ./mnt-btrfs.sh
 arch-chroot /mnt pacman -Syu
 arch-chroot /mnt mkinitcpio -p linux
+cryptsetup luksClose vault
+umount -R /mnt
 ```
 
 ## Error While Loading Shared Libraries
