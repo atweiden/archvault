@@ -409,8 +409,9 @@ method loop-cmdline-proc(
 sub install-expect(--> Nil)
 {
     # C<pacman -S> requires root privileges
-    $*USER == 0
-        or die('Sorry, missing pkg expect. Please install: pacman -S expect');
+    my Str:D $message =
+        'Sorry, missing pkg expect. Please install: pacman -S expect';
+    $*USER == 0 or die($message);
     my Str:D $pacman-expect-cmdline = 'pacman -Sy --needed --noconfirm expect';
     Archvault::Utils.loop-cmdline-proc(
         'Installing expect...',
