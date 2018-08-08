@@ -1078,13 +1078,10 @@ multi sub install-bootloader(
 {
     install-bootloader(:legacy, $partition);
     install-bootloader(:uefi, $partition);
-    run(qw<
-        arch-chroot
-        /mnt
-        cp
-        /usr/share/locale/en@quot/LC_MESSAGES/grub.mo
-        /boot/grub/locale/en.mo
-    >);
+    copy(
+        '/mnt/usr/share/locale/en@quot/LC_MESSAGES/grub.mo',
+        '/mnt/boot/grub/locale/en.mo'
+    );
     run(qw<
         arch-chroot
         /mnt
