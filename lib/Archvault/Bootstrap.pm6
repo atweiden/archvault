@@ -85,7 +85,6 @@ method !setup(--> Nil)
         glibc
         gptfdisk
         grub
-        haveged
         kbd
         kmod
         openssl
