@@ -1756,7 +1756,8 @@ multi sub replace(
     --> Array[Str:D]
 )
 {
-    my UInt:D $index = @line.first(/^'#'$subject/, :k);
+    # if C<GRUB_ENABLE_CRYPTODISK> not found, append to bottom of file
+    my UInt:D $index = @line.first(/^'#'$subject/, :k) // @line.elems;
     my Str:D $replace = sprintf(Q{%s=y}, $subject);
     @line[$index] = $replace;
     @line;
