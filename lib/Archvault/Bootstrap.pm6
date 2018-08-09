@@ -1605,16 +1605,16 @@ multi sub replace(
 )
 {
     # prepare modules
-    my Str:D @modules;
-    push(@modules, $processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c');
-    push(@modules, 'i915') if $graphics eq 'INTEL';
-    push(@modules, 'nouveau') if $graphics eq 'NVIDIA';
-    push(@modules, 'radeon') if $graphics eq 'RADEON';
+    my Str:D @module;
+    push(@module, $processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c');
+    push(@module, 'i915') if $graphics eq 'INTEL';
+    push(@module, 'nouveau') if $graphics eq 'NVIDIA';
+    push(@module, 'radeon') if $graphics eq 'RADEON';
     # for systemd-swap lz4
-    push(@modules, |qw<lz4 lz4_compress>);
+    push(@module, |qw<lz4 lz4_compress>);
     # replace modules
     my UInt:D $index = @line.first(/^$subject/, :k);
-    my Str:D $replace = sprintf(Q{%s=(%s)}, $subject, @modules.join(' '));
+    my Str:D $replace = sprintf(Q{%s=(%s)}, $subject, @module.join(' '));
     @line[$index] = $replace;
     @line;
 }
