@@ -1492,7 +1492,7 @@ multi sub replace(
     my Str:D $file = '/mnt/etc/locale.gen';
     my Str:D @line = $file.IO.lines;
     my Str:D $locale-full = sprintf(Q{%s.UTF-8 UTF-8}, $locale);
-    my UInt:D $index = @line.first(/^'#'$locale-full/, :k);
+    my UInt:D $index = @line.first(/^"#$locale-full"/, :k);
     @line[$index] = $locale-full;
     my Str:D $replace = @line.join("\n");
     spurt($file, $replace ~ "\n");
