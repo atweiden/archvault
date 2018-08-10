@@ -64,9 +64,15 @@ multi sub disable-cow(
     run(qqw<chown $user:$group $orig-dir>);
     run(qqw<chattr -R +C $orig-dir>);
     dir($backup-dir).map(-> IO::Path:D $file {
-        run(qqw<cp -dpr $file $orig-dir>)
+        run(qqw<
+            cp
+            --no-dereference
+            --preserve=links,mode,ownership,timestamps
+            $file
+            $orig-dir
+        >);
     });
-    run(qqw<rm -rf $backup-dir>);
+    run(qqw<rm --recursive --force $backup-dir>);
 }
 
 multi sub disable-cow(
@@ -412,7 +418,8 @@ sub install-expect(--> Nil)
     my Str:D $message =
         'Sorry, missing pkg expect. Please install: pacman -S expect';
     $*USER == 0 or die($message);
-    my Str:D $pacman-expect-cmdline = 'pacman -Sy --needed --noconfirm expect';
+    my Str:D $pacman-expect-cmdline =
+        'pacman --sync --refresh --needed --noconfirm expect';
     Archvault::Utils.loop-cmdline-proc(
         'Installing expect...',
         $pacman-expect-cmdline
