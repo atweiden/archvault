@@ -23,7 +23,6 @@ method bootstrap(::?CLASS:D: --> Nil)
     $*USER == 0 or die('root privileges required');
     # ensure pressing Ctrl-C works
     signal(SIGINT).tap({ exit(130) });
-
     self!setup;
     self!mkdisk;
     self!disable-cow;
@@ -52,7 +51,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-securetty;
     self!configure-xorg;
     self!enable-systemd-services;
-    self!augment if $augment;
+    self!augment if $augment.so;
     self!unmount;
 }
 
