@@ -425,6 +425,7 @@ port 12345.
 ```sh
 pacman -S darkhttpd
 darkhttpd "$PWD" --addr 127.0.0.1 --port 54321
+systemctl start sshd
 ```
 
 **On host machine**:
