@@ -723,7 +723,6 @@ method !pacstrap-base(--> Nil)
         gptfdisk
         grub
         haveged
-        ifplugd
         iproute2
         iw
         kbd
