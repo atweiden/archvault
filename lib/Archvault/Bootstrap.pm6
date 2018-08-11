@@ -711,11 +711,13 @@ method !pacstrap-base(--> Nil)
         bash-completion
         btrfs-progs
         ca-certificates
+        cdrtools
         crda
         dhclient
         dialog
         dnscrypt-proxy
         dosfstools
+        dvd+rw-tools
         ed
         efibootmgr
         ethtool
