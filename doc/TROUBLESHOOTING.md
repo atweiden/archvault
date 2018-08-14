@@ -143,13 +143,10 @@ the system:
 
 ```sh
 cryptsetup luksOpen /dev/sda3 vault
-# see: https://github.com/atweiden/scripts/blob/master/mnt-btrfs.sh
-curl -o mnt-btrfs.sh http://ix.io/1iUP
-chmod +x mnt-btrfs.sh
-./mnt-btrfs.sh
+./scripts/mount-system.sh
 arch-chroot /mnt pacman -Syu
 arch-chroot /mnt mkinitcpio -p linux
-umount -R /mnt
+./scripts/umount-system.sh
 cryptsetup luksClose vault
 ```
 
