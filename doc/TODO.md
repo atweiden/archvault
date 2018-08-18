@@ -1,3 +1,13 @@
+Todo
+====
+
+- implement mkinitcpio-sshd-nonet
+  - new profile: `headless-nonet`
+    - disable grub boot encryption
+    - pkg https://github.com/atweiden/mkinitcpio-sshd-nonet
+    - add systemd config for `ip link set dev eth0 up`
+    - modify `sshd_config` to `AllowUsers admin`
+    - have systemd launch sshd on startup
 - idea: `archvault new [profile]`
   - `archvault new amnesia`
     - https://tails.boum.org/contribute/design/memory_erasure/
