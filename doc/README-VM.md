@@ -469,8 +469,19 @@ Configure `wpa_supplicant` for use with `wpa_cli`:
 
 ```sh
 cat >> /etc/wpa_supplicant/wpa_supplicant.conf <<'EOF'
+# give configuration update rights to wpa_cli
 ctrl_interface=/run/wpa_supplicant
+ctrl_interface_group=wheel
 update_config=1
+
+# enable AP scanning
+ap_scan=1
+
+# EAPOL v2 provides better security, but use v1 for wider compatibility
+eapol_version=1
+
+# enable fast re-authentication (EAP-TLS session resumption) if supported
+fast_reauth=1
 EOF
 ```
 
@@ -498,7 +509,7 @@ bssid / frequency / signal level / flags / ssid
 11:11:11:11:11:11 2437 -64 [WPA2-PSK-CCMP][ESS] ANOTHERSSID
 ```
 
-To associate with MYSSID, add the network, set the credentials and
+To associate with `MYSSID`, add the network, set the credentials and
 enable it:
 
 ```
@@ -532,7 +543,13 @@ OK
 
 ### Obtaining an IP address
 
-Obtain an IP address using dhcpcd:
+#### using `dhclient`:
+
+```sh
+systemctl start dhclient@wlan0
+```
+
+#### using `dhcpcd`:
 
 ```sh
 systemctl start dhcpcd@wlan0
