@@ -457,7 +457,33 @@ ip link set wlan0 up
 ### Connecting with `wpa_passphrase`
 
 ```sh
-wpa_supplicant -B -i wlan0 [-Dnl80211,wext] -c <(wpa_passphrase MYSSID "passphrase")
+wpa_passphrase "myssid" "passphrase" > /etc/wpa_supplicant/myssid.conf
+cat >> /etc/systemd/system/wpa_supplicant-myssid@.service.d/conf_file.conf <<'EOF'
+SSID=myssid
+CONF_FILE="/etc/wpa_supplicant/$SSID.conf"
+EOF
+cat >> /usr/lib/systemd/system/wpa_supplicant-myssid@.service <<'EOF'
+[Unit]
+Description=WPA supplicant daemon (interface-specific version for myssid)
+Requires=sys-subsystem-net-devices-%i.device
+After=sys-subsystem-net-devices-%i.device
+Before=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/wpa_supplicant -i %I -c $CONF_FILE
+
+[Install]
+Alias=multi-user.target.wants/wpa_supplicant-myssid@%i.service
+EOF
+systemctl start wpa_supplicant-myssid@wlan0
+```
+
+or:
+
+```sh
+wpa_supplicant -B -i wlan0 [-Dnl80211,wext] -c <(wpa_passphrase "myssid" "passphrase")
 ```
 
 If the passphrase contains special characters, rather than escaping them,
@@ -488,6 +514,30 @@ EOF
 Run `wpa_supplicant`:
 
 ```sh
+cat >> /etc/systemd/system/wpa_supplicant@.service.d/conf_file.conf <<'EOF'
+CONF_FILE="/etc/wpa_supplicant/wpa_supplicant.conf"
+EOF
+cat >> /usr/lib/systemd/system/wpa_supplicant@.service <<'EOF'
+[Unit]
+Description=WPA supplicant daemon (interface-specific version)
+Requires=sys-subsystem-net-devices-%i.device
+After=sys-subsystem-net-devices-%i.device
+Before=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/wpa_supplicant -i %I -c $CONF_FILE
+
+[Install]
+Alias=multi-user.target.wants/wpa_supplicant@%i.service
+EOF
+systemctl start wpa_supplicant@wlan0
+```
+
+or:
+
+```sh
 wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
 ```
 
@@ -505,17 +555,17 @@ OK
 <3>CTRL-EVENT-SCAN-RESULTS
 > scan_results
 bssid / frequency / signal level / flags / ssid
-00:00:00:00:00:00 2462 -49 [WPA2-PSK-CCMP][ESS] MYSSID
+00:00:00:00:00:00 2462 -49 [WPA2-PSK-CCMP][ESS] myssid
 11:11:11:11:11:11 2437 -64 [WPA2-PSK-CCMP][ESS] ANOTHERSSID
 ```
 
-To associate with `MYSSID`, add the network, set the credentials and
+To associate with `myssid`, add the network, set the credentials and
 enable it:
 
 ```
 > add_network
 0
-> set_network 0 ssid "MYSSID"
+> set_network 0 ssid "myssid"
 > set_network 0 psk "passphrase"
 > enable_network 0
 <2>CTRL-EVENT-CONNECTED - Connection to 00:00:00:00:00:00 completed (reauth) [id=0 id_str=]
