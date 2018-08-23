@@ -18,6 +18,11 @@ ip link set wlan0 up
 
 ## Connecting with `wpa_passphrase`
 
+If the passphrase contains special characters, rather than escaping them,
+invoke `wpa_passphrase` without specifying the passphrase.
+
+### via systemd service
+
 ```sh
 wpa_passphrase "myssid" "passphrase" > /etc/wpa_supplicant/myssid.conf
 cat >> /etc/systemd/system/wpa_supplicant-myssid@.service.d/conf_file.conf <<'EOF'
@@ -42,18 +47,15 @@ EOF
 systemctl start wpa_supplicant-myssid@wlan0
 ```
 
-or:
+### via cmdline
 
 ```sh
-wpa_supplicant -B -i wlan0 [-Dnl80211,wext] -c <(wpa_passphrase "myssid" "passphrase")
+wpa_supplicant -B -i wlan0 [-D nl80211,wext] -c <(wpa_passphrase "myssid" "passphrase")
 ```
-
-If the passphrase contains special characters, rather than escaping them,
-invoke `wpa_passphrase` without specifying the passphrase.
 
 ## Connecting with `wpa_cli`
 
-Configure `wpa_supplicant` for use with `wpa_cli`:
+### Configuring `wpa_supplicant` for use with `wpa_cli`
 
 ```sh
 cat >> /etc/wpa_supplicant/wpa_supplicant.conf <<'EOF'
@@ -73,7 +75,9 @@ fast_reauth=1
 EOF
 ```
 
-Run `wpa_supplicant`:
+### Running `wpa_supplicant`
+
+#### via systemd service
 
 ```sh
 cat >> /etc/systemd/system/wpa_supplicant@.service.d/conf_file.conf <<'EOF'
@@ -97,13 +101,13 @@ EOF
 systemctl start wpa_supplicant@wlan0
 ```
 
-or:
+#### via cmdline
 
 ```sh
 wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
 ```
 
-Run `wpa_cli`:
+### Running `wpa_cli`
 
 ```sh
 wpa_cli
@@ -157,12 +161,28 @@ OK
 
 ### using `dhclient`:
 
+#### via systemd service
+
 ```sh
 systemctl start dhclient@wlan0
 ```
 
+#### via cmdline
+
+```sh
+dhclient -1 wlan0
+```
+
 ### using `dhcpcd`:
+
+#### via systemd service
 
 ```sh
 systemctl start dhcpcd@wlan0
+```
+
+#### via cmdline
+
+```sh
+dhcpcd wlan0
 ```
