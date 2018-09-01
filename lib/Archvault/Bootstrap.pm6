@@ -974,6 +974,9 @@ method !configure-dhcpcd(--> Nil)
     my Str:D $dhcpcd = q:to/EOF/;
     # Set vendor-class-id to empty string
     vendorclassid
+
+    # Prevent dhcpcd from overwriting /etc/resolv.conf
+    nohook resolv.conf
     EOF
     spurt('/mnt/etc/dhcpcd.conf', "\n" ~ $dhcpcd, :append);
 }
@@ -985,7 +988,7 @@ method !configure-dnscrypt-proxy(--> Nil)
 
 method !set-nameservers(--> Nil)
 {
-    my Str:D $path = 'etc/resolv.conf.head';
+    my Str:D $path = 'etc/resolv.conf';
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 

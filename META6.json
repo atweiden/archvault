@@ -28,7 +28,7 @@
         "etc/hosts.allow",
         "etc/modprobe.d/modprobe.conf",
         "etc/profile.d/shell-timeout.sh",
-        "etc/resolv.conf.head",
+        "etc/resolv.conf",
         "etc/securetty",
         "etc/ssh/ssh_config",
         "etc/ssh/sshd_config",
