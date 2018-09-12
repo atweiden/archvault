@@ -131,10 +131,6 @@ Fetch Archvault sources with Git:
 
 ```sh
 git clone https://github.com/atweiden/archvault
-curl \
-  -L \
-  -o '#1-#2.#3' \
-  https://github.com/atweiden/{archvault}/archive/{master}.{tar.gz}
 cd archvault
 ```
 
