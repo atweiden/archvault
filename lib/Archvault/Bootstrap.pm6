@@ -728,6 +728,7 @@ method !pacstrap-base(--> Nil)
         iproute2
         iw
         kbd
+        lynx
         lz4
         net-tools
         nftables
