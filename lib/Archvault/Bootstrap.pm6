@@ -1766,6 +1766,7 @@ multi sub replace(
     my Str:D @replace =
         $file.IO.lines
         ==> replace('grub', 'GRUB_CMDLINE_LINUX', |@opts)
+        ==> replace('grub', 'GRUB_DISABLE_OS_PROBER')
         ==> replace('grub', 'GRUB_ENABLE_CRYPTODISK');
     my Str:D $replace = @replace.join("\n");
     spurt($file, $replace ~ "\n");
@@ -1797,6 +1798,20 @@ multi sub replace(
     # replace GRUB_CMDLINE_LINUX
     my UInt:D $index = @line.first(/^$subject'='/, :k);
     my Str:D $replace = sprintf(Q{%s="%s"}, $subject, $grub-cmdline-linux);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'grub',
+    Str:D $subject where 'GRUB_DISABLE_OS_PROBER',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # if C<GRUB_DISABLE_OS_PROBER> not found, append to bottom of file
+    my UInt:D $index = @line.first(/^'#'$subject/, :k) // @line.elems;
+    my Str:D $replace = sprintf(Q{%s=true}, $subject);
     @line[$index] = $replace;
     @line;
 }
