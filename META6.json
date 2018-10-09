@@ -1,7 +1,7 @@
 {
     "perl"        : "6.*",
     "name"        : "Archvault",
-    "version"     : "1.0.5",
+    "version"     : "1.0.6",
     "author"      : "atweiden",
     "description" : "Bootstrap Arch with FDE",
     "license"     : "Unlicense",
