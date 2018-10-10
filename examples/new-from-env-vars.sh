@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export PATH="bin:$PATH"
-export PERL6LIB="lib"
+export PATH="$(realpath bin):$PATH"
+export PERL6LIB="$(realpath lib)"
 export ARCHVAULT_ADMIN_NAME="live"
 export ARCHVAULT_ADMIN_PASS="your admin user's password"
 export ARCHVAULT_GUEST_NAME="guest"

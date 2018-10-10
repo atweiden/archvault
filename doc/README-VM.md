@@ -277,9 +277,10 @@ Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
     - `git clone https://github.com/atweiden/archvault`
     - `cd archvault`
 - Run Archvault
-  - `export PERL6LIB=lib`
-  - `bin/archvault --help`
-  - `bin/archvault new`
+  - `export PATH="$(realpath bin):$PATH"`
+  - `export PERL6LIB="$(realpath lib)"`
+  - `archvault --help`
+  - `archvault new`
 - Follow the prompts as needed, let Archvault finish to completion
 - Shutdown the LiveCD
   - `shutdown now`

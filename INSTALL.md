@@ -138,8 +138,9 @@ cd archvault
 Run Archvault:
 
 ```sh
-export PERL6LIB=lib
-bin/archvault --help
+export PATH="$(realpath bin):$PATH"
+export PERL6LIB="$(realpath lib)"
+archvault --help
 ```
 
 
