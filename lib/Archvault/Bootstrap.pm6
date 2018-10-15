@@ -1159,8 +1159,16 @@ method !configure-sysctl(--> Nil)
 
 method !configure-nftables(--> Nil)
 {
-    my Str:D $path = 'etc/nftables.conf';
-    copy(%?RESOURCES{$path}, "/mnt/$path");
+    my Str:D @path =
+        'etc/nftables.conf',
+        'etc/nftables/wireguard/table/inet/filter/forward/wireguard.nft',
+        'etc/nftables/wireguard/table/inet/filter/input/wireguard.nft',
+        'etc/nftables/wireguard/table/wireguard.nft';
+    @path.map(-> Str:D $path {
+        my Str:D $base-path = $path.IO.dirname;
+        mkdir("/mnt/$base-path");
+        copy(%?RESOURCES{$path}, "/mnt/$path");
+    });
 }
 
 method !configure-openssh(--> Nil)
