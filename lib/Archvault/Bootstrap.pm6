@@ -1152,6 +1152,8 @@ method !configure-sysctl(--> Nil)
 {
     my DiskType:D $disk-type = $.config.disk-type;
     my Str:D $path = 'etc/sysctl.d/99-sysctl.conf';
+    my Str:D $base-path = $path.IO.dirname;
+    mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
     replace('99-sysctl.conf', $disk-type);
     run(qw<arch-chroot /mnt sysctl --system>);
@@ -1219,16 +1221,16 @@ method !configure-systemd(--> Nil)
 
 multi sub configure-systemd('limits' --> Nil)
 {
-    my Str:D $base-path = 'etc/systemd/system.conf.d';
-    my Str:D $path = "$base-path/limits.conf";
+    my Str:D $path = 'etc/systemd/system.conf.d/limits.conf';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-systemd('mounts' --> Nil)
 {
-    my Str:D $base-path = 'etc/systemd/system/tmp.mount.d';
-    my Str:D $path = "$base-path/noexec.conf";
+    my Str:D $path = 'etc/systemd/system/tmp.mount.d/noexec.conf';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
@@ -1241,8 +1243,8 @@ multi sub configure-systemd('sleep' --> Nil)
 
 multi sub configure-systemd('swap' --> Nil)
 {
-    my Str:D $base-path = 'etc/systemd/swap.conf.d/';
-    my Str:D $path = "$base-path/zram.conf";
+    my Str:D $path = 'etc/systemd/swap.conf.d/zram.conf';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
@@ -1256,16 +1258,16 @@ multi sub configure-systemd('tmpfiles' --> Nil)
 
 multi sub configure-systemd('udev' --> Nil)
 {
-    my Str:D $base-path = 'etc/udev/rules.d';
-    my Str:D $path = "$base-path/60-io-schedulers.rules";
+    my Str:D $path = 'etc/udev/rules.d/60-io-schedulers.rules';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 method !configure-hidepid(--> Nil)
 {
-    my Str:D $base-path = 'etc/systemd/system/systemd-logind.service.d';
-    my Str:D $path = "$base-path/hidepid.conf";
+    my Str:D $path = 'etc/systemd/system/systemd-logind.service.d/hidepid.conf';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 
@@ -1303,24 +1305,24 @@ method !configure-xorg(--> Nil)
 
 multi sub configure-xorg('Xwrapper.config' --> Nil)
 {
-    my Str:D $base-path = 'etc/X11';
-    my Str:D $path = "$base-path/Xwrapper.config";
+    my Str:D $path = 'etc/X11/Xwrapper.config';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-xorg('10-synaptics.conf' --> Nil)
 {
-    my Str:D $base-path = 'etc/X11/xorg.conf.d';
-    my Str:D $path = "$base-path/10-synaptics.conf";
+    my Str:D $path = 'etc/X11/xorg.conf.d/10-synaptics.conf';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-xorg('99-security.conf' --> Nil)
 {
-    my Str:D $base-path = 'etc/X11/xorg.conf.d';
-    my Str:D $path = "$base-path/99-security.conf";
+    my Str:D $path = 'etc/X11/xorg.conf.d/99-security.conf';
+    my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
