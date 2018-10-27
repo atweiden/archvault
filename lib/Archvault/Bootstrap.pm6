@@ -744,7 +744,6 @@ method !pacstrap-base(--> Nil)
         wireguard
         wireless-regdb
         wireless_tools
-        wpa_actiond
         wpa_supplicant
         zip
     >;
