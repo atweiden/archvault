@@ -741,7 +741,7 @@ method !pacstrap-base(--> Nil)
         unzip
         vim
         wget
-        wireguard
+        wireguard-tools
         wireless-regdb
         wireless_tools
         wpa_supplicant
