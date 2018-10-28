@@ -279,12 +279,12 @@ The rest of the instructions are the same as with VirtualBox.
   - Uncomment `Color`
   - Uncomment `TotalDownload`
   - Add `ILoveCandy` on new line beneathe `CheckSpace`
-  - Add spidermario's private Rakudo Perl 6 binary repo:
+  - Add private Rakudo Perl 6 binary repo:
 
 ```dosini
-[rakudo]
-SigLevel = Optional
-Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
+[perl6]
+SigLevel = PackageOptional
+Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
 ```
 
 - Sync pacman mirrors

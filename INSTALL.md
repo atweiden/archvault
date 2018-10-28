@@ -27,9 +27,9 @@ vim /etc/pacman.d/mirrorlist
 ```sh
 # add private repo until official rakudo package in community
 cat >> /etc/pacman.conf <<'EOF'
-[rakudo]
-SigLevel = Optional
-Server = https://spider-mario.quantic-telecom.net/archlinux/$repo/$arch
+[perl6]
+SigLevel = PackageOptional
+Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
 EOF
 
 pacman -Syy git rakudo
