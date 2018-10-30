@@ -76,6 +76,8 @@ could cause catastrophic data loss and system instability.
 - enables systemd service for dnscrypt-proxy, nftables and systemd-swap
 - configures [Xorg][Xorg], but does not install any Xorg packages (see:
   [resources/etc/X11](resources/etc/X11))
+- optionally disables IPv6, and makes IPv4-only adjustments to dhcpcd,
+  dnscrypt-proxy, openresolv, OpenSSH
 
 ### Filesystem
 
@@ -162,6 +164,7 @@ ARCHVAULT_LOCALE="en_US"
 ARCHVAULT_KEYMAP="us"
 ARCHVAULT_TIMEZONE="America/Los_Angeles"
 ARCHVAULT_AUGMENT=1
+ARCHVAULT_DISABLE_IPV6=1
 ```
 
 **Supply options via cmdline flags**:
@@ -304,6 +307,7 @@ variable values for all configuration options aside from:
 - `--admin-pass`
 - `--admin-pass-hash`
 - `--augment`
+- `--disable-ipv6`
 - `--grub-name`
 - `--grub-pass`
 - `--grub-pass-hash`
@@ -327,6 +331,7 @@ No console input is read for configuration options:
 
 - `--admin-pass-hash`
 - `--augment`
+- `--disable-ipv6`
 - `--grub-pass-hash`
 - `--guest-pass-hash`
 - `--reflector`
