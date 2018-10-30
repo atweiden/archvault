@@ -188,6 +188,27 @@ grub rescue> normal
 It takes a really long time for [GRUB][GRUB] to decrypt the `/boot`
 partition.
 
+## Always Prompted for GRUB User and Password on Bootup
+
+If you're always prompted for a GRUB username and password on bootup,
+it probably means a system upgrade has destroyed Archvault's changes to
+the config file at `/etc/grub.d/10_linux`.
+
+Run [this script][10_linux] to fix it:
+
+```perl6
+use v6;
+my Str:D $file = '/etc/grub.d/10_linux';
+my Str:D @line = $file.IO.lines;
+my Regex:D $regex = /'${CLASS}'\h/;
+my UInt:D @index = @line.grep($regex, :k);
+@index.race.map(-> UInt:D $index {
+    @line[$index] .= subst($regex, '--unrestricted ${CLASS} ')
+});
+my Str:D $replace = @line.join("\n");
+spurt($file, $replace ~ "\n");
+```
+
 ## Error While Booting: Kernel Panic
 
 This might be due to an error completing the `mkinitcpio -p linux`
@@ -288,6 +309,7 @@ Use <kbd>Ctrl-w</kbd> <kbd><</kbd>, <kbd>Ctrl-w</kbd> <kbd>></kbd>,
 split borders to your liking.
 
 
+[10_linux]: https://github.com/atweiden/archvault/blob/51c2e02e41d95cb597cff4021a1a39714ae8ff45/lib/Archvault/Bootstrap.pm6#L2068
 [GPE.L6F]: http://jhshi.me/2015/11/14/acpi-error-method-parseexecution-failed-_gpe_l6f/index.html#.W19wDdhKjdQ
 [GRUB]: https://www.reddit.com/r/archlinux/comments/6ahvnk/grub_decryption_really_slow/dhew32m/
 [Respecting the regulatory domain]: https://wiki.archlinux.org/index.php/Wireless_network_configuration#Respecting_the_regulatory_domain
