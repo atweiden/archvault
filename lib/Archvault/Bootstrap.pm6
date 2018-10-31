@@ -749,7 +749,7 @@ method !pacstrap-base(--> Nil)
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
-    push(@pkg, 'intel-ucode') if $processor eq 'intel';
+    push(@pkg, 'intel-ucode') if $processor eq 'INTEL';
     push(@pkg, 'reflector') if $reflector;
 
     # download and install packages with pacman in chroot
