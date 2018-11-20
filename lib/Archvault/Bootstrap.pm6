@@ -85,6 +85,7 @@ method !setup(--> Nil)
         grub
         kbd
         kmod
+        libutil-linux
         openssl
         pacman
         procps-ng
