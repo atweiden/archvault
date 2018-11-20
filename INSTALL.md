@@ -121,13 +121,13 @@ Fetch Archvault sources with Curl:
 
 ```sh
 # official release tarball
-version=1.2.0
+VERSION=1.3.0
 curl \
   -L \
   -O \
-  https://github.com/atweiden/archvault/releases/download/$version/archvault-$version.tar.gz
-tar xvzf archvault-$version.tar.gz
-cd archvault-$version
+  https://github.com/atweiden/archvault/releases/download/$VERSION/archvault-$VERSION.tar.gz
+tar xvzf archvault-$VERSION.tar.gz
+cd archvault-$VERSION
 
 # latest snapshot
 curl \
