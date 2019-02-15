@@ -145,7 +145,7 @@ git clone https://github.com/atweiden/archvault
 cd archvault
 ```
 
-Run Archvault:
+Run Archvault (as root):
 
 ```sh
 export PATH="$(realpath bin):$PATH"
