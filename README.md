@@ -118,7 +118,7 @@ Synopsis
 
 ### `archvault new`
 
-Bootstrap Archvault.
+Bootstrap Archvault. Must be run as root.
 
 **Supply options interactively (recommended)**:
 
