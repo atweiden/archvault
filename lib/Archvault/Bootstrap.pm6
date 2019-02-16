@@ -279,6 +279,7 @@ multi sub build-cryptsetup-luks-format-cmdline(
 {
     my Str:D $spawn-cryptsetup-luks-format = qqw<
          spawn cryptsetup
+         --type luks1
          --cipher aes-xts-plain64
          --key-size 512
          --hash sha512
@@ -322,6 +323,7 @@ multi sub build-cryptsetup-luks-format-cmdline(
 {
     my Str:D $spawn-cryptsetup-luks-format = qqw<
                  spawn cryptsetup
+                 --type luks1
                  --cipher aes-xts-plain64
                  --key-size 512
                  --hash sha512
