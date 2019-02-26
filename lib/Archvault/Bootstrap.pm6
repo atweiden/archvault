@@ -189,6 +189,7 @@ sub sgdisk(Str:D $partition --> Nil)
 
 sub mkefi(Str:D $partition-efi --> Nil)
 {
+    run(qw<modprobe vfat>);
     run(qqw<mkfs.vfat -F 32 $partition-efi>);
 }
 
