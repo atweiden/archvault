@@ -121,7 +121,7 @@ Fetch Archvault sources with Curl:
 
 ```sh
 # official release tarball
-VERSION=1.4.0
+VERSION=1.5.0
 curl \
   -L \
   -O \
