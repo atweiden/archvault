@@ -1,6 +1,8 @@
 Todo
 ====
 
+- switch from `lzo` to `zstd` compression once [GRUB zstd support][GRUB
+  zstd support] ships in a stable release
 - implement mkinitcpio-sshd-nonet
   - new profile: `headless-nonet`
     - disable grub boot encryption
@@ -48,3 +50,5 @@ Todo
   - https://github.com/kuerbis/Term-Choose-p6
   - https://github.com/wbiker/io-prompt
   - https://github.com/tadzik/Terminal-ANSIColor
+
+[GRUB zstd support]: https://git.savannah.gnu.org/cgit/grub.git/commit/?id=386128648606a3aa6ae7108d1c9af52258202279
