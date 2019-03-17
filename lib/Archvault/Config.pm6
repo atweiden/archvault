@@ -769,8 +769,7 @@ sub prompt-timezone(--> Timezone:D)
     # prompt choose region
     my Str:D $region = do {
         # get list of timezone regions
-        my Str:D @regions =
-            @timezones.hyper.map({ .subst(/'/'\N*$/, '') }).unique;
+        my Str:D @regions = @timezones.map({ .subst(/'/'\N*$/, '') }).unique;
         my Str:D $default-item = 'America';
         my Str:D $prompt-text = 'Select region:';
         my Str:D $title = 'TIMEZONE REGION SELECTION';
@@ -791,7 +790,6 @@ sub prompt-timezone(--> Timezone:D)
         my Str:D @subregions =
             @timezones
             .grep(/$region/)
-            .hyper
             .map({ .subst(/^$region'/'/, '') })
             .sort;
         my Str:D $default-item = 'Los_Angeles';
