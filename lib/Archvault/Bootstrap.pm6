@@ -880,7 +880,7 @@ multi sub build-cryptsetup-luks-add-key-cmdline(
     my Str:D $spawn-cryptsetup-luks-add-key =
                 "spawn cryptsetup luksAddKey $iter-time $partition-vault $key";
     my Str:D $sleep =
-                'sleep 0.33';
+                'sleep 7';
     my Str:D $expect-enter-send-vault-pass =
         sprintf('expect "Enter*" { send "%s\r" }', $vault-pass);
     my Str:D $expect-eof =
