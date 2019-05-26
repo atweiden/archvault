@@ -270,7 +270,7 @@ Name                 | Provides                                           | Incl
 ---                  | ---                                                | ---
 arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`              | Y
 btrfs-progs          | Btrfs support                                      | Y
-coreutils            | `chmod`, `chown`, `cp`, `dd`, `rm`                 | Y
+coreutils            | `chmod`, `chown`, `cp`, `rm`                       | Y
 cryptsetup           | FDE with LUKS                                      | Y
 dosfstools           | create VFAT filesystem for UEFI with `mkfs.vfat`   | Y
 e2fsprogs            | `chattr`                                           | Y
