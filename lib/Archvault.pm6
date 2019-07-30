@@ -3,7 +3,7 @@ use Archvault::Bootstrap;
 use Archvault::Config;
 unit class Archvault;
 
-constant $VERSION = v1.6.0;
+constant $VERSION = v1.7.0;
 
 method new(
     *%opts (
