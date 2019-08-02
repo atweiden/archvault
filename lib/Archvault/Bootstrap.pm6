@@ -1244,6 +1244,7 @@ multi sub install-bootloader(
 {
     install-bootloader(:legacy, $partition);
     install-bootloader(:uefi, $partition);
+    mkdir('/mnt/boot/grub/locale');
     copy(
         '/mnt/usr/share/locale/en@quot/LC_MESSAGES/grub.mo',
         '/mnt/boot/grub/locale/en.mo'
