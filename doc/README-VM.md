@@ -334,7 +334,7 @@ Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
   - `cd clonepkg && makepkg -Acsi --noconfirm`
   - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
   - `clonepkg fzf-extras fzf-git ix pacnew_scripts pkgcacheclean`
-  - `clonepkg downgrade icdiff quixand repacman2 subrepo yay`
+  - `clonepkg diffr downgrade icdiff quixand repacman2 subrepo yay`
 - Get console font
   - `clonepkg tamsyn-console-font`
   - `setfont Tamsyn10x20r`
