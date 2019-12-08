@@ -724,6 +724,7 @@ method !pacstrap-base(--> Nil)
         cdrtools
         crda
         dhclient
+        dhcpcd
         dialog
         dnscrypt-proxy
         dosfstools
