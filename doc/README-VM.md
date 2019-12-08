@@ -328,12 +328,12 @@ Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
   - `sudo pacman -Syy`
   - `sudo pacman -S colordiff ripgrep rlwrap sdcv the_silver_searcher tree`
   - `sudo pacman -S arch-wiki-docs arch-wiki-lite asp git mlocate pacmatic`
-  - `sudo pacman -S moreutils pwgen qrencode socat tor torsocks`
+  - `sudo pacman -S fzf moreutils pwgen qrencode socat tor torsocks`
 - Get AUR pkgs
   - `git clone https://aur.archlinux.org/clonepkg.git`
   - `cd clonepkg && makepkg -Acsi --noconfirm`
-  - `clonepkg ccrypt keymap-us-capslock-backspace tty-no-cursor-blink`
-  - `clonepkg fzf-extras fzf-git ix pacnew_scripts pkgcacheclean`
+  - `clonepkg keymap-us-capslock-backspace tty-no-cursor-blink`
+  - `clonepkg ccrypt fzf-extras ix pacnew_scripts pkgcacheclean`
   - `clonepkg diffr downgrade icdiff quixand repacman2 subrepo yay`
 - Get console font
   - `clonepkg tamsyn-console-font`
