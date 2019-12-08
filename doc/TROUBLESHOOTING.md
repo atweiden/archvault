@@ -68,6 +68,22 @@ systemctl restart dnscrypt-proxy.service
 Be sure `dnscrypt-proxy.socket` is not active, as it conflicts with
 `dnscrypt-proxy.service` at runtime.
 
+If Archvault still fails to connect to the Internet after ensuring
+`/etc/resolv.conf` and dnscrypt-proxy are in working order, try
+disabling dnscrypt-proxy and resetting the contents of `/etc/resolv`
+to the following:
+
+```sh
+# OpenDNS nameservers
+nameserver 208.67.222.222
+nameserver 208.67.220.220
+# Google nameservers
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+```
+
+This step is often necessary when tethering mobile data.
+
 ### Failure to Connect to Wireless Access Point
 
 If Archvault fails to connect to a wireless access point, it could
