@@ -453,7 +453,6 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
         'home',
         'opt',
         'srv',
-        'usr',
         'var',
         'var-cache-pacman',
         'var-lib-ex',
@@ -2023,7 +2022,6 @@ multi sub replace(
         filesystems
         fsck
         shutdown
-        usr
     >;
     $disk-type eq 'USB'
         ?? @hooks.splice(2, 0, 'block')

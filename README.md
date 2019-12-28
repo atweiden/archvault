@@ -95,7 +95,6 @@ Subvolume name       | Mounting point
 `@home`              | `/home`
 `@opt`               | `/opt`
 `@srv`               | `/srv`
-`@usr`               | `/usr`
 `@var`               | `/var`
 `@var-cache-pacman`  | `/var/cache/pacman`
 `@var-lib-ex`        | `/var/lib/ex`
