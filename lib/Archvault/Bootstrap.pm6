@@ -2127,6 +2127,8 @@ multi sub replace(
         rootflags=subvol=@
         loglevel=6
     >;
+    # required for use of fsck mkinitcpio hook on systemd
+    push(@grub-cmdline-linux, 'rw=1');
     # enable slub/slab allocator free poisoning (needs CONFIG_SLUB_DEBUG=y)
     push(@grub-cmdline-linux, 'slub_debug=FZP');
     #                                     |||
