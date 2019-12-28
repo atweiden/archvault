@@ -459,7 +459,6 @@ sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
         'var-lib-ex',
         'var-lib-machines',
         'var-lib-portables',
-        'var-lib-postgres',
         'var-log',
         'var-opt',
         'var-spool',
@@ -576,24 +575,6 @@ multi sub mount-btrfs-subvolume(
 }
 
 multi sub mount-btrfs-subvolume(
-    'var-lib-postgres',
-    Str:D $mount-options,
-    VaultName:D $vault-name
-    --> Nil
-)
-{
-    my Str:D $btrfs-dir = 'var/lib/postgres';
-    mkdir("/mnt/$btrfs-dir");
-    run(qqw<
-        mount
-        --types btrfs
-        --options $mount-options,subvol=@var-lib-postgres
-        /dev/mapper/$vault-name
-        /mnt/$btrfs-dir
-    >);
-}
-
-multi sub mount-btrfs-subvolume(
     'var-log',
     Str:D $mount-options,
     VaultName:D $vault-name
@@ -698,7 +679,6 @@ sub disable-cow(--> Nil)
         var/lib/ex
         var/lib/machines
         var/lib/portables
-        var/lib/postgres
         var/log
         var/spool
         var/tmp

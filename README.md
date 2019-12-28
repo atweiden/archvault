@@ -101,15 +101,14 @@ Subvolume name       | Mounting point
 `@var-lib-ex`        | `/var/lib/ex`
 `@var-lib-machines`  | `/var/lib/machines`
 `@var-lib-portables` | `/var/lib/portables`
-`@var-lib-postgres`  | `/var/lib/postgres`
 `@var-log`           | `/var/log`
 `@var-opt`           | `/var/opt`
 `@var-spool`         | `/var/spool`
 `@var-tmp`           | `/var/tmp`
 
-Archvault [disables Btrfs CoW][disables Btrfs CoW] on `/home`,
-`/srv`, `/var/lib/ex`, `/var/lib/machines`, `/var/lib/portables`,
-`/var/lib/postgres`, `/var/log`, `/var/spool` and `/var/tmp`.
+Archvault [disables Btrfs CoW][disables Btrfs CoW] on `/home`, `/srv`,
+`/var/lib/ex`, `/var/lib/machines`, `/var/lib/portables`, `/var/log`,
+`/var/spool` and `/var/tmp`.
 
 Archvault mounts directories `/srv`, `/tmp`, `/var/lib/ex`, `/var/log`,
 `/var/spool` and `/var/tmp` with options `nodev,noexec,nosuid`.
