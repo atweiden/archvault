@@ -711,24 +711,34 @@ method !pacstrap-base(--> Nil)
         ed
         efibootmgr
         ethtool
+        exfat-utils
         expect
         gptfdisk
         grub
         haveged
+        inetutils
         iproute2
         iw
         kbd
         lynx
         lz4
+        man-db
+        man-pages
+        mlocate
         net-tools
         nftables
         openresolv
         openssh
         pacman-contrib
+        perl
         rsync
+        socat
+        sysfsutils
         systemd-swap
         tmux
         unzip
+        usb_modeswitch
+        usbutils
         vim
         wget
         wireguard-arch
