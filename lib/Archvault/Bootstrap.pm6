@@ -1507,7 +1507,7 @@ multi sub arch-chroot-mkdir(
     Str:D @dir,
     Str:D $user,
     Str:D $group,
-    # permissions should be octal: https://doc.perl6.org/routine/chmod
+    # permissions should be octal: https://docs.raku.org/routine/chmod
     UInt:D $permissions
     --> Nil
 )
@@ -2499,4 +2499,4 @@ multi sub replace(
 
 # end sub replace }}}
 
-# vim: set filetype=perl6 foldmethod=marker foldlevel=0 nowrap:
+# vim: set filetype=raku foldmethod=marker foldlevel=0 nowrap:

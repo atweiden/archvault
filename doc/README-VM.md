@@ -279,7 +279,7 @@ The rest of the instructions are the same as with VirtualBox.
   - Uncomment `Color`
   - Uncomment `TotalDownload`
   - Add `ILoveCandy` on new line beneathe `CheckSpace`
-  - Add private Rakudo Perl 6 binary repo:
+  - Add private Raku binary repo:
 
 ```dosini
 [perl6]
@@ -289,7 +289,7 @@ Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
 
 - Sync pacman mirrors
   - `pacman -Syy`
-- Install Rakudo Perl 6
+- Install Raku
   - `pacman -S rakudo`
 - Fetch Archvault sources
   - with Curl:

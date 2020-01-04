@@ -8,12 +8,12 @@ loader screen, press <kbd>Tab</kbd> and [append the following][gist] to
 the kernel line: `copytoram=y copytoram_size=7G cow_spacesize=7G`. Then,
 press <kbd>Enter</kbd>.
 
-In order to use Archvault, install [Rakudo Perl 6][rakudo]. Archvault
+In order to use Archvault, install [Raku][rakudo]. Archvault
 will automatically resolve all other dependencies.
 
 
-Installing Rakudo Perl 6
-------------------------
+Installing Raku
+---------------
 
 After logging in to the Arch Linux installation CD as root:
 
@@ -22,7 +22,7 @@ After logging in to the Arch Linux installation CD as root:
 vim /etc/pacman.d/mirrorlist
 ```
 
-### Install Rakudo Perl 6 from binary repo
+### Install Raku from binary repo
 
 ```sh
 # add private repo until official rakudo package in community
@@ -35,7 +35,7 @@ EOF
 pacman -Syy git rakudo
 ```
 
-### Install Rakudo Perl 6 using rakudobrew
+### Install Raku using rakudobrew
 
 ```sh
 pacman -Syy base-devel git --needed
@@ -44,7 +44,7 @@ export PATH="$HOME/.rakudobrew/bin:$PATH"
 rakudobrew build moar 2018.05
 ```
 
-### Install Rakudo Perl 6 from official release tarballs
+### Install Raku from official release tarballs
 
 Make non-root user account for installing AUR packages:
 
