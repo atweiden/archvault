@@ -673,7 +673,6 @@ sub mount-efi(Str:D $partition-efi --> Nil)
 sub disable-cow(--> Nil)
 {
     my Str:D @directory = qw<
-        home
         srv
         var/lib/ex
         var/lib/machines

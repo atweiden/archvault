@@ -105,7 +105,7 @@ Subvolume name       | Mounting point
 `@var-spool`         | `/var/spool`
 `@var-tmp`           | `/var/tmp`
 
-Archvault [disables Btrfs CoW][disables Btrfs CoW] on `/home`, `/srv`,
+Archvault [disables Btrfs CoW][disables Btrfs CoW] on `/srv`,
 `/var/lib/ex`, `/var/lib/machines`, `/var/lib/portables`, `/var/log`,
 `/var/spool` and `/var/tmp`.
 
