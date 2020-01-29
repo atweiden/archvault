@@ -3,6 +3,7 @@ Todo
 
 - switch from `luks1` to `luks2` cryptsetup format once [GRUB luks2
   support][GRUB luks2 support] ships in a stable release
+- rm `wireguard-arch` once `linux-5.6` ships in arch
 - implement mkinitcpio-sshd-nonet
   - new profile: `headless-nonet`
     - disable grub boot encryption
