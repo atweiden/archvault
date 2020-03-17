@@ -964,18 +964,9 @@ multi sub useradd(
 )
 {
     my Str:D $user-group-admin = qw<
-        audio
-        games
         log
-        lp
-        network
-        optical
-        power
         proc
-        scanner
-        storage
         users
-        video
         wheel
     >.join(',');
     my Str:D $user-shell-admin = '/bin/bash';
@@ -1003,7 +994,10 @@ multi sub useradd(
     --> Nil
 )
 {
-    my Str:D $user-group-guest = 'guests,users';
+    my Str:D $user-group-guest = qw<
+        guests
+        users
+    >.join(',');
     my Str:D $user-shell-guest = '/bin/bash';
 
     say("Creating new guest user named $user-name-guest...");
@@ -1030,7 +1024,9 @@ multi sub useradd(
 )
 {
     # https://wiki.archlinux.org/index.php/SFTP_chroot
-    my Str:D $user-group-sftp = 'sftponly';
+    my Str:D $user-group-sftp = qw<
+        sftponly
+    >.join(',');
     my Str:D $user-shell-sftp = '/sbin/nologin';
     my Str:D $auth-dir = '/etc/ssh/authorized_keys';
     my Str:D $jail-dir = '/srv/ssh/jail';
