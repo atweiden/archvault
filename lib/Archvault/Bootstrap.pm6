@@ -967,6 +967,7 @@ multi sub useradd(
         log
         proc
         users
+        uucp
         wheel
     >.join(',');
     my Str:D $user-shell-admin = '/bin/bash';
