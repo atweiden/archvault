@@ -302,7 +302,7 @@ Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
     - `cd archvault`
 - Run Archvault
   - `export PATH="$(realpath bin):$PATH"`
-  - `export PERL6LIB="$(realpath lib)"`
+  - `export RAKUDOLIB="$(realpath lib)"`
   - `archvault --help`
   - `archvault new`
 - Follow the prompts as needed, let Archvault finish to completion
