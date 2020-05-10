@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export PATH="$(realpath bin):$PATH"
-export RAKUDOLIB="$(realpath lib)"
+export RAKULIB="$(realpath lib)"
 archvault --admin-name="live"                                  \
           --admin-pass="your admin user's password"            \
           --guest-name="guest"                                 \

@@ -149,7 +149,7 @@ Run Archvault (as root):
 
 ```sh
 export PATH="$(realpath bin):$PATH"
-export RAKUDOLIB="$(realpath lib)"
+export RAKULIB="$(realpath lib)"
 archvault --help
 ```
 
