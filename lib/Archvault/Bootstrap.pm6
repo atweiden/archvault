@@ -723,6 +723,7 @@ method !pacstrap-base(--> Nil)
         lz4
         man-db
         man-pages
+        mkinitcpio
         mlocate
         net-tools
         nftables
