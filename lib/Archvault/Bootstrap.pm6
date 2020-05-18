@@ -740,7 +740,6 @@ method !pacstrap-base(--> Nil)
         usbutils
         vim
         wget
-        wireguard-arch
         wireguard-tools
         wireless-regdb
         wireless_tools
