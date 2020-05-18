@@ -719,6 +719,7 @@ method !pacstrap-base(--> Nil)
         iproute2
         iw
         kbd
+        linux
         lynx
         lz4
         man-db
