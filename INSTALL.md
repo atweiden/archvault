@@ -25,23 +25,21 @@ vim /etc/pacman.d/mirrorlist
 ### Install Raku from binary repo
 
 ```sh
+cd /root
+curl \
+  -L \
+  -O \
+  https://github.com/atweiden/pkgbuilds/releases/download/2020.05/raku.tar.gz
+tar xvzf raku.tar.gz
+
 # add private repo until official rakudo package in community
 cat >> /etc/pacman.conf <<'EOF'
-[perl6]
-SigLevel = PackageOptional
-Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
+[raku]
+SigLevel = Optional TrustAll
+Server = file:///root/raku
 EOF
 
-pacman -Syy git rakudo
-```
-
-### Install Raku using rakudobrew
-
-```sh
-pacman -Syy base-devel git --needed
-git clone https://github.com/tadzik/rakudobrew ~/.rakudobrew
-export PATH="$HOME/.rakudobrew/bin:$PATH"
-rakudobrew build moar 2018.05
+pacman -Syy rakudo
 ```
 
 ### Install Raku from official release tarballs

@@ -281,10 +281,20 @@ The rest of the instructions are the same as with VirtualBox.
   - Add `ILoveCandy` on new line beneathe `CheckSpace`
   - Add private Raku binary repo:
 
-```dosini
-[perl6]
-SigLevel = PackageOptional
-Server = https://github.com/atweiden/pkgbuilds/releases/download/latest
+```sh
+cd /root
+curl \
+  -L \
+  -O \
+  https://github.com/atweiden/pkgbuilds/releases/download/2020.05/raku.tar.gz
+tar xvzf raku.tar.gz
+
+# add private repo until official rakudo package in community
+cat >> /etc/pacman.conf <<'EOF'
+[raku]
+SigLevel = Optional TrustAll
+Server = file:///root/raku
+EOF
 ```
 
 - Sync pacman mirrors
