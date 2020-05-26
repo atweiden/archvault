@@ -2143,7 +2143,7 @@ multi sub replace(
     #                                     |+--- redzoning (Z)
     #                                     +---- sanity checks (F)
     # enable buddy allocator free poisoning (needs CONFIG_PAGE_POISONING=y)
-    #push(@grub-cmdline-linux, 'page_poison=1');
+    push(@grub-cmdline-linux, 'page_poison=1');
     # disable slab merging (makes many heap overflow attacks more difficult)
     push(@grub-cmdline-linux, 'slab_nomerge=1');
     # always enable Kernel Page Table Isolation (to be safe from Meltdown)
