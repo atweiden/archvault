@@ -9,7 +9,6 @@ Todo
   in a stable release of libgcrypt, and [GRUB luks2 argon2 support][GRUB
   luks2 argon2 support] code is shipped in a stable release of GRUB
 - replace sudo with [doas][doas]
-- rm `wireguard-arch` once `linux-5.6` ships in arch
 - implement mkinitcpio-sshd-nonet
   - new profile: `headless-nonet`
     - disable grub boot encryption
