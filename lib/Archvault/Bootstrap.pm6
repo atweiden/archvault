@@ -87,6 +87,7 @@ method !setup(--> Nil)
         kbd
         kmod
         libutil-linux
+        man-pages
         openssl
         pacman
         procps-ng
