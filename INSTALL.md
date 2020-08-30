@@ -8,8 +8,8 @@ loader screen, press <kbd>Tab</kbd> and [append the following][gist] to
 the kernel line: `copytoram=y copytoram_size=7G cow_spacesize=7G`. Then,
 press <kbd>Enter</kbd>.
 
-In order to use Archvault, install [Raku][rakudo]. Archvault
-will automatically resolve all other dependencies.
+In order to use Archvault, install [Raku][rakudo], `dialog` and
+`grub`. Archvault will automatically resolve all other dependencies.
 
 
 Installing Raku
