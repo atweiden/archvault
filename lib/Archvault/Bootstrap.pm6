@@ -718,9 +718,12 @@ method !pacstrap-base(--> Nil)
         haveged
         inetutils
         iproute2
+        ipw2100-fw
+        ipw2200-fw
         iw
         kbd
         linux
+        linux-firmware
         lynx
         lz4
         man-db
