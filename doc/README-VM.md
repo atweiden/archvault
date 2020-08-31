@@ -274,6 +274,14 @@ The rest of the instructions are the same as with VirtualBox.
 - Allow time for the LiveCD to boot up
 - Configure pacman mirrorlist
   - `vim /etc/pacman.d/mirrorlist`
+
+```sh
+# optionally select Australia/Melbourne mirror
+cat > /etc/pacman.d/mirrorlist <<'EOF'
+Server = https://ftp.swin.edu.au/archlinux/$repo/os/$arch
+EOF
+```
+
 - Configure pacman.conf
   - `vim /etc/pacman.conf`
   - Uncomment `Color`
