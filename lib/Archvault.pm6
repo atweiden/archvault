@@ -1,6 +1,7 @@
 use v6;
 use Archvault::Bootstrap;
 use Archvault::Config;
+use Archvault::Utils;
 unit class Archvault;
 
 constant $VERSION = v1.9.1;
@@ -38,6 +39,9 @@ method new(
     --> Nil
 )
 {
+    '/usr/bin/dialog'.IO.x.so
+        or Archvault::Utils.pacman-install('dialog');
+
     # instantiate archvault config, prompting for user input as needed
     my Archvault::Config $config .= new(|%opts);
 
