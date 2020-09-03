@@ -176,9 +176,12 @@ multi sub prompt-pass-hash(
 
 multi sub gen-pass-hash-closure(Bool:D :grub($)! where .so --> Sub:D)
 {
-    # we require expect for scripting C<grub-mkpasswd-pbkdf2>
+    # install grub, expect for scripting C<grub-mkpasswd-pbkdf2>
+    '/usr/bin/grub-mkpasswd-pbkdf2'.IO.x.so
+        or Archvault::Utils.pacman-install('grub');
     '/usr/bin/expect'.IO.x.so
-        or install-expect();
+        or Archvault::Utils.pacman-install('expect');
+
     my &gen-pass-hash = sub (Str:D $grub-pass --> Str:D)
     {
         my Str:D $grub-mkpasswd-pbkdf2-cmdline =
@@ -447,17 +450,20 @@ method loop-cmdline-proc(
     }
 }
 
-sub install-expect(--> Nil)
+method pacman-install(
+    Str:D $package where .so
+    --> Nil
+)
 {
     # C<pacman -S> requires root privileges
     my Str:D $message =
-        'Sorry, missing pkg expect. Please install: pacman -S expect';
+        "Sorry, missing pkg $package. Please install: pacman -S $package";
     $*USER == 0 or die($message);
-    my Str:D $pacman-expect-cmdline =
-        'pacman --sync --refresh --needed --noconfirm expect';
+    my Str:D $pacman-install-cmdline =
+        "pacman --sync --refresh --needed --noconfirm $package";
     Archvault::Utils.loop-cmdline-proc(
-        'Installing expect...',
-        $pacman-expect-cmdline
+        "Installing $package...",
+        $pacman-install-cmdline
     );
 }
 

@@ -8,8 +8,8 @@ loader screen, press <kbd>Tab</kbd> and [append the following][gist] to
 the kernel line: `copytoram=y copytoram_size=7G cow_spacesize=7G`. Then,
 press <kbd>Enter</kbd>.
 
-In order to use Archvault, install [Raku][rakudo], `dialog` and
-`grub`. Archvault will automatically resolve all other dependencies.
+In order to use Archvault, install [Raku][rakudo] and `dialog`. Archvault
+will automatically resolve all other dependencies.
 
 
 Installing Raku
@@ -109,6 +109,14 @@ pacman -Syy base-devel --needed
 pushd moarvm && makepkg -Acsi && popd
 pushd nqp && makepkg -Acsi && popd
 pushd rakudo && makepkg -Acsi && popd
+```
+
+
+Installing `dialog`
+-------------------
+
+```sh
+pacman -S dialog
 ```
 
 
