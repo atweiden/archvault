@@ -4,7 +4,7 @@ Archvault
 <table>
   <tr>
     <td>Last tested</td>
-    <td>2020-05-30 with <a href="https://www.archlinux.org/releng/releases/2020.05.01/">archlinux-2020.05.01-x86_64.iso</a></td>
+    <td>2020-09-07 with <a href="https://www.archlinux.org/releng/releases/2020.09.01/">archlinux-2020.09.01-x86_64.iso</a></td>
   </tr>
 </table>
 
