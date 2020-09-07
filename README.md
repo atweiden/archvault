@@ -91,7 +91,6 @@ layout]:
 Subvolume name       | Mounting point
 ---                  | ---
 `@`                  | `/`
-`@boot`              | `/boot`
 `@home`              | `/home`
 `@opt`               | `/opt`
 `@srv`               | `/srv`
