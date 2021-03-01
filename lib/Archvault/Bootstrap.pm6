@@ -2140,13 +2140,10 @@ multi sub replace(
     # required for use of fsck mkinitcpio hook on systemd
     push(@grub-cmdline-linux, 'rw=1');
     # enable slub/slab allocator free poisoning (needs CONFIG_SLUB_DEBUG=y)
-    push(@grub-cmdline-linux, 'slub_debug=FZP');
-    #                                     |||
-    #                                     ||+-- poisoning (P)
+    push(@grub-cmdline-linux, 'slub_debug=FZ');
+    #                                     ||
     #                                     |+--- redzoning (Z)
     #                                     +---- sanity checks (F)
-    # enable buddy allocator free poisoning (needs CONFIG_PAGE_POISONING=y)
-    push(@grub-cmdline-linux, 'page_poison=1');
     # disable slab merging (makes many heap overflow attacks more difficult)
     push(@grub-cmdline-linux, 'slab_nomerge=1');
     # always enable Kernel Page Table Isolation (to be safe from Meltdown)
