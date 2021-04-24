@@ -276,7 +276,6 @@ expect               | interactive command prompt automation              | N
 glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
 gptfdisk             | GPT disk partitioning with `sgdisk`                | Y
 grub                 | FDE on `/boot`, `grub-mkpasswd-pbkdf2`             | N
-haveged              | entropy for `pacman-key`                           | Y
 kbd                  | keymap data in `/usr/share/kbd/keymaps`, `setfont` | Y
 kmod                 | `modprobe`                                         | Y
 openssl              | user password salts                                | Y

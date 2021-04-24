@@ -65,10 +65,8 @@ method !setup(--> Nil)
     my Bool:D $reflector = $.config.reflector;
 
     # initialize pacman-keys
-    run(qw<haveged --write=1024>);
     run(qw<pacman-key --init>);
     run(qw<pacman-key --populate archlinux>);
-    run(qw<pkill haveged>);
 
     # fetch dependencies needed prior to pacstrap
     my Str:D @dep = qw<
