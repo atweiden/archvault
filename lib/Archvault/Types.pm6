@@ -1053,6 +1053,7 @@ constant @timezones = qw<
     Pacific/Guam
     Pacific/Honolulu
     Pacific/Johnston
+    Pacific/Kanton
     Pacific/Kiritimati
     Pacific/Kosrae
     Pacific/Kwajalein
