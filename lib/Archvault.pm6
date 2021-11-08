@@ -4,7 +4,7 @@ use Archvault::Config;
 use Archvault::Utils;
 unit class Archvault;
 
-constant $VERSION = v1.11.0;
+constant $VERSION = v1.12.0;
 
 method new(
     *%opts (

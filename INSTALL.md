@@ -119,7 +119,7 @@ Fetch Archvault sources with Curl:
 
 ```sh
 # official release tarball
-VERSION=1.11.0
+VERSION=1.12.0
 curl \
   -L \
   -O \
