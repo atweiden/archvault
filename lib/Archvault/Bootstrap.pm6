@@ -2237,6 +2237,7 @@ multi sub replace(
         ==> replace('99-sysctl.conf', 'net.ipv6.conf.all.disable_ipv6')
         ==> replace('99-sysctl.conf', 'net.ipv6.conf.default.disable_ipv6')
         ==> replace('99-sysctl.conf', 'net.ipv6.conf.lo.disable_ipv6')
+        ==> replace('99-sysctl.conf', 'vm.mmap_rnd_bits')
         ==> replace('99-sysctl.conf', 'vm.vfs_cache_pressure')
         ==> replace('99-sysctl.conf', 'vm.swappiness');
     my Str:D $replace = @replace.join("\n");
@@ -2256,7 +2257,8 @@ multi sub replace(
         ==> replace('99-sysctl.conf', 'kernel.pid_max')
         ==> replace('99-sysctl.conf', 'net.ipv6.conf.all.disable_ipv6')
         ==> replace('99-sysctl.conf', 'net.ipv6.conf.default.disable_ipv6')
-        ==> replace('99-sysctl.conf', 'net.ipv6.conf.lo.disable_ipv6');
+        ==> replace('99-sysctl.conf', 'net.ipv6.conf.lo.disable_ipv6')
+        ==> replace('99-sysctl.conf', 'vm.mmap_rnd_bits');
     my Str:D $replace = @replace.join("\n");
     spurt($file, $replace ~ "\n");
 }
@@ -2272,6 +2274,7 @@ multi sub replace(
     my Str:D @replace =
         $file.IO.lines
         ==> replace('99-sysctl.conf', 'kernel.pid_max')
+        ==> replace('99-sysctl.conf', 'vm.mmap_rnd_bits')
         ==> replace('99-sysctl.conf', 'vm.vfs_cache_pressure')
         ==> replace('99-sysctl.conf', 'vm.swappiness');
     my Str:D $replace = @replace.join("\n");
@@ -2288,7 +2291,8 @@ multi sub replace(
     my Str:D $file = '/mnt/etc/sysctl.d/99-sysctl.conf';
     my Str:D @replace =
         $file.IO.lines
-        ==> replace('99-sysctl.conf', 'kernel.pid_max');
+        ==> replace('99-sysctl.conf', 'kernel.pid_max')
+        ==> replace('99-sysctl.conf', 'vm.mmap_rnd_bits');
     my Str:D $replace = @replace.join("\n");
     spurt($file, $replace ~ "\n");
 }
@@ -2367,6 +2371,42 @@ multi sub replace(
     my UInt:D $index = @line.first(/^'#'$subject/, :k);
     my Str:D $replace = sprintf(Q{%s = 1}, $subject);
     @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    '99-sysctl.conf',
+    Str:D $subject where 'vm.mmap_rnd_bits',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $kernel-bits = $*KERNEL.bits;
+    replace('99-sysctl.conf', $subject, @line, :$kernel-bits);
+}
+
+multi sub replace(
+    '99-sysctl.conf',
+    Str:D $subject where 'vm.mmap_rnd_bits',
+    Str:D @line,
+    UInt:D :kernel-bits($)! where 32
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = 16}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    '99-sysctl.conf',
+    Str:D $subject where 'vm.mmap_rnd_bits',
+    Str:D @line,
+    UInt:D :kernel-bits($)!
+    --> Array[Str:D]
+)
+{
     @line;
 }
 
