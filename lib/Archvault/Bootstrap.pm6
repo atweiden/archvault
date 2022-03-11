@@ -424,7 +424,8 @@ multi sub build-cryptsetup-luks-open-cmdline(
 sub mkbtrfs(DiskType:D $disk-type, VaultName:D $vault-name --> Nil)
 {
     # create btrfs filesystem on opened vault
-    run(qqw<mkfs.btrfs /dev/mapper/$vault-name>);
+    run(qw<modprobe btrfs xxhash_generic>);
+    run(qqw<mkfs.btrfs --csum xxhash /dev/mapper/$vault-name>);
 
     # set mount options
     my Str:D @mount-options = qw<
@@ -2002,8 +2003,7 @@ multi sub replace(
 )
 {
     # prepare modules
-    my Str:D @module;
-    push(@module, $processor eq 'INTEL' ?? 'crc32c-intel' !! 'crc32c');
+    my Str:D @module = 'xxhash_generic';
     push(@module, 'i915') if $graphics eq 'INTEL';
     push(@module, 'nouveau') if $graphics eq 'NVIDIA';
     push(@module, 'radeon') if $graphics eq 'RADEON';
