@@ -162,6 +162,7 @@ ARCHVAULT_KEYMAP="us"
 ARCHVAULT_TIMEZONE="America/Los_Angeles"
 ARCHVAULT_AUGMENT=1
 ARCHVAULT_DISABLE_IPV6=1
+ARCHVAULT_ENABLE_SERIAL_CONSOLE=1
 ```
 
 **Supply options via cmdline flags**:
@@ -304,6 +305,7 @@ variable values for all configuration options aside from:
 - `--admin-pass-hash`
 - `--augment`
 - `--disable-ipv6`
+- `--enable-serial-console`
 - `--grub-name`
 - `--grub-pass`
 - `--grub-pass-hash`
@@ -328,6 +330,7 @@ No console input is read for configuration options:
 - `--admin-pass-hash`
 - `--augment`
 - `--disable-ipv6`
+- `--enable-serial-console`
 - `--grub-pass-hash`
 - `--guest-pass-hash`
 - `--reflector`

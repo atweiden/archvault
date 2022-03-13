@@ -141,6 +141,10 @@ has Bool:D $.augment =
 has Bool:D $.disable-ipv6 =
     ?%*ENV<ARCHVAULT_DISABLE_IPV6>;
 
+# enable serial console
+has Bool:D $.enable-serial-console =
+    ?%*ENV<ARCHVAULT_ENABLE_SERIAL_CONSOLE>;
+
 # reflector
 has Bool:D $.reflector =
     ?%*ENV<ARCHVAULT_REFLECTOR>;
@@ -188,6 +192,7 @@ submethod BUILD(
     Bool :$augment,
     Bool :$disable-ipv6,
     Str :$disk-type,
+    Bool :$enable-serial-console,
     Str :$graphics,
     Str :$grub-name,
     Str :$grub-pass,
@@ -218,6 +223,8 @@ submethod BUILD(
         if $disable-ipv6;
     $!disk-type = Archvault::Config.gen-disk-type($disk-type)
         if $disk-type;
+    $!enable-serial-console = $enable-serial-console
+        if $enable-serial-console;
     $!graphics = Archvault::Config.gen-graphics($graphics)
         if $graphics;
     $!host-name = Archvault::Config.gen-host-name($hostname)
@@ -276,6 +283,7 @@ method new(
         Bool :augment($),
         Bool :disable-ipv6($),
         Str :disk-type($),
+        Bool :enable-serial-console($),
         Str :graphics($),
         Str :grub-name($),
         Str :grub-pass($),
