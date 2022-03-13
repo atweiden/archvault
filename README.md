@@ -355,7 +355,7 @@ This is free and unencumbered public domain software. For more
 information, see http://unlicense.org/ or the accompanying UNLICENSE file.
 
 [550MB]: https://wiki.archlinux.org/index.php/EFI_system_partition#Create_the_partition
-[arch-install-scripts]: https://git.archlinux.org/arch-install-scripts.git
+[arch-install-scripts]: https://github.com/archlinux/arch-install-scripts
 [denies console login as root]: https://wiki.archlinux.org/index.php/Security#Denying_console_login_as_root
 [disables Btrfs CoW]: https://wiki.archlinux.org/index.php/Btrfs#Disabling_CoW
 [dnscrypt-proxy]: https://wiki.archlinux.org/index.php/DNSCrypt
