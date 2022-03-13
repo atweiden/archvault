@@ -1895,7 +1895,7 @@ multi sub replace(
     --> Array[Str:D]
 )
 {
-    my UInt:D $index = @line.first(/^'#'?$subject/, :k);
+    my UInt:D $index = @line.first(/^$subject/, :k);
     my Str:D $replace = sprintf(Q{%s="127.0.0.1"}, $subject);
     @line[$index] = $replace;
     @line;
