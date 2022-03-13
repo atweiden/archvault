@@ -1895,7 +1895,7 @@ multi sub replace(
     --> Array[Str:D]
 )
 {
-    my UInt:D $index = @line.first(/^$subject/, :k);
+    my UInt:D $index = @line.first(/^'#'?$subject/, :k);
     my Str:D $replace = sprintf(Q{%s="127.0.0.1"}, $subject);
     @line[$index] = $replace;
     @line;
@@ -1930,11 +1930,9 @@ multi sub replace(
     my Str:D $file = '/mnt/etc/pacman.conf';
     my Str:D @replace =
         $file.IO.lines
-        # uncomment Color
+        # uncomment C<Color>
         ==> replace('pacman.conf', 'Color')
-        # uncomment TotalDownload
-        ==> replace('pacman.conf', 'TotalDownload')
-        # put ILoveCandy on the line below CheckSpace
+        # put C<ILoveCandy> on the line below C<CheckSpace>
         ==> replace('pacman.conf', 'ILoveCandy');
     @replace =
         @replace
@@ -1947,18 +1945,6 @@ multi sub replace(
 multi sub replace(
     'pacman.conf',
     Str:D $subject where 'Color',
-    Str:D @line
-    --> Array[Str:D]
-)
-{
-    my UInt:D $index = @line.first(/^'#'\h*$subject/, :k);
-    @line[$index] = $subject;
-    @line;
-}
-
-multi sub replace(
-    'pacman.conf',
-    Str:D $subject where 'TotalDownload',
     Str:D @line
     --> Array[Str:D]
 )
@@ -2082,6 +2068,7 @@ multi sub replace(
     my Str:D @files = qw<
         /boot/volume.key
         /etc/modprobe.d/modprobe.conf
+        /etc/modules-load.d/bbr.conf
     >;
     # replace files
     my UInt:D $index = @line.first(/^$subject/, :k);
@@ -2139,6 +2126,7 @@ multi sub replace(
     my Str:D @replace =
         $file.IO.lines
         ==> replace('grub', 'GRUB_CMDLINE_LINUX', |@opts)
+        ==> replace('grub', 'GRUB_CMDLINE_LINUX_DEFAULT')
         ==> replace('grub', 'GRUB_DISABLE_OS_PROBER')
         ==> replace('grub', 'GRUB_DISABLE_RECOVERY')
         ==> replace('grub', 'GRUB_ENABLE_CRYPTODISK')
@@ -2217,6 +2205,21 @@ multi sub replace(
 
 multi sub replace(
     'grub',
+    Str:D $subject where 'GRUB_CMDLINE_LINUX_DEFAULT',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    # comment out C<GRUB_CMDLINE_LINUX_DEFAULT>
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $original = @line[$index];
+    my Str:D $replace = sprintf(Q{#%s}, $original);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'grub',
     Str:D $subject where 'GRUB_DISABLE_OS_PROBER',
     Str:D @line
     --> Array[Str:D]
@@ -2237,7 +2240,7 @@ multi sub replace(
 )
 {
     # if C<GRUB_DISABLE_RECOVERY> not found, append to bottom of file
-    my UInt:D $index = @line.first(/^'#'$subject/, :k) // @line.elems;
+    my UInt:D $index = @line.first(/^'#'?$subject/, :k) // @line.elems;
     my Str:D $replace = sprintf(Q{%s=true}, $subject);
     @line[$index] = $replace;
     @line;
