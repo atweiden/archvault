@@ -2196,6 +2196,8 @@ multi sub replace(
     # always panic on uncorrected errors, log corrected errors
     push(@grub-cmdline-linux, 'mce=0');
     push(@grub-cmdline-linux, 'printk.time=1');
+    # the linux kernel enables zswap by default, but we use zram instead
+    push(@grub-cmdline-linux, 'zswap.enabled=0');
     push(@grub-cmdline-linux, 'radeon.dpm=1') if $graphics eq 'RADEON';
     push(@grub-cmdline-linux, 'ipv6.disable=1') if $disable-ipv6.so;
     my Str:D $grub-cmdline-linux = @grub-cmdline-linux.join(' ');
