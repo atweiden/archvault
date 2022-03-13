@@ -738,7 +738,6 @@ method !pacstrap-base(--> Nil)
         rsync
         socat
         sysfsutils
-        systemd-swap
         tmux
         unzip
         usb_modeswitch
@@ -750,6 +749,7 @@ method !pacstrap-base(--> Nil)
         wireless_tools
         wpa_supplicant
         zip
+        zram-generator
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
@@ -1365,9 +1365,9 @@ method !configure-systemd(--> Nil)
     configure-systemd('limits');
     configure-systemd('mounts');
     configure-systemd('sleep');
-    configure-systemd('swap');
     configure-systemd('tmpfiles');
     configure-systemd('udev');
+    configure-systemd('zram-generator');
 }
 
 multi sub configure-systemd('limits' --> Nil)
@@ -1392,14 +1392,6 @@ multi sub configure-systemd('sleep' --> Nil)
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
-multi sub configure-systemd('swap' --> Nil)
-{
-    my Str:D $path = 'etc/systemd/swap.conf.d/zram.conf';
-    my Str:D $base-path = $path.IO.dirname;
-    mkdir("/mnt/$base-path");
-    copy(%?RESOURCES{$path}, "/mnt/$path");
-}
-
 multi sub configure-systemd('tmpfiles' --> Nil)
 {
     # https://wiki.archlinux.org/index.php/Tmpfs#Disable_automatic_mount
@@ -1410,6 +1402,14 @@ multi sub configure-systemd('tmpfiles' --> Nil)
 multi sub configure-systemd('udev' --> Nil)
 {
     my Str:D $path = 'etc/udev/rules.d/60-io-schedulers.rules';
+    my Str:D $base-path = $path.IO.dirname;
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-systemd('zram-generator' --> Nil)
+{
+    my Str:D $path = 'etc/systemd/zram-generator.conf';
     my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
@@ -1497,7 +1497,7 @@ method !enable-systemd-services(--> Nil)
     my Str:D @service = qw<
         dnscrypt-proxy.service
         nftables
-        systemd-swap
+        systemd-zram-setup@zram0.service
     >;
     @service.map(-> Str:D $service {
         run(qqw<arch-chroot /mnt systemctl enable $service>);
@@ -2023,7 +2023,7 @@ multi sub replace(
     push(@module, 'i915') if $graphics eq 'INTEL';
     push(@module, 'nouveau') if $graphics eq 'NVIDIA';
     push(@module, 'radeon') if $graphics eq 'RADEON';
-    # for systemd-swap lz4
+    # for zram lz4 compression
     push(@module, |qw<lz4 lz4_compress>);
     # replace modules
     my UInt:D $index = @line.first(/^$subject/, :k);

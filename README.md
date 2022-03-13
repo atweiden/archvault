@@ -32,8 +32,8 @@ could cause catastrophic data loss and system instability.
 - whole system Btrfs on LUKS, including encrypted `/boot`
 - [GPT][GPT] partitioning
 - no swap partition, uses [zram][zram]
-  via [systemd-swap][systemd-swap] (see:
-  [resources/etc/systemd/swap.conf.d/zram.conf](resources/etc/systemd/swap.conf.d/zram.conf))
+  via [zram-generator][zram-generator] (see:
+  [resources/etc/systemd/zram-generator.conf](resources/etc/systemd/zram-generator.conf))
 - [GRUB][GRUB] bootloader with both legacy BIOS and UEFI support
 - custom GRUB command line username and password
 - custom root, admin, guest, and SFTP user account passwords
@@ -73,7 +73,8 @@ could cause catastrophic data loss and system instability.
   [resources/etc/udev/rules.d/60-io-schedulers.rules](resources/etc/udev/rules.d/60-io-schedulers.rules))
 - disables hibernate, sleep, suspend (see:
   [resources/etc/systemd/sleep.conf](resources/etc/systemd/sleep.conf))
-- enables systemd service for dnscrypt-proxy, nftables and systemd-swap
+- enables systemd service for dnscrypt-proxy, nftables and
+  systemd-zram-setup
 - configures [Xorg][Xorg], but does not install any Xorg packages (see:
   [resources/etc/X11](resources/etc/X11))
 - optionally disables IPv6, and makes IPv4-only adjustments to dhcpcd,
@@ -367,8 +368,8 @@ information, see http://unlicense.org/ or the accompanying UNLICENSE file.
 [nftables]: https://wiki.archlinux.org/index.php/nftables
 [OpenSSH]: https://wiki.archlinux.org/index.php/Secure_Shell
 [Sysctl]: https://wiki.archlinux.org/index.php/Sysctl
-[systemd-swap]: https://github.com/Nefelim4ag/systemd-swap
 [Xorg]: https://wiki.archlinux.org/index.php/Xorg
 [zram]: https://www.kernel.org/doc/Documentation/blockdev/zram.txt
+[zram-generator]: https://github.com/systemd/zram-generator
 
 <!-- vim: set filetype=markdown foldmethod=marker foldlevel=0 nowrap: -->
