@@ -696,37 +696,52 @@ method !pacstrap-base(--> Nil)
     my Processor:D $processor = $.config.processor;
     my Bool:D $reflector = $.config.reflector;
 
-    # base packages
+    # base packages - arch's C<base> with light additions
+    # duplicates C<base>'s C<depends> for thoroughness
     my Str:D @pkg = qw<
         acpi
         arch-install-scripts
         base
-        base-devel
+        bash
         bash-completion
         btrfs-progs
+        busybox
+        bzip2
         ca-certificates
-        cdrtools
+        coreutils
         crda
-        dhclient
+        cryptsetup
+        curl
+        device-mapper
         dhcpcd
-        dialog
+        diffutils
         dnscrypt-proxy
         dosfstools
-        dvd+rw-tools
-        ed
+        e2fsprogs
         efibootmgr
-        ethtool
         exfat-utils
-        expect
+        file
+        filesystem
+        findutils
+        gawk
+        gcc-libs
+        gettext
+        glibc
         gptfdisk
+        grep
         grub
-        haveged
-        inetutils
+        gzip
+        iana-etc
         iproute2
+        iputils
         ipw2100-fw
         ipw2200-fw
         iw
         kbd
+        kmod
+        ldns
+        less
+        licenses
         linux
         linux-firmware
         lynx
@@ -734,28 +749,35 @@ method !pacstrap-base(--> Nil)
         man-db
         man-pages
         mkinitcpio
-        mlocate
-        net-tools
+        ncurses
         nftables
         openresolv
         openssh
-        pacman-contrib
+        openssl
+        pacman
+        pciutils
         perl
+        pinentry
+        plocate
+        procps-ng
         rsync
-        socat
-        sysfsutils
-        tmux
-        unzip
-        usb_modeswitch
-        usbutils
+        sed
+        shadow
+        sudo
+        systemd
+        systemd-sysvcompat
+        tar
+        tzdata
+        util-linux
         vim
-        wget
+        which
         wireguard-tools
         wireless-regdb
-        wireless_tools
         wpa_supplicant
-        zip
+        xz
+        zlib
         zram-generator
+        zstd
     >;
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
