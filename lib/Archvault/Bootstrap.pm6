@@ -759,7 +759,6 @@ method !pacstrap-base(--> Nil)
         pciutils
         perl
         pinentry
-        plocate
         procps-ng
         rsync
         sed
