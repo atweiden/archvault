@@ -110,6 +110,7 @@ multi sub MAIN(
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
+        Str :packages($),
         Str :partition($),
         Str :processor($),
         Bool :reflector($),
@@ -270,6 +271,7 @@ multi sub USAGE('new' --> Nil)
                 [--processor=<processor>] [--graphics=<graphics>]
                 [--disk-type=<disktype>] [--locale=<locale>]
                 [--keymap=<keymap>] [--timezone=<timezone>]
+                [--packages=<packages>]
                 [--augment]
                 [--disable-ipv6] [--enable-serial-console]
                 new
@@ -309,6 +311,8 @@ multi sub USAGE('new' --> Nil)
         Keymap
       --locale=<locale>
         Locale
+      --packages=<packages>
+        List of additional packages to install
       --partition=<device>
         Partition target for install
       --processor=<processor>

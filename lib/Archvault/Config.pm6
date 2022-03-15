@@ -10,6 +10,12 @@ unit class Archvault::Config;
 # - attributes appear in specific order for prompting user
 # - defaults are geared towards live media installation
 
+# additional packages to install
+has Str:D @.package =
+    ?%*ENV<VOIDVAULT_PACKAGES>
+        ?? %*ENV<VOIDVAULT_PACKAGES>.split(' ')
+        !! Empty;
+
 # name for admin user (default: live)
 has UserName:D $.user-name-admin =
     %*ENV<ARCHVAULT_ADMIN_NAME>
@@ -203,6 +209,7 @@ submethod BUILD(
     Str :$hostname,
     Str :$keymap,
     Str :$locale,
+    Str :$packages,
     Str :$partition,
     Str :$processor,
     Bool :$reflector,
@@ -233,6 +240,8 @@ submethod BUILD(
         if $keymap;
     $!locale = Archvault::Config.gen-locale($locale)
         if $locale;
+    @!package = $packages.split(' ')
+        if $packages;
     $!partition = $partition
         if $partition;
     $!processor = Archvault::Config.gen-processor($processor)
@@ -294,6 +303,7 @@ method new(
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
+        Str :packages($),
         Str :partition($),
         Str :processor($),
         Bool :reflector($),

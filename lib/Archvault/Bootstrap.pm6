@@ -693,6 +693,7 @@ sub disable-cow(--> Nil)
 # bootstrap initial chroot with pacstrap
 method !pacstrap-base(--> Nil)
 {
+    my Str:D @package = $.config.package;
     my Processor:D $processor = $.config.processor;
     my Bool:D $reflector = $.config.reflector;
 
@@ -782,7 +783,8 @@ method !pacstrap-base(--> Nil)
 
     # https://www.archlinux.org/news/changes-to-intel-microcodeupdates/
     push(@pkg, 'intel-ucode') if $processor eq 'INTEL';
-    push(@pkg, 'reflector') if $reflector;
+
+    push(@pkg, $_) for @package;
 
     # download and install packages with pacman in chroot
     my Str:D $pacstrap-cmdline = sprintf('pacstrap /mnt %s', @pkg.join(' '));

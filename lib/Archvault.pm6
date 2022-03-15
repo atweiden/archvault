@@ -25,6 +25,7 @@ method new(
         Str :hostname($),
         Str :keymap($),
         Str :locale($),
+        Str :packages($),
         Str :partition($),
         Str :processor($),
         Bool :reflector($),

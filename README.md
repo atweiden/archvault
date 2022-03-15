@@ -161,6 +161,7 @@ ARCHVAULT_DISK_TYPE="usb"
 ARCHVAULT_LOCALE="en_US"
 ARCHVAULT_KEYMAP="us"
 ARCHVAULT_TIMEZONE="America/Los_Angeles"
+ARCHVAULT_PACKAGES="space separated list of packages"
 ARCHVAULT_AUGMENT=1
 ARCHVAULT_DISABLE_IPV6=1
 ARCHVAULT_ENABLE_SERIAL_CONSOLE=1
@@ -314,6 +315,7 @@ variable values for all configuration options aside from:
 - `--guest-pass`
 - `--guest-pass-hash`
 - `--hostname`
+- `--packages`
 - `--reflector`
 - `--root-pass`
 - `--root-pass-hash`
@@ -334,6 +336,7 @@ No console input is read for configuration options:
 - `--enable-serial-console`
 - `--grub-pass-hash`
 - `--guest-pass-hash`
+- `--packages`
 - `--reflector`
 - `--root-pass-hash`
 - `--sftp-pass-hash`
