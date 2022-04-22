@@ -2347,6 +2347,16 @@ multi sub replace(
     # disable busmaster bit on all PCI bridges (avoids holes in IOMMU)
     push(@grub-cmdline-linux, 'efi=disable_early_pci_dma');
     # enable kernel lockdown (avoids userspace escalation to kernel mode)
+    my Str:D $lsm = qw<
+        landlock
+        lockdown
+        yama
+        loadpin
+        safesetid
+        integrity
+        bpf
+    >.join(',');
+    push(@grub-cmdline-linux, "lsm=$lsm");
     push(@grub-cmdline-linux, 'lockdown=confidentiality');
     # always panic on uncorrected errors, log corrected errors
     push(@grub-cmdline-linux, 'mce=0');
