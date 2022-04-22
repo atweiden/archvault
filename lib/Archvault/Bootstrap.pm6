@@ -54,6 +54,7 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-pamd;
     self!configure-shadow;
     self!configure-xorg;
+    self!configure-dbus;
     self!enable-systemd-services;
     self!augment if $augment.so;
     self!unmount;
@@ -1402,6 +1403,7 @@ method !configure-systemd(--> Nil)
     configure-systemd('coredump');
     configure-systemd('ipv6');
     configure-systemd('limits');
+    configure-systemd('machine-id');
     configure-systemd('mounts');
     configure-systemd('sleep');
     configure-systemd('tmpfiles');
@@ -1432,6 +1434,12 @@ multi sub configure-systemd('limits' --> Nil)
     my Str:D $path = 'etc/systemd/system.conf.d/limits.conf';
     my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-systemd('machine-id' --> Nil)
+{
+    my Str:D $path = 'etc/machine-id';
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
@@ -1562,6 +1570,22 @@ multi sub configure-xorg('99-security.conf' --> Nil)
     my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+method !configure-dbus(--> Nil)
+{
+    my Str:D $path = 'var/lib/dbus/machine-id';
+    my Str:D $base-path = $path.IO.dirname;
+    mkdir("/mnt/$base-path");
+    run(qqw<
+        arch-chroot
+        /mnt
+        ln
+        --symbolic
+        --force
+        /etc/machine-id
+        /$path
+    >);
 }
 
 method !enable-systemd-services(--> Nil)

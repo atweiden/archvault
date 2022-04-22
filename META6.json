@@ -25,6 +25,7 @@
         "etc/X11/xorg.conf.d/10-synaptics.conf",
         "etc/X11/xorg.conf.d/99-security.conf",
         "etc/hosts",
+        "etc/machine-id",
         "etc/modprobe.d/modprobe.conf",
         "etc/modules-load.d/bbr.conf",
         "etc/nftables.conf",
