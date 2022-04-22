@@ -50,7 +50,9 @@ method bootstrap(::?CLASS:D: --> Nil)
     self!configure-systemd;
     self!configure-hidepid;
     self!configure-securetty;
+    self!configure-security-limits;
     self!configure-pamd;
+    self!configure-shadow;
     self!configure-xorg;
     self!enable-systemd-services;
     self!augment if $augment.so;
@@ -1490,10 +1492,25 @@ multi sub configure-securetty('shell-timeout' --> Nil)
     copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
+method !configure-security-limits(--> Nil)
+{
+    my Str:D $path = 'etc/security/limits.d/30_security-misc.conf';
+    my Str:D $base-path = $path.IO.dirname;
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
 method !configure-pamd(--> Nil)
 {
     # raise number of passphrase hashing rounds C<passwd> employs
     replace('passwd');
+}
+
+method !configure-shadow(--> Nil)
+{
+    # set C<shadow> (group) passphrase encryption method and hashing
+    # rounds in line with pam
+    replace('login.defs');
 }
 
 method !configure-xorg(--> Nil)
@@ -1745,6 +1762,8 @@ multi sub replace(
         ==> replace('dnscrypt-proxy.toml', 'listen_addresses')
         # server must support DNS security extensions (DNSSEC)
         ==> replace('dnscrypt-proxy.toml', 'require_dnssec')
+        # disable undesireable resolvers
+        ==> replace('dnscrypt-proxy.toml', 'disabled_server_names')
         # always use TCP to connect to upstream servers
         ==> replace('dnscrypt-proxy.toml', 'force_tcp')
         # create new, unique key for each DNS query
@@ -1755,8 +1774,12 @@ multi sub replace(
         ==> replace('dnscrypt-proxy.toml', 'ignore_system_dns')
         # wait for network connectivity before initializing
         ==> replace('dnscrypt-proxy.toml', 'netprobe_timeout')
+        # immediately respond to IPv6 queries with empty response
+        ==> replace('dnscrypt-proxy.toml', 'block_ipv6')
         # disable DNS cache
-        ==> replace('dnscrypt-proxy.toml', 'cache');
+        ==> replace('dnscrypt-proxy.toml', 'cache')
+        # skip resolvers incompatible with anonymization
+        ==> replace('dnscrypt-proxy.toml', 'skip_incompatible');
     my Str:D $replace = @replace.join("\n");
     spurt($file, $replace ~ "\n");
 }
@@ -1772,6 +1795,8 @@ multi sub replace(
         $file.IO.lines
         # server must support DNS security extensions (DNSSEC)
         ==> replace('dnscrypt-proxy.toml', 'require_dnssec')
+        # disable undesireable resolvers
+        ==> replace('dnscrypt-proxy.toml', 'disabled_server_names')
         # always use TCP to connect to upstream servers
         ==> replace('dnscrypt-proxy.toml', 'force_tcp')
         # create new, unique key for each DNS query
@@ -1783,7 +1808,9 @@ multi sub replace(
         # wait for network connectivity before initializing
         ==> replace('dnscrypt-proxy.toml', 'netprobe_timeout')
         # disable DNS cache
-        ==> replace('dnscrypt-proxy.toml', 'cache');
+        ==> replace('dnscrypt-proxy.toml', 'cache')
+        # skip resolvers incompatible with anonymization
+        ==> replace('dnscrypt-proxy.toml', 'skip_incompatible');
     my Str:D $replace = @replace.join("\n");
     spurt($file, $replace ~ "\n");
 }
@@ -1810,6 +1837,19 @@ multi sub replace(
 {
     my UInt:D $index = @line.first(/^$subject/, :k);
     my Str:D $replace = sprintf(Q{%s = true}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
+    Str:D $subject where 'disabled_server_names',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^$subject/, :k);
+    my Str:D $replace = sprintf(Q{%s = ['cloudflare-ipv6']}, $subject);
     @line[$index] = $replace;
     @line;
 }
@@ -1881,6 +1921,19 @@ multi sub replace(
 
 multi sub replace(
     'dnscrypt-proxy.toml',
+    Str:D $subject where 'block_ipv6',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^$subject\h/, :k);
+    my Str:D $replace = sprintf(Q{%s = true}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
     Str:D $subject where 'cache',
     Str:D @line
     --> Array[Str:D]
@@ -1888,6 +1941,19 @@ multi sub replace(
 {
     my UInt:D $index = @line.first(/^$subject\h/, :k);
     my Str:D $replace = sprintf(Q{%s = false}, $subject);
+    @line[$index] = $replace;
+    @line;
+}
+
+multi sub replace(
+    'dnscrypt-proxy.toml',
+    Str:D $subject where 'skip_incompatible',
+    Str:D @line
+    --> Array[Str:D]
+)
+{
+    my UInt:D $index = @line.first(/^$subject\h/, :k);
+    my Str:D $replace = sprintf(Q{%s = true}, $subject);
     @line[$index] = $replace;
     @line;
 }
@@ -2245,6 +2311,9 @@ multi sub replace(
     push(@grub-cmdline-linux, 'nosmt=force');
     # mark all huge pages in EPT non-executable (mitigates iTLB multihit)
     push(@grub-cmdline-linux, 'kvm.nx_huge_pages=force');
+    # always perform cache flush when entering guest vm (limits unintended
+    # memory exposure to malicious guests)
+    push(@grub-cmdline-linux, 'kvm-intel.vmentry_l1d_flush=always');
     # enable IOMMU (prevents DMA attacks)
     push(@grub-cmdline-linux, 'intel_iommu=on');
     push(@grub-cmdline-linux, 'amd_iommu=on');
@@ -2786,6 +2855,28 @@ multi sub replace(
 }
 
 # --- end passwd }}}
+# --- login.defs {{{
+
+multi sub replace(
+    'login.defs'
+    --> Nil
+)
+{
+    my Str:D $crypt-rounds = ~$Archvault::Utils::CRYPT-ROUNDS;
+    my Str:D $crypt-scheme = $Archvault::Utils::CRYPT-SCHEME;
+    my Str:D $file = '/mnt/etc/login.defs';
+    my Str:D $replace = qq:to/EOF/;
+    #
+    # Encrypt group passwords with {$crypt-scheme}-based algorithm ($crypt-rounds SHA rounds)
+    #
+    ENCRYPT_METHOD $crypt-scheme
+    SHA_CRYPT_MIN_ROUNDS $crypt-rounds
+    SHA_CRYPT_MAX_ROUNDS $crypt-rounds
+    EOF
+    spurt($file, "\n" ~ $replace, :append);
+}
+
+# --- end login.defs }}}
 
 # end sub replace }}}
 
