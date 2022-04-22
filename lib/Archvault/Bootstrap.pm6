@@ -1399,12 +1399,32 @@ multi sub configure-openssh(
 
 method !configure-systemd(--> Nil)
 {
+    configure-systemd('coredump');
+    configure-systemd('ipv6');
     configure-systemd('limits');
     configure-systemd('mounts');
     configure-systemd('sleep');
     configure-systemd('tmpfiles');
     configure-systemd('udev');
     configure-systemd('zram-generator');
+}
+
+multi sub configure-systemd('coredump' --> Nil)
+{
+    # insist systemd disable core dumps
+    my Str:D $path = 'etc/systemd/coredump.conf.d/disable.conf';
+    my Str:D $base-path = $path.IO.dirname;
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-systemd('ipv6' --> Nil)
+{
+    # insist systemd-networkd enable ipv6 privacy extensions
+    my Str:D $path = 'etc/systemd/network/ipv6.conf';
+    my Str:D $base-path = $path.IO.dirname;
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
 }
 
 multi sub configure-systemd('limits' --> Nil)
@@ -1494,7 +1514,7 @@ multi sub configure-securetty('shell-timeout' --> Nil)
 
 method !configure-security-limits(--> Nil)
 {
-    my Str:D $path = 'etc/security/limits.d/30_security-misc.conf';
+    my Str:D $path = 'etc/security/limits.d/coredump.conf';
     my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
@@ -2290,6 +2310,8 @@ multi sub replace(
     push(@grub-cmdline-linux, 'init_on_free=1');
     # enable page allocator freelist randomization
     push(@grub-cmdline-linux, 'page_alloc.shuffle=1');
+    # randomize kernel stack offset on syscall entry
+    push(@grub-cmdline-linux, 'randomize_kstack_offset=on');
     # disable vsyscalls (inhibits return oriented programming)
     push(@grub-cmdline-linux, 'vsyscall=none');
     # restrict access to debugfs
@@ -2319,9 +2341,13 @@ multi sub replace(
     push(@grub-cmdline-linux, 'amd_iommu=on');
     push(@grub-cmdline-linux, 'amd_iommu=force_isolation');
     push(@grub-cmdline-linux, 'iommu=force');
+    # force IOMMU TLB invalidation (avoids access to stale data contents)
+    push(@grub-cmdline-linux, 'iommu.passthrough=0');
     push(@grub-cmdline-linux, 'iommu.strict=1');
     # disable busmaster bit on all PCI bridges (avoids holes in IOMMU)
     push(@grub-cmdline-linux, 'efi=disable_early_pci_dma');
+    # enable kernel lockdown (avoids userspace escalation to kernel mode)
+    push(@grub-cmdline-linux, 'lockdown=confidentiality');
     # always panic on uncorrected errors, log corrected errors
     push(@grub-cmdline-linux, 'mce=0');
     push(@grub-cmdline-linux, 'printk.time=1');
