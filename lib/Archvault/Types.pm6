@@ -988,6 +988,7 @@ constant @timezones = qw<
     Europe/Kaliningrad
     Europe/Kiev
     Europe/Kirov
+    Europe/Kyiv
     Europe/Lisbon
     Europe/Ljubljana
     Europe/London
