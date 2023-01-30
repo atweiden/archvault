@@ -738,8 +738,6 @@ method !pacstrap-base(--> Nil)
         iana-etc
         iproute2
         iputils
-        ipw2100-fw
-        ipw2200-fw
         iw
         kbd
         kmod
