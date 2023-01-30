@@ -1110,6 +1110,9 @@ sub mksudo(UserName:D $user-name-admin --> Nil)
     $user-name-admin ALL=(ALL) ALL
     $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/reboot
     $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/shutdown
+    $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/systemctl halt
+    $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/systemctl poweroff
+    $user-name-admin ALL=(ALL) NOPASSWD: /usr/bin/systemctl reboot
     EOF
     spurt('/mnt/etc/sudoers', "\n" ~ $sudoers, :append);
 }
