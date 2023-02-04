@@ -1062,7 +1062,7 @@ multi sub useradd(
     my Str:D $user-group-sftp = qw<
         sftponly
     >.join(',');
-    my Str:D $user-shell-sftp = '/sbin/nologin';
+    my Str:D $user-shell-sftp = '/usr/bin/nologin';
     my Str:D $auth-dir = '/etc/ssh/authorized_keys';
     my Str:D $jail-dir = '/srv/ssh/jail';
     my Str:D $home-dir = "$jail-dir/$user-name-sftp";
