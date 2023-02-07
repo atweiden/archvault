@@ -708,6 +708,7 @@ method !pacstrap-base(--> Nil)
         base
         bash
         bash-completion
+        binutils
         btrfs-progs
         busybox
         bzip2
