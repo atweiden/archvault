@@ -1404,6 +1404,7 @@ method !configure-systemd(--> Nil)
 {
     configure-systemd('coredump');
     configure-systemd('ipv6');
+    configure-systemd('journald');
     configure-systemd('limits');
     configure-systemd('machine-id');
     configure-systemd('mounts');
@@ -1426,6 +1427,14 @@ multi sub configure-systemd('ipv6' --> Nil)
 {
     # insist systemd-networkd enable ipv6 privacy extensions
     my Str:D $path = 'etc/systemd/network/ipv6.conf';
+    my Str:D $base-path = $path.IO.dirname;
+    mkdir("/mnt/$base-path");
+    copy(%?RESOURCES{$path}, "/mnt/$path");
+}
+
+multi sub configure-systemd('journald' --> Nil)
+{
+    my Str:D $path = 'etc/systemd/journald.conf.d/limits.conf';
     my Str:D $base-path = $path.IO.dirname;
     mkdir("/mnt/$base-path");
     copy(%?RESOURCES{$path}, "/mnt/$path");
@@ -1673,6 +1682,13 @@ multi sub replace(
 
     # only allow sudo when the user is logged in to a real tty
     Defaults requiretty
+
+    # set PATH environment variable for commands run using sudo
+    Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+    # always use indicated umask regardless of what umask user has set
+    Defaults umask=0022
+    Defaults umask_override
 
     # prevent arbitrary code execution as your user when sudoing to another
     # user due to TTY hijacking via TIOCSTI ioctl
@@ -2367,6 +2383,19 @@ multi sub replace(
     push(@grub-cmdline-linux, 'iommu.strict=1');
     # disable busmaster bit on all PCI bridges (avoids holes in IOMMU)
     push(@grub-cmdline-linux, 'efi=disable_early_pci_dma');
+    # enable kernel lockdown (avoids userspace escalation to kernel mode)
+    my Str:D $lsm = qw<
+        landlock
+        lockdown
+        yama
+        loadpin
+        safesetid
+        integrity
+        apparmor
+        bpf
+    >.join(',');
+    push(@grub-cmdline-linux, "lsm=$lsm");
+    push(@grub-cmdline-linux, 'lockdown=confidentiality');
     # always panic on uncorrected errors, log corrected errors
     push(@grub-cmdline-linux, 'mce=0');
     push(@grub-cmdline-linux, 'printk.time=1');

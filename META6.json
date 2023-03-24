@@ -40,6 +40,7 @@
         "etc/ssh/sshd_config",
         "etc/sysctl.d/99-sysctl.conf",
         "etc/systemd/coredump.conf.d/disable.conf",
+        "etc/systemd/journald.conf.d/limits.conf",
         "etc/systemd/network/ipv6.conf",
         "etc/systemd/sleep.conf",
         "etc/systemd/system.conf.d/limits.conf",
