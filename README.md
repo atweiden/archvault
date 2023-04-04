@@ -266,27 +266,27 @@ See: [INSTALL.md](INSTALL.md).
 Dependencies
 ------------
 
-Name                 | Provides                                           | Included in Arch ISO¹?
----                  | ---                                                | ---
-arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`              | Y
-btrfs-progs          | Btrfs support                                      | Y
-coreutils            | `chmod`, `chown`, `cp`, `rm`                       | Y
-cryptsetup           | FDE with LUKS                                      | Y
-dosfstools           | create VFAT filesystem for UEFI with `mkfs.vfat`   | Y
-e2fsprogs            | `chattr`                                           | Y
-efibootmgr           | UEFI support                                       | Y
-expect               | interactive command prompt automation              | N
-glibc                | libcrypt, locale data in `/usr/share/i18n/locales` | Y
-gptfdisk             | GPT disk partitioning with `sgdisk`                | Y
-grub                 | FDE on `/boot`, `grub-mkpasswd-pbkdf2`             | N
-kbd                  | keymap data in `/usr/share/kbd/keymaps`, `setfont` | Y
-kmod                 | `modprobe`                                         | Y
-openssl              | user password salts                                | Y
-pacman               | `makepkg`, `pacman`, `pacman-key`                  | Y
-procps-ng            | `pkill`                                            | Y
-rakudo               | `archvault` Raku runtime                           | N
-tzdata               | timezone data in `/usr/share/zoneinfo/zone.tab`    | Y
-util-linux           | `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`      | Y
+Name                 | Provides                                            | Included in Arch ISO¹?
+---                  | ---                                                 | ---
+arch-install-scripts | `arch-chroot`, `genfstab`, `pacstrap`               | Y
+btrfs-progs          | Btrfs support                                       | Y
+coreutils            | `chmod`, `chown`, `cp`, `rm`                        | Y
+cryptsetup           | FDE with LUKS                                       | Y
+dosfstools           | create VFAT filesystem for UEFI with `mkfs.vfat`    | Y
+e2fsprogs            | `chattr`                                            | Y
+efibootmgr           | UEFI support                                        | Y
+expect               | interactive command prompt automation               | N
+glibc                | libcrypt, locale data in `/usr/share/i18n/locales`  | Y
+gptfdisk             | GPT disk partitioning with `sgdisk`                 | Y
+grub                 | FDE on `/boot`, `grub-mkpasswd-pbkdf2`              | N
+kbd                  | keymap data in `/usr/share/kbd/keymaps`, `setfont`  | Y
+kmod                 | `modprobe`                                          | Y
+openssl              | user password salts                                 | Y
+pacman               | `makepkg`, `pacman`, `pacman-key`                   | Y
+procps-ng            | `pkill`                                             | Y
+rakudo               | `archvault` Raku runtime                            | N
+tzdata               | timezone data in `/usr/share/zoneinfo/zone1970.tab` | Y
+util-linux           | `hwclock`, `lsblk`, `mkfs`, `mount`, `umount`       | Y
 
 ¹: the [official installation medium](https://www.archlinux.org/download/)
 
