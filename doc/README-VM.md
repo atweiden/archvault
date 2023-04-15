@@ -24,7 +24,7 @@
   - Type: Linux
   - Version: Arch Linux (64-bit)
   - Continue
-  - Memory Size: 2048 MB
+  - Memory Size: 4096 MB
   - Continue
   - Create a virtual hard disk now
   - Create
@@ -212,7 +212,7 @@ ssh -vvv -N -T -i "$HOME/.ssh/vbox-arch64/id_ed25519" -D 9999 variable@192.168.3
 - Select Customize Settings
   - Processors and Memory
     - 1 processor core
-    - Memory: 2048 MB
+    - Memory: 4096 MB
   - Isolation
     - uncheck Enable Drag and Drop
     - uncheck Enable Copy and Paste
