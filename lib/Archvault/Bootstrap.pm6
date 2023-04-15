@@ -1240,6 +1240,7 @@ method !generate-initramfs(--> Nil)
 method !install-bootloader(--> Nil)
 {
     my Bool:D $disable-ipv6 = $.config.disable-ipv6;
+    my DiskType:D $disk-type = $.config.disk-type;
     my Bool:D $enable-serial-console = $.config.enable-serial-console;
     my Graphics:D $graphics = $.config.graphics;
     my Str:D $partition = $.config.partition;
@@ -1251,6 +1252,7 @@ method !install-bootloader(--> Nil)
     replace(
         'grub',
         $disable-ipv6,
+        $disk-type,
         $enable-serial-console,
         $graphics,
         $partition-vault,
@@ -2270,6 +2272,7 @@ multi sub replace(
     'grub',
     *@opts (
         Bool:D $disable-ipv6,
+        DiskType:D $disk-type,
         Bool:D $enable-serial-console,
         Graphics:D $graphics,
         Str:D $partition-vault,
@@ -2297,6 +2300,7 @@ multi sub replace(
     'grub',
     Str:D $subject where 'GRUB_CMDLINE_LINUX',
     Bool:D $disable-ipv6,
+    DiskType:D $disk-type,
     Bool:D $enable-serial-console,
     Graphics:D $graphics,
     Str:D $partition-vault,
@@ -2308,10 +2312,12 @@ multi sub replace(
     # prepare GRUB_CMDLINE_LINUX
     my Str:D $vault-uuid =
         qqx<blkid --match-tag UUID --output value $partition-vault>.trim;
+    my Str:D $cryptdevice = "/dev/disk/by-uuid/$vault-uuid:$vault-name";
+    $cryptdevice ~= ":no-read-workqueue,no-write-workqueue" if $disk-type !eq 'HDD';
     my Str:D @grub-cmdline-linux = qqw<
         quiet
         loglevel=0
-        cryptdevice=/dev/disk/by-uuid/$vault-uuid:$vault-name
+        cryptdevice=$cryptdevice
         cryptkey=rootfs:/boot/volume.key
         rootflags=subvol=@
     >;
