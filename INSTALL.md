@@ -29,7 +29,7 @@ cd /root
 curl \
   -L \
   -O \
-  https://github.com/atweiden/pkgbuilds/releases/download/2022.12/raku.tar.gz
+  https://github.com/atweiden/pkgbuilds/releases/download/2023.02/raku.tar.gz
 tar xvzf raku.tar.gz
 
 # add private repo until official rakudo package in community
