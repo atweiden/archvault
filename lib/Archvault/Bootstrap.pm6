@@ -714,7 +714,6 @@ method !pacstrap-base(--> Nil)
         bzip2
         ca-certificates
         coreutils
-        crda
         cryptsetup
         curl
         device-mapper
