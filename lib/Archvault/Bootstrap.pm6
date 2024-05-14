@@ -1781,9 +1781,15 @@ multi sub replace(
     # Use the same DNS servers every time
     static domain_name_servers=127.0.0.1
 
+    # Only configure IPv4
+    ipv4only
+
     # Disable IPv6 router solicitation
-    noipv6rs
     noipv6
+    noipv6rs
+
+    # Don't start DHCPv6 or listen to DHCPv6 messages
+    nodhcp6
     EOF
     spurt($file, "\n" ~ $dhcpcd, :append);
 }
@@ -1802,9 +1808,15 @@ multi sub replace(
     # Use the same DNS servers every time
     static domain_name_servers=127.0.0.1 ::1
 
+    # Only configure IPv4
+    #ipv4only
+
     # Disable IPv6 router solicitation
-    #noipv6rs
     #noipv6
+    #noipv6rs
+
+    # Don't start DHCPv6 or listen to DHCPv6 messages
+    #nodhcp6
     EOF
     spurt($file, "\n" ~ $dhcpcd, :append);
 }
