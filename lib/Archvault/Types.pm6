@@ -767,6 +767,7 @@ constant @timezones = qw<
     America/Creston
     America/Cuiaba
     America/Curacao
+    America/Coyhaique
     America/Danmarkshavn
     America/Dawson
     America/Dawson_Creek
