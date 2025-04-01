@@ -69,8 +69,6 @@ could cause catastrophic data loss and system instability.
   users besides admin
 - [denies console login as root][denies console login as root]
 - disables GRUB recovery mode
-- uses mq-deadline I/O scheduler for SSDs, BFQ for HDDs (see:
-  [resources/etc/udev/rules.d/60-io-schedulers.rules](resources/etc/udev/rules.d/60-io-schedulers.rules))
 - disables hibernate, sleep, suspend (see:
   [resources/etc/systemd/sleep.conf](resources/etc/systemd/sleep.conf))
 - enables systemd service for dnscrypt-proxy, nftables and
